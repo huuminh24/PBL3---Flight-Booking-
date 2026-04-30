@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>SkyNest - Đặt vé máy bay</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-background": "#281718",
+                        "surface-dim": "#f2d3d3",
+                        "on-tertiary-fixed-variant": "#005234",
+                        "surface-container-lowest": "#ffffff",
+                        "luxe-purple": "#460479",
+                        "surface-tint": "#be0038",
+                        "muted": "#6a6a6a",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "canvas": "#ffffff",
+                        "ink": "#222222",
+                        "on-surface": "#281718",
+                        "surface-strong": "#f2f2f2",
+                        "on-surface-variant": "#5c3f41",
+                        "surface-container": "#ffe9e9",
+                        "outline": "#906f70",
+                        "inverse-surface": "#3f2b2c",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-primary-fixed": "#40000d",
+                        "rausch-disabled": "#ffd1da",
+                        "primary": "#ba0036",
+                        "legal-blue": "#428bff",
+                        "surface-container-low": "#fff0f0",
+                        "hairline": "#dddddd",
+                        "surface-soft": "#f7f7f7",
+                        "tertiary-fixed-dim": "#62dca3",
+                        "hairline-soft": "#ebebeb",
+                        "inverse-primary": "#ffb2b6",
+                        "secondary-container": "#e2dfde",
+                        "background": "#fff8f7",
+                        "surface": "#fff8f7",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#008558",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#ffe1e2",
+                        "on-tertiary-container": "#f6fff6",
+                        "border-strong": "#c1c1c1",
+                        "secondary-fixed": "#e5e2e1",
+                        "muted-soft": "#929292",
+                        "surface-variant": "#fbdbdc",
+                        "surface-container-highest": "#fbdbdc",
+                        "primary-fixed": "#ffdada",
+                        "on-primary-fixed-variant": "#920029",
+                        "rausch": "#ff385c",
+                        "tertiary-fixed": "#80f9bd",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#002113",
+                        "error": "#c13515",
+                        "on-primary": "#ffffff",
+                        "secondary": "#5f5e5e",
+                        "primary-fixed-dim": "#ffb2b6",
+                        "on-primary-container": "#fffbff",
+                        "outline-variant": "#e5bdbe",
+                        "surface-bright": "#fff8f7",
+                        "tertiary": "#006a45",
+                        "on-secondary-container": "#636262",
+                        "rausch-active": "#e00b41",
+                        "primary-container": "#e21e4a",
+                        "on-tertiary": "#ffffff",
+                        "body": "#3f3f3f",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#ffedec",
+                        "plus-magenta": "#92174d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "card": "14px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "md": "12px",
+                        "xxs": "2px",
+                        "base": "16px",
+                        "xxl": "48px",
+                        "section": "64px"
+                    },
+                    "fontFamily": {
+                        "uppercase-tag": ["Plus Jakarta Sans"],
+                        "rating-display": ["Plus Jakarta Sans"],
+                        "display-md": ["Plus Jakarta Sans"],
+                        "badge": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "nav-link": ["Plus Jakarta Sans"],
+                        "caption": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "display-xl": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "uppercase-tag": ["8px", { "lineHeight": "1.25", "letterSpacing": "0.32px", "fontWeight": "700" }],
+                        "rating-display": ["64px", { "lineHeight": "1.1", "letterSpacing": "-1px", "fontWeight": "700" }],
+                        "display-md": ["21px", { "lineHeight": "1.43", "letterSpacing": "0", "fontWeight": "700" }],
+                        "badge": ["11px", { "lineHeight": "1.18", "letterSpacing": "0", "fontWeight": "600" }],
+                        "title-md": ["16px", { "lineHeight": "1.25", "letterSpacing": "0", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.43", "letterSpacing": "0", "fontWeight": "400" }],
+                        "nav-link": ["16px", { "lineHeight": "1.25", "letterSpacing": "0", "fontWeight": "600" }],
+                        "caption": ["14px", { "lineHeight": "1.29", "letterSpacing": "0", "fontWeight": "500" }],
+                        "display-lg": ["22px", { "lineHeight": "1.18", "letterSpacing": "-0.44px", "fontWeight": "500" }],
+                        "display-xl": ["28px", { "lineHeight": "1.43", "letterSpacing": "0", "fontWeight": "700" }]
+                    },
+                    "boxShadow": {
+                        "float": "0 2px 10px rgba(0,0,0,0.02), 0 0 0 1px rgba(0,0,0,0.02)",
+                        "search": "0 10px 40px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02)"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-canvas text-ink antialiased">
+    <!-- TopAppBar -->
+    <header
+        class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-zinc-100 font-['Plus_Jakarta_Sans'] antialiased">
+    </header>
+    <div id="staff-booking-banner"
+        class="hidden fixed top-20 inset-x-0 z-40 bg-amber-50 border-b border-amber-200 text-amber-800">
+        <div class="max-w-5xl mx-auto px-6 md:px-20 py-3 flex items-center gap-3 text-sm font-semibold">
+            <span class="material-symbols-outlined text-[20px]">support_agent</span>
+            <span>Bạn đang đặt vé hộ khách hàng. Tất cả bước sẽ ghi nhận kênh "Staff".</span>
+            <a href="/staff.html" class="ml-auto underline hover:text-amber-900">Về bảng điều khiển</a>
+        </div>
+    </div>
+    <main class="pt-20">
+        <!-- Hero Search Section -->
+        <section class="relative w-full min-h-screen flex flex-col items-center justify-center">
+
+            <div class="absolute inset-0 z-0">
+                <img alt="Aerial view of a commercial airplane flying over white clouds at sunset with warm golden hour light"
+                    class="w-full h-full object-cover"
+                    src="/plane.jpg"
+                    style="" />
+                <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
+            </div>
+            <div class="relative z-10 w-full max-w-5xl px-6 md:px-20 mt-[-100px]">
+                <h1 class="text-canvas text-display-xl font-display-xl mb-xl text-center shadow-sm" style="">Khám phá
+                    điểm đến tiếp theo</h1>
+                <!-- Tab Buttons -->
+                <div class="flex justify-center mb-4">
+                    <button id="tab-main-booking"
+                        class="px-6 py-3 text-sm font-bold border-b-2 border-ink text-ink transition-colors">Đặt
+                        vé</button>
+                </div>
+                <!-- Search Container -->
+                <div class="bg-surface-container-lowest rounded-[32px] shadow-search p-4 mx-auto max-w-5xl w-full">
+                    <div id="booking-content" class="block">
+                        <!-- Top Options Row -->
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-4 px-2 gap-4">
+                            <!-- Flight Types -->
+                            <div class="flex items-center space-x-1">
+                                <button onclick="setFlightType('oneway')" id="btn-type-oneway"
+                                    class="px-4 py-2 rounded-full text-body-sm font-medium bg-surface-soft transition-all text-ink">Một
+                                    chiều</button>
+                                <button onclick="setFlightType('roundtrip')" id="btn-type-roundtrip"
+                                    class="px-4 py-2 rounded-full text-body-sm font-medium hover:bg-surface-soft transition-all text-ink">Khứ
+                                    hồi</button>
+                                <button onclick="setFlightType('multicity')" id="btn-type-multicity"
+                                    class="px-4 py-2 rounded-full text-body-sm font-medium hover:bg-surface-soft transition-all text-ink">Nhiều
+                                    chặng</button>
+                            </div>
+                            <!-- Passenger & Class -->
+                            <div class="flex items-center space-x-4">
+                                <div class="relative">
+                                    <button id="btn-pax-toggle"
+                                        class="flex items-center space-x-2 text-body-sm font-medium text-ink hover:text-rausch transition-colors group">
+                                        <span
+                                            class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">group</span>
+                                        <span id="pax-display-text">1 Hành khách</span>
+                                        <span
+                                            class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">expand_more</span>
+                                    </button>
+                                    <div id="pax-popup"
+                                        class="hidden absolute top-full left-0 mt-2 bg-white rounded-xl shadow-search border border-hairline p-4 w-[320px] z-50 cursor-default">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <div>
+                                                <div class="font-bold text-ink">Người lớn</div>
+                                                <div class="text-xs text-muted">Từ 12 tuổi</div>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <button onclick="updatePax('adult', -1)" id="btn-pax-adult-dec"
+                                                    class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors disabled:opacity-30 disabled:hover:border-hairline">-</button>
+                                                <span id="pax-adult" class="font-bold w-4 text-center">1</span>
+                                                <button onclick="updatePax('adult', 1)"
+                                                    class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-4">
+                                            <div>
+                                                <div class="font-bold text-ink">Trẻ em</div>
+                                                <div class="text-xs text-muted">Từ 2 - 11 tuổi</div>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <button onclick="updatePax('child', -1)" id="btn-pax-child-dec"
+                                                    class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors disabled:opacity-30 disabled:hover:border-hairline">-</button>
+                                                <span id="pax-child" class="font-bold w-4 text-center">0</span>
+                                                <button onclick="updatePax('child', 1)"
+                                                    class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <div class="font-bold text-ink">Em bé</div>
+                                                <div class="text-xs text-muted">Dưới 2 tuổi (Ngồi chung)</div>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <button onclick="updatePax('infant', -1)" id="btn-pax-infant-dec"
+                                                    class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors disabled:opacity-30 disabled:hover:border-hairline">-</button>
+                                                <span id="pax-infant" class="font-bold w-4 text-center">0</span>
+                                                <button onclick="updatePax('infant', 1)"
+                                                    class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors">+</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <button id="btn-class-toggle"
+                                        class="flex items-center space-x-2 text-body-sm font-medium text-ink hover:text-rausch transition-colors group">
+                                        <span
+                                            class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">airline_seat_recline_normal</span>
+                                        <span id="class-display-text">Phổ thông</span>
+                                        <span
+                                            class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">expand_more</span>
+                                    </button>
+                                    <div id="class-popup"
+                                        class="hidden absolute top-full left-0 mt-2 bg-white rounded-xl shadow-search border border-hairline py-2 w-[200px] z-50">
+                                        <button onclick="setSeatClass('Economy', 'Phổ thông')"
+                                            class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink">Phổ
+                                            thông</button>
+                                        <button onclick="setSeatClass('Business', 'Thương gia')"
+                                            class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink">Thương
+                                            gia</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Normal Search Pill -->
+                        <div id="normal-search-pill"
+                            class="bg-surface-container-lowest rounded-full flex items-stretch divide-x divide-hairline border border-hairline mx-auto w-full h-16">
+                            <div
+                                class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft rounded-l-full cursor-pointer transition-colors group">
+                                <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
+                                    style="">Khởi hành từ</label>
+                                <select id="input-dep"
+                                    class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none">
+                                    <option value="Da Nang">Đà Nẵng (DAD)</option>
+                                    <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
+                                    <option value="Ha Noi">Hà Nội (HAN)</option>
+                                </select>
+                            </div>
+                            <div
+                                class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft cursor-pointer transition-colors group border-l border-hairline">
+                                <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
+                                    style="">Điểm đến</label>
+                                <select id="input-arr"
+                                    class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none">
+                                    <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
+                                    <option value="Da Nang">Đà Nẵng (DAD)</option>
+                                    <option value="Ha Noi">Hà Nội (HAN)</option>
+                                </select>
+                            </div>
+                            <div
+                                class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft cursor-pointer transition-colors group border-l border-hairline">
+                                <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
+                                    style="">Ngày đi</label>
+                                <input id="input-date"
+                                    class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full placeholder-muted-soft cursor-pointer truncate leading-tight outline-none"
+                                    type="date" />
+                            </div>
+                            <div id="return-date-container"
+                                class="flex-1 flex items-center justify-between pl-lg pr-2 hover:bg-surface-soft rounded-r-full cursor-pointer transition-colors group relative border-l border-hairline opacity-50 pointer-events-none">
+                                <div class="flex flex-col justify-center h-full w-full pr-2">
+                                    <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
+                                        style="">Ngày về</label>
+                                    <input id="input-return-date"
+                                        class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full placeholder-muted-soft cursor-pointer truncate leading-tight outline-none"
+                                        type="date" disabled />
+                                </div>
+                            </div>
+                            <button id="btn-submit-search"
+                                class="bg-rausch hover:bg-rausch-active text-canvas rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-float flex-shrink-0 relative z-10 ml-2"
+                                style="">
+                                <span class="material-symbols-outlined text-[20px]" style="">search</span>
+                            </button>
+                        </div>
+                        <!-- Multi-city Container -->
+                        <div id="multicity-container" class="hidden flex flex-col gap-3 w-full">
+                            <div id="multicity-legs" class="flex flex-col gap-3 w-full">
+                                <!-- Leg 1 -->
+                                <div
+                                    class="multicity-leg flex flex-col md:flex-row gap-2 bg-surface-container-lowest border border-hairline rounded-xl p-2 items-center">
+                                    <span class="font-bold text-sm text-ink px-2">Chặng 1</span>
+                                    <div class="flex-1 flex gap-2 w-full">
+                                        <select
+                                            class="leg-dep flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
+                                            <option value="Da Nang">Đà Nẵng (DAD)</option>
+                                            <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
+                                            <option value="Ha Noi">Hà Nội (HAN)</option>
+                                        </select>
+                                        <select
+                                            class="leg-arr flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
+                                            <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
+                                            <option value="Da Nang">Đà Nẵng (DAD)</option>
+                                            <option value="Ha Noi">Hà Nội (HAN)</option>
+                                        </select>
+                                        <input
+                                            class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink"
+                                            type="date" />
+                                    </div>
+                                    <button onclick="removeLeg(this)"
+                                        class="p-2 text-muted hover:text-rausch disabled:opacity-50" disabled><span
+                                            class="material-symbols-outlined">delete</span></button>
+                                </div>
+                                <!-- Leg 2 -->
+                                <div
+                                    class="multicity-leg flex flex-col md:flex-row gap-2 bg-surface-container-lowest border border-hairline rounded-xl p-2 items-center">
+                                    <span class="font-bold text-sm text-ink px-2">Chặng 2</span>
+                                    <div class="flex-1 flex gap-2 w-full">
+                                        <select
+                                            class="leg-dep flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
+                                            <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
+                                            <option value="Da Nang">Đà Nẵng (DAD)</option>
+                                            <option value="Ha Noi">Hà Nội (HAN)</option>
+                                        </select>
+                                        <select
+                                            class="leg-arr flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
+                                            <option value="Ha Noi">Hà Nội (HAN)</option>
+                                            <option value="Da Nang">Đà Nẵng (DAD)</option>
+                                            <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
+                                        </select>
+                                        <input
+                                            class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink"
+                                            type="date" />
+                                    </div>
+                                    <button onclick="removeLeg(this)" class="p-2 text-muted hover:text-rausch"><span
+                                            class="material-symbols-outlined">delete</span></button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center px-2">
+                                <button onclick="addLeg()"
+                                    class="flex items-center gap-1 text-sm font-bold text-legal-blue hover:underline"><span
+                                        class="material-symbols-outlined text-[18px]">add</span> Thêm chặng bay</button>
+                                <button id="btn-submit-multicity"
+                                    class="bg-rausch hover:bg-rausch-active text-canvas rounded-full px-6 py-3 flex items-center justify-center transition-colors shadow-sm font-bold text-sm">
+                                    Tìm chuyến bay
+                                </button>
+                            </div>
+                        </div>
+                    </div> <!-- End BOOKING TAB CONTENT -->
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- BottomNavBar (Mobile) -->
+    <nav
+        class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 md:hidden pb-safe bg-white dark:bg-zinc-900 border-t border-zinc-100 dark:border-zinc-800 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] font-['Plus_Jakarta_Sans'] text-[10px] font-semibold">
+        <a class="flex flex-col items-center justify-center text-rose-500 dark:text-rose-400 opacity-80 active:scale-90 transition-transform w-full h-full"
+            href="#" style="">
+            <span class="material-symbols-outlined mb-1" style="">search</span>
+            <span class="" style="">Khám phá</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 opacity-80 active:scale-90 transition-transform w-full h-full"
+            href="#" style="">
+            <span class="material-symbols-outlined mb-1" style="">flight_takeoff</span>
+            <span class="" style="">Chuyến đi</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 opacity-80 active:scale-90 transition-transform w-full h-full"
+            href="#" style="">
+            <span class="material-symbols-outlined mb-1" style="">person</span>
+            <span class="" style="">Tài khoản</span>
+        </a>
+    </nav>
+
+    <script src="/shared.js"></script>
+    <script>
+        // State
+        let paxState = { adult: 1, child: 0, infant: 0 };
+        let seatClassVal = 'Economy';
+        let flightType = 'oneway';
+
+        const isStaffBookingMode = (getUrlParam('staff') === 'true');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render shared navbar
+            renderNavbar(isStaffBookingMode ? 'staff-booking' : 'home');
+
+            if (isStaffBookingMode && typeof isStaff === 'function' && isStaff()) {
+                document.getElementById('staff-booking-banner').classList.remove('hidden');
+                // push content down so the banner doesn't overlap
+                document.querySelector('main').classList.replace('pt-20', 'pt-32');
+            }
+
+            // Init Default Date — today + 3 days, or 2026-05-01 if within range (seed data)
+            const today = new Date();
+            const defaultDate = new Date(today);
+            defaultDate.setDate(defaultDate.getDate() + 3);
+            const seedDate = new Date('2026-05-01');
+            // Use seed date if it's in the future and close to today+3, otherwise use dynamic date
+            if (seedDate > today) {
+                document.getElementById('input-date').value = '2026-05-01';
+            } else {
+                document.getElementById('input-date').value = defaultDate.toISOString().split('T')[0];
+            }
+            // Set min date to today
+            document.getElementById('input-date').min = today.toISOString().split('T')[0];
+
+            // Toggle Pax Popup
+            const paxBtn = document.getElementById('btn-pax-toggle');
+            const paxPopup = document.getElementById('pax-popup');
+            paxBtn.onclick = (e) => {
+                e.stopPropagation();
+                paxPopup.classList.toggle('hidden');
+                document.getElementById('class-popup').classList.add('hidden');
+            };
+
+            // Toggle Class Popup
+            const classBtn = document.getElementById('btn-class-toggle');
+            const classPopup = document.getElementById('class-popup');
+            classBtn.onclick = (e) => {
+                e.stopPropagation();
+                classPopup.classList.toggle('hidden');
+                paxPopup.classList.add('hidden');
+            };
+
+            // Close popups on outside click
+            document.onclick = (e) => {
+                if (!paxPopup.contains(e.target) && !paxBtn.contains(e.target)) paxPopup.classList.add('hidden');
+                if (!classPopup.contains(e.target) && !classBtn.contains(e.target)) classPopup.classList.add('hidden');
+            };
+
+            // Search action normal
+            document.getElementById('btn-submit-search').onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (typeof requireAuth === 'function' && !requireAuth('Vui lòng đăng nhập để tìm kiếm chuyến bay')) return;
+
+                const dep = document.getElementById('input-dep').value;
+                const arr = document.getElementById('input-arr').value;
+                const date = document.getElementById('input-date').value;
+
+                if (dep === arr) { alert('Điểm đi và điểm đến phải khác nhau!'); return; }
+                if (!date) { alert('Vui lòng chọn ngày đi!'); return; }
+
+                const totalPax = paxState.adult + paxState.child + paxState.infant;
+                const params = new URLSearchParams({
+                    type: flightType,
+                    pax: totalPax,
+                    adult: paxState.adult,
+                    child: paxState.child,
+                    infant: paxState.infant,
+                    cls: seatClassVal,
+                    dep, arr, date
+                });
+
+                if (flightType === 'roundtrip') {
+                    const returnDate = document.getElementById('input-return-date').value;
+                    if (!returnDate) { alert('Vui lòng chọn ngày về!'); return; }
+                    if (new Date(returnDate) < new Date(date)) { alert('Ngày về phải sau ngày đi!'); return; }
+                    params.set('returnDate', returnDate);
+                }
+
+                if (isStaffBookingMode && typeof isStaff === 'function' && isStaff()) {
+                    params.set('staff', 'true');
+                }
+
+                window.location.href = '/flightsearch.html?' + params.toString();
+            };
+
+            // Search action multicity
+            document.getElementById('btn-submit-multicity').onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (typeof requireAuth === 'function' && !requireAuth('Vui lòng đăng nhập để tìm kiếm chuyến bay')) return;
+
+                const legs = document.querySelectorAll('.multicity-leg');
+                let valid = true;
+                const mcData = [];
+                let prevDate = null;
+
+                legs.forEach((leg, i) => {
+                    const dep = leg.querySelector('.leg-dep').value;
+                    const arr = leg.querySelector('.leg-arr').value;
+                    const date = leg.querySelector('.leg-date').value;
+
+                    if (dep === arr) { alert(`Chặng ${i + 1}: Điểm đi và điểm đến phải khác nhau!`); valid = false; return; }
+                    if (!date) { alert(`Chặng ${i + 1}: Vui lòng chọn ngày đi!`); valid = false; return; }
+
+                    if (prevDate && new Date(date) < new Date(prevDate)) {
+                        alert(`Chặng ${i + 1}: Ngày bay không được trước ngày của chặng trước đó!`); valid = false; return;
+                    }
+                    prevDate = date;
+
+                    mcData.push({ dep, arr, date });
+                });
+
+                if (!valid) return;
+
+                const totalPax = paxState.adult + paxState.child + paxState.infant;
+                const params = new URLSearchParams({
+                    type: 'multicity',
+                    pax: totalPax,
+                    adult: paxState.adult,
+                    child: paxState.child,
+                    infant: paxState.infant,
+                    cls: seatClassVal,
+                    mc: JSON.stringify(mcData)
+                });
+
+                if (isStaffBookingMode && typeof isStaff === 'function' && isStaff()) {
+                    params.set('staff', 'true');
+                }
+
+                window.location.href = '/flightsearch.html?' + params.toString();
+            };
+        });
+
+        // Add Multi-city Leg
+        function addLeg() {
+            const container = document.getElementById('multicity-legs');
+            const legs = container.querySelectorAll('.multicity-leg');
+            if (legs.length >= 6) {
+                alert('Tối đa 6 chặng bay.');
+                return;
+            }
+
+            const lastLeg = legs[legs.length - 1];
+            const lastArr = lastLeg.querySelector('.leg-arr').value;
+
+            const idx = legs.length + 1;
+            const div = document.createElement('div');
+            div.className = "multicity-leg flex flex-col md:flex-row gap-2 bg-surface-container-lowest border border-hairline rounded-xl p-2 items-center";
+            div.innerHTML = `
+                <span class="font-bold text-sm text-ink px-2">Chặng ${idx}</span>
+                <div class="flex-1 flex gap-2 w-full">
+                    <select class="leg-dep flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
+                        <option value="Da Nang" ${lastArr === 'Da Nang' ? 'selected' : ''}>Đà Nẵng (DAD)</option>
+                        <option value="Ho Chi Minh" ${lastArr === 'Ho Chi Minh' ? 'selected' : ''}>TP. Hồ Chí Minh (SGN)</option>
+                        <option value="Ha Noi" ${lastArr === 'Ha Noi' ? 'selected' : ''}>Hà Nội (HAN)</option>
+                    </select>
+                    <select class="leg-arr flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
+                        <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
+                        <option value="Da Nang">Đà Nẵng (DAD)</option>
+                        <option value="Ha Noi">Hà Nội (HAN)</option>
+                    </select>
+                    <input class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink" type="date" />
+                </div>
+                <button onclick="removeLeg(this)" class="p-2 text-muted hover:text-rausch"><span class="material-symbols-outlined">delete</span></button>
+            `;
+            container.appendChild(div);
+            updateLegNumbers();
+        }
+
+        function removeLeg(btn) {
+            const container = document.getElementById('multicity-legs');
+            if (container.querySelectorAll('.multicity-leg').length <= 2) {
+                alert('Nhiều chặng phải có ít nhất 2 chuyến bay.');
+                return;
+            }
+            btn.closest('.multicity-leg').remove();
+            updateLegNumbers();
+        }
+
+        function updateLegNumbers() {
+            const legs = document.querySelectorAll('.multicity-leg');
+            legs.forEach((leg, i) => {
+                leg.querySelector('span.font-bold').textContent = `Chặng ${i + 1}`;
+                const delBtn = leg.querySelector('button');
+                if (i === 0) delBtn.disabled = true; // First leg cannot be deleted
+            });
+        }
+
+        async function loadAirports() {
+            try {
+                const airports = await api('GET', '/Flights/airports');
+                if (!Array.isArray(airports) || airports.length === 0) return;
+                const dl = document.getElementById('airports');
+                if (!dl) return;
+                dl.innerHTML = airports.map(a => `<option value="${String(a).replace(/"/g, '&quot;')}"></option>`).join('');
+            } catch (e) {
+                // keep current static datalist
+            }
+        }
+
+        // Flight Type Logic
+        function setFlightType(type) {
+            flightType = type;
+            const btnOneway = document.getElementById('btn-type-oneway');
+            const btnRoundtrip = document.getElementById('btn-type-roundtrip');
+            const btnMulticity = document.getElementById('btn-type-multicity');
+            const returnContainer = document.getElementById('return-date-container');
+            const returnInput = document.getElementById('input-return-date');
+
+            // Reset styling
+            [btnOneway, btnRoundtrip, btnMulticity].forEach(b => {
+                b.classList.remove('bg-surface-soft');
+                b.classList.add('hover:bg-surface-soft');
+            });
+
+            const normalPill = document.getElementById('normal-search-pill');
+            const mcContainer = document.getElementById('multicity-container');
+
+            // Set active styling
+            if (type === 'oneway' || type === 'roundtrip') {
+                normalPill.classList.remove('hidden');
+                mcContainer.classList.add('hidden');
+
+                if (type === 'oneway') {
+                    btnOneway.classList.add('bg-surface-soft');
+                    btnOneway.classList.remove('hover:bg-surface-soft');
+                    returnContainer.classList.add('opacity-50', 'pointer-events-none');
+                    returnInput.disabled = true;
+                    returnInput.value = '';
+                } else if (type === 'roundtrip') {
+                    btnRoundtrip.classList.add('bg-surface-soft');
+                    btnRoundtrip.classList.remove('hover:bg-surface-soft');
+                    returnContainer.classList.remove('opacity-50', 'pointer-events-none');
+                    returnInput.disabled = false;
+                }
+            } else if (type === 'multicity') {
+                btnMulticity.classList.add('bg-surface-soft');
+                btnMulticity.classList.remove('hover:bg-surface-soft');
+                normalPill.classList.add('hidden');
+                mcContainer.classList.remove('hidden');
+                mcContainer.classList.add('flex');
+            }
+        }
+
+        // Passenger Logic
+        function updatePax(type, change) {
+            let newVal = paxState[type] + change;
+            if (type === 'adult' && newVal < 1) newVal = 1; // Min 1 adult
+            if ((type === 'child' || type === 'infant') && newVal < 0) newVal = 0; // Min 0 child/infant
+
+            // Rule: 1 infant per adult maximum
+            if (type === 'infant' && newVal > paxState.adult) {
+                alert('Số lượng em bé không được vượt quá số lượng người lớn.');
+                return;
+            }
+
+            // Rule: Maximum 9 passengers total (as per API limits)
+            const totalPax = paxState.adult + paxState.child + paxState.infant;
+            if (change > 0 && totalPax >= 9) {
+                alert('Tối đa 9 hành khách mỗi lần đặt.');
+                return;
+            }
+
+            paxState[type] = newVal;
+            document.getElementById(`pax-${type}`).textContent = newVal;
+
+            // Validate infant count if adult count decreases
+            if (type === 'adult' && paxState.infant > paxState.adult) {
+                paxState.infant = paxState.adult;
+                document.getElementById('pax-infant').textContent = paxState.infant;
+            }
+
+            updatePaxDisplay();
+        }
+
+        function updatePaxDisplay() {
+            const total = paxState.adult + paxState.child + paxState.infant;
+            document.getElementById('pax-display-text').textContent = total + ' Hành khách';
+
+            // Update buttons state
+            document.getElementById('btn-pax-adult-dec').disabled = paxState.adult <= 1;
+            document.getElementById('btn-pax-child-dec').disabled = paxState.child <= 0;
+            document.getElementById('btn-pax-infant-dec').disabled = paxState.infant <= 0;
+        }
+
+        // Seat Class Logic
+        function setSeatClass(val, label) {
+            seatClassVal = val;
+            document.getElementById('class-display-text').textContent = label;
+            document.getElementById('class-popup').classList.add('hidden');
+        }
+    </script>
+</body>
+
+</html>

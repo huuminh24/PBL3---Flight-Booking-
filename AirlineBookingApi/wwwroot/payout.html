@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Thông tin hành khách - SkyHmH</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{rausch:"#ff385c","rausch-active":"#e00b41",ink:"#222222",muted:"#6a6a6a",canvas:"#ffffff",hairline:"#dddddd"},fontFamily:{sans:["Plus Jakarta Sans","sans-serif"]}}}}</script>
+<style>body{font-family:'Plus Jakarta Sans',sans-serif} .input-field{width:100%;height:56px;padding:0 16px;border:1px solid #ddd;border-radius:8px;font-size:14px;transition:border-color .2s} .input-field:focus{border-color:#ff385c;outline:none;box-shadow:0 0 0 1px #ff385c}</style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 antialiased">
+<header class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-zinc-100 shadow-sm"></header>
+
+<main class="max-w-[1100px] mx-auto px-6 py-8">
+  <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-zinc-500 hover:text-zinc-800 text-sm font-medium mb-6 transition-colors">
+    <span class="material-symbols-outlined text-[18px]">arrow_back</span>Quay lại
+  </a>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Left: Forms -->
+    <div class="lg:col-span-7 space-y-8">
+      <!-- Flight info loading -->
+      <div id="flight-info-banner" class="bg-white border border-zinc-200 rounded-xl p-5"></div>
+
+      <!-- Contact -->
+      <section class="bg-white border border-zinc-200 rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Thông tin liên hệ</h2>
+        <p class="text-sm text-zinc-500 mb-4">Xác nhận vé sẽ được gửi đến đây.</p>
+        <div class="space-y-3">
+          <input id="c-name" type="text" placeholder="Họ tên liên hệ" class="input-field"/>
+          <input id="c-email" type="email" placeholder="Email" class="input-field"/>
+          <input id="c-phone" type="tel" placeholder="Số điện thoại" class="input-field"/>
+        </div>
+      </section>
+
+      <section id="staff-customer-section" class="hidden bg-white border border-zinc-200 rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Đặt vé hộ khách hàng</h2>
+        <div class="space-y-3">
+          <label class="flex items-center gap-3 p-3 border border-zinc-200 rounded-lg cursor-pointer has-[:checked]:border-[#ff385c] has-[:checked]:bg-red-50">
+            <input id="cust-guest" type="radio" name="cust-mode" value="guest" checked class="accent-[#ff385c]"/>
+            <div>
+              <div class="font-semibold">Khách vãng lai (Guest)</div>
+              <div class="text-xs text-zinc-500">Không gán vào tài khoản Customer</div>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-3 border border-zinc-200 rounded-lg cursor-pointer has-[:checked]:border-[#ff385c] has-[:checked]:bg-red-50">
+            <input id="cust-existing" type="radio" name="cust-mode" value="existing" class="accent-[#ff385c]"/>
+            <div class="flex-1">
+              <div class="font-semibold">Khách đã có tài khoản</div>
+              <div class="text-xs text-zinc-500">Tìm theo tên / email / số điện thoại</div>
+            </div>
+          </label>
+
+          <div id="cust-search-wrap" class="hidden relative">
+            <input id="cust-query" type="text" placeholder="Ví dụ: Nguyen Van A, a@gmail.com, 090..." class="input-field" autocomplete="off"/>
+            <div id="cust-results" class="hidden absolute mt-2 w-full bg-white border border-zinc-200 rounded-xl shadow-lg overflow-hidden z-50"></div>
+            <div id="cust-selected" class="hidden mt-3 text-sm"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Passengers -->
+      <section class="bg-white border border-zinc-200 rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Thông tin hành khách</h2>
+        <div id="pax-forms" class="space-y-6"></div>
+      </section>
+
+      <button id="btn-continue" class="w-full h-12 bg-[#ff385c] hover:bg-[#e00b41] text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+        Hoàn tất đặt vé
+        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+      </button>
+    </div>
+
+    <!-- Right: Summary -->
+    <div class="lg:col-span-5">
+      <div class="sticky top-28 bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+        <h3 class="font-bold text-lg mb-4">Tóm tắt chuyến bay</h3>
+        <div id="summary-content">Đang tải...</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="/shared.js"></script>
+<script>
+let flightData = null;
+let pax = parseInt(getUrlParam('pax') || '1');
+let adultCount = parseInt(getUrlParam('adult') || '1');
+let childCount = parseInt(getUrlParam('child') || '0');
+let infantCount = parseInt(getUrlParam('infant') || '0');
+let cls = getUrlParam('cls') || 'Economy';
+let isStaffBooking = false;
+let selectedCustomerAccountId = null;
+
+let bookingData = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  renderNavbar('home');
+  if (!requireAuth()) return;
+
+  bookingData = JSON.parse(sessionStorage.getItem('bookingData') || 'null');
+  if (bookingData?.searchParams) {
+    pax = parseInt(bookingData.searchParams.pax || pax);
+    adultCount = parseInt(bookingData.searchParams.adult || adultCount);
+    childCount = parseInt(bookingData.searchParams.child || childCount);
+    infantCount = parseInt(bookingData.searchParams.infant || infantCount);
+    cls = bookingData.searchParams.cls || cls;
+    isStaffBooking = bookingData.searchParams.staff === true || getUrlParam('staff') === 'true';
+
+    if (bookingData.flights && bookingData.flights.length > 0) {
+      // Use the first flight ID just as a fallback
+    }
+  }
+
+  if (!bookingData || !bookingData.flights || bookingData.flights.length === 0) {
+    toast('Thiếu thông tin chuyến bay','error'); return;
+  }
+
+  // Prefill contact info for the logged-in customer (not for staff booking on behalf of someone else).
+  if (!(isStaff() && isStaffBooking)) {
+    try {
+      const me = await api('GET', '/Auth/me');
+      const cn = document.getElementById('c-name');
+      const ce = document.getElementById('c-email');
+      const cp = document.getElementById('c-phone');
+      if (cn && !cn.value) cn.value = me.fullName || '';
+      if (ce && !ce.value) ce.value = me.email || '';
+      if (cp && !cp.value) cp.value = me.phoneNumber || '';
+    } catch (_) { /* silent — không phá vỡ flow */ }
+  }
+
+  initStaffCustomerSection();
+
+  try {
+    renderFlightInfo();
+    renderPassengerForms();
+    renderSummary();
+  } catch(e) { toast(e.message,'error'); }
+
+  document.getElementById('btn-continue').onclick = async () => {
+    // Validate contact info
+    const cn = document.getElementById('c-name').value.trim();
+    const ce = document.getElementById('c-email').value.trim();
+    const cp = document.getElementById('c-phone').value.trim();
+    if(!cn||!ce||!cp) { toast('Vui lòng điền đầy đủ thông tin liên hệ','error'); return; }
+
+    const passengers = [];
+    for(let i=0;i<pax;i++) {
+      const name = document.getElementById(`pax-name-${i}`).value.trim();
+      const gender = document.getElementById(`pax-gender-${i}`).value;
+      const type = document.getElementById(`pax-type-${i}`).value;
+      const dobVal = document.getElementById(`pax-dob-${i}`).value;
+      if(!name) { toast(`Vui lòng nhập họ tên hành khách ${i+1}`,'error'); return; }
+      const p = { fullName: name, gender, passengerType: type };
+      if (dobVal) p.dateOfBirth = dobVal;
+      passengers.push(p);
+    }
+
+    const btn = document.getElementById('btn-continue');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = 'Đang xử lý...';
+    btn.disabled = true;
+
+    try {
+      const isSt = isStaff() && isStaffBooking;
+      const endpoint = isSt ? '/staff/bookings' : '/Bookings';
+
+      const reqBody = {
+        flights: bookingData.flights.map((f, i) => ({
+          flightId: f.flightId,
+          seatClass: cls
+        })),
+        contactFullName: cn,
+        contactEmail: ce,
+        contactPhoneNumber: cp,
+        passengers: passengers
+      };
+
+      if (isSt) {
+        reqBody.customerAccountId = selectedCustomerAccountId || null;
+      }
+
+      const res = await api('POST', endpoint, reqBody);
+      
+      // Clear current booking draft
+      sessionStorage.removeItem('bookingData');
+
+      const params = new URLSearchParams({
+        bookingId: res.bookingId,
+        pnr: res.pnrCode,
+        total: res.totalAmount
+      });
+      if (res.expiresAt) params.set('expiresAt', res.expiresAt);
+      if (isSt || res.bookingChannel === 'Staff') params.set('channel', 'staff');
+      window.location.href = `/payment.html?${params.toString()}`;
+    } catch (e) {
+      toast(e.message, 'error');
+      btn.innerHTML = oldText;
+      btn.disabled = false;
+    }
+  };
+});
+
+function initStaffCustomerSection() {
+  const section = document.getElementById('staff-customer-section');
+  if (!section) return;
+  if (!isStaff() || !isStaffBooking) return;
+
+  section.classList.remove('hidden');
+
+  const wrap = document.getElementById('cust-search-wrap');
+  const rGuest = document.getElementById('cust-guest');
+  const rExisting = document.getElementById('cust-existing');
+
+  function syncMode() {
+    const mode = document.querySelector('input[name="cust-mode"]:checked')?.value;
+    if (mode === 'existing') {
+      wrap.classList.remove('hidden');
+    } else {
+      wrap.classList.add('hidden');
+      selectedCustomerAccountId = null;
+      document.getElementById('cust-selected').classList.add('hidden');
+      document.getElementById('cust-results').classList.add('hidden');
+      document.getElementById('cust-query').value = '';
+    }
+  }
+
+  rGuest.onchange = syncMode;
+  rExisting.onchange = syncMode;
+  syncMode();
+
+  const input = document.getElementById('cust-query');
+  const resultsEl = document.getElementById('cust-results');
+  const selectedEl = document.getElementById('cust-selected');
+
+  let t = null;
+  input.oninput = () => {
+    clearTimeout(t);
+    const q = input.value.trim();
+    if (q.length < 2) {
+      resultsEl.classList.add('hidden');
+      resultsEl.innerHTML = '';
+      return;
+    }
+    t = setTimeout(() => searchCustomers(q), 250);
+  };
+
+  document.addEventListener('click', (e) => {
+    if (!wrap.contains(e.target)) resultsEl.classList.add('hidden');
+  });
+
+  async function searchCustomers(q) {
+    try {
+      const list = await api('GET', `/staff/customers?query=${encodeURIComponent(q)}`);
+      if (!Array.isArray(list) || list.length === 0) {
+        resultsEl.innerHTML = '<div class="p-3 text-sm text-zinc-500">Không tìm thấy khách hàng phù hợp.</div>';
+        resultsEl.classList.remove('hidden');
+        return;
+      }
+      resultsEl.innerHTML = list.map(x => {
+        const name = (x.fullName || '').trim() || '(Chưa có tên)';
+        const email = (x.email || '').trim();
+        const phone = (x.phoneNumber || '').trim();
+        return `<button type="button" class="w-full text-left p-3 hover:bg-zinc-50 transition-colors" data-id="${x.accountId}" data-name="${escapeHtml(name)}" data-email="${escapeHtml(email)}" data-phone="${escapeHtml(phone)}">
+          <div class="font-semibold text-zinc-800">${escapeHtml(name)}</div>
+          <div class="text-xs text-zinc-500">${escapeHtml(email)}${phone ? ' · ' + escapeHtml(phone) : ''}</div>
+        </button>`;
+      }).join('');
+      resultsEl.classList.remove('hidden');
+
+      resultsEl.querySelectorAll('button[data-id]').forEach(btn => {
+        btn.onclick = () => {
+          selectedCustomerAccountId = parseInt(btn.dataset.id);
+          const name = btn.dataset.name || '';
+          const email = btn.dataset.email || '';
+          const phone = btn.dataset.phone || '';
+          selectedEl.innerHTML = `<div class="p-3 rounded-lg border border-zinc-200 bg-zinc-50">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="font-semibold text-zinc-800">Đã chọn: ${escapeHtml(name)}</div>
+                <div class="text-xs text-zinc-500">${escapeHtml(email)}${phone ? ' · ' + escapeHtml(phone) : ''} · ID #${selectedCustomerAccountId}</div>
+              </div>
+              <button type="button" class="text-xs font-semibold text-red-600 hover:underline" id="btn-clear-cust">Bỏ chọn</button>
+            </div>
+          </div>`;
+          selectedEl.classList.remove('hidden');
+          resultsEl.classList.add('hidden');
+          input.value = name;
+
+          // Prefill contact form fields with the chosen customer's profile.
+          const cName = document.getElementById('c-name');
+          const cEmail = document.getElementById('c-email');
+          const cPhone = document.getElementById('c-phone');
+          if (cName && !cName.value) cName.value = name;
+          if (cEmail && !cEmail.value) cEmail.value = email;
+          if (cPhone && !cPhone.value) cPhone.value = phone;
+
+          const clearBtn = document.getElementById('btn-clear-cust');
+          if (clearBtn) {
+            clearBtn.onclick = () => {
+              selectedCustomerAccountId = null;
+              selectedEl.classList.add('hidden');
+              selectedEl.innerHTML = '';
+              input.value = '';
+              // Note: keep contact form values so staff can override manually.
+            };
+          }
+        };
+      });
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  }
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function renderFlightBanner(flight, label) {
+  const dur = diffMin(flight.departureTime, flight.arrivalTime);
+  return `
+    <div class="flex items-center justify-between p-1">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[#ff385c]" style="font-variation-settings:'FILL' 1">flight</span>
+        <div>
+          <div class="font-bold">${flight.flightNumber} <span class="text-xs font-normal text-zinc-400">${label}</span></div>
+          <div class="text-xs text-zinc-500">${cls==='Economy'?'Phổ thông':'Thương gia'} · ${fmtDate(flight.departureTime)}</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-6 text-center">
+        <div><div class="font-bold text-lg">${fmtTime(flight.departureTime)}</div><div class="text-xs text-zinc-500">${flight.departureAirport}</div></div>
+        <div class="text-xs text-zinc-400">${durStr(dur)} →</div>
+        <div><div class="font-bold text-lg">${fmtTime(flight.arrivalTime)}</div><div class="text-xs text-zinc-500">${flight.arrivalAirport}</div></div>
+      </div>
+    </div>`;
+}
+
+function renderFlightInfo() {
+  if(!bookingData || !bookingData.flights) return;
+
+  let html = '';
+  bookingData.flights.forEach((flight, i) => {
+    let label = `Chặng ${i + 1}`;
+    if (bookingData.searchParams.type === 'roundtrip') {
+      label = i === 0 ? 'Chuyến đi' : 'Chuyến về';
+    } else if (bookingData.searchParams.type === 'oneway') {
+      label = 'Chuyến bay';
+    }
+    
+    if (i > 0) html += '<hr class="border-zinc-100 my-2"/>';
+    html += renderFlightBanner(flight, label);
+  });
+  
+  document.getElementById('flight-info-banner').innerHTML = html;
+}
+
+function renderPassengerForms() {
+  const c = document.getElementById('pax-forms');
+  c.innerHTML = '';
+  // Build passenger type list based on adult/child/infant counts
+  const types = [];
+  for (let i = 0; i < adultCount; i++) types.push('Adult');
+  for (let i = 0; i < childCount; i++) types.push('Child');
+  for (let i = 0; i < infantCount; i++) types.push('Infant');
+
+  for(let i=0;i<pax;i++) {
+    const defaultType = types[i] || 'Adult';
+    c.innerHTML += `
+    <div class="border border-zinc-100 rounded-lg p-4">
+      <h3 class="font-semibold mb-3 flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[#ff385c]/10 text-[#ff385c] flex items-center justify-center text-sm font-bold">${i+1}</span>Hành khách ${i+1}</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <input id="pax-name-${i}" type="text" placeholder="Họ tên" class="input-field"/>
+        <select id="pax-gender-${i}" class="input-field"><option value="Male">Nam</option><option value="Female">Nữ</option></select>
+        <select id="pax-type-${i}" class="input-field"><option value="Adult" ${defaultType==='Adult'?'selected':''}>Người lớn</option><option value="Child" ${defaultType==='Child'?'selected':''}>Trẻ em</option><option value="Infant" ${defaultType==='Infant'?'selected':''}>Em bé</option></select>
+        <input id="pax-dob-${i}" type="date" class="input-field" placeholder="Ngày sinh"/>
+      </div>
+    </div>`;
+  }
+}
+
+function getFlightPrice(flight, seatClass) {
+  if (!flight || !flight.prices) return 0;
+  const priceItem = flight.prices.find(p => p.seatClass === seatClass);
+  return priceItem ? priceItem.price : 0;
+}
+
+function renderSummary() {
+  if(!bookingData || !bookingData.flights) return;
+  
+  let summaryHtml = `<div class="space-y-3 text-sm">`;
+  let totalPrice = 0;
+
+  bookingData.flights.forEach((flight, i) => {
+    let legPrice = typeof flight.price === 'number' ? flight.price : getFlightPrice(flight, cls);
+
+    // Calculate price per passenger type
+    let legTotal = legPrice * adultCount + legPrice * 0.75 * childCount + legPrice * 0.10 * infantCount;
+    totalPrice += legTotal;
+
+    let label = `Chặng ${i + 1}`;
+    if (bookingData.searchParams.type === 'roundtrip') {
+      label = i === 0 ? 'Chuyến đi' : 'Chuyến về';
+    } else if (bookingData.searchParams.type === 'oneway') {
+      label = 'Chuyến bay';
+    }
+
+    if (i > 0) summaryHtml += `<hr class="border-zinc-100"/>`;
+    
+    summaryHtml += `
+      <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider">${label}</div>
+      <div class="flex justify-between"><span class="text-zinc-500">Chuyến bay</span><span class="font-medium">${flight.flightNumber}</span></div>
+      <div class="flex justify-between"><span class="text-zinc-500">Tuyến</span><span class="font-medium">${flight.departureAirport} → ${flight.arrivalAirport}</span></div>
+      <div class="flex justify-between"><span class="text-zinc-500">Ngày</span><span class="font-medium">${fmtDate(flight.departureTime)}</span></div>
+      <div class="flex justify-between"><span class="text-zinc-500">Hạng</span><span class="font-medium">${cls==='Economy'?'Phổ thông':'Thương gia'}</span></div>
+      <div class="flex justify-between"><span class="text-zinc-500">Giá cơ bản/khách</span><span class="font-medium">${fmt(legPrice)}</span></div>`;
+  });
+
+  const paxBreakdown = [];
+  if (adultCount > 0) paxBreakdown.push(`${adultCount} người lớn`);
+  if (childCount > 0) paxBreakdown.push(`${childCount} trẻ em (75%)`);
+  if (infantCount > 0) paxBreakdown.push(`${infantCount} em bé (10%)`);
+
+  summaryHtml += `
+    <hr class="border-zinc-100"/>
+    <div class="flex justify-between"><span class="text-zinc-500">Hành khách</span><span class="font-medium">${paxBreakdown.join(', ')}</span></div>
+    <div class="flex justify-between text-base pt-2 border-t border-zinc-100"><span class="font-bold">Tổng cộng</span><span class="font-bold text-[#ff385c]">${fmt(totalPrice)}</span></div>
+  </div>`;
+
+  document.getElementById('summary-content').innerHTML = summaryHtml;
+}
+</script>
+</body>
+</html>

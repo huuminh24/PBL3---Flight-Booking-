@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Kết quả tìm kiếm - SkyHmH</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rausch: "#ff385c", "rausch-active": "#e00b41",
+                        ink: "#222222", muted: "#6a6a6a", "muted-soft": "#929292",
+                        canvas: "#ffffff", hairline: "#dddddd", "hairline-soft": "#ebebeb",
+                        "surface-soft": "#f7f7f7", "surface-strong": "#f2f2f2",
+                        primary: "#ba0036", body: "#3f3f3f"
+                    },
+                    fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] },
+                    boxShadow: { float: "0 2px 10px rgba(0,0,0,0.02), 0 0 0 1px rgba(0,0,0,0.02)" }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .flight-card { transition: all 0.2s; border: 1px solid #dddddd; }
+        .flight-card:hover { border-color: #222222; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .flight-card.selected { border-color: #ff385c; background-color: #fff8f7; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-canvas text-ink antialiased pb-32">
+
+<!-- TopNavBar (Shared) -->
+<header class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-hairline shadow-sm"></header>
+
+<!-- Search Summary Bar -->
+<div class="bg-surface-soft border-b border-hairline sticky top-16 z-40">
+    <div class="max-w-[1100px] mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex flex-col">
+            <div class="flex items-center gap-2 text-ink font-bold text-lg">
+                <span id="sum-dep">Đà Nẵng</span>
+                <span class="material-symbols-outlined text-[20px] text-muted">arrow_forward</span>
+                <span id="sum-arr">TP.HCM</span>
+            </div>
+            <div id="sum-meta" class="text-sm text-body mt-0.5">16 Thg 6 · 1 Hành khách · Phổ thông</div>
+        </div>
+        <button onclick="window.location.href='/'" class="px-4 py-2 bg-white border border-hairline rounded-full text-sm font-semibold hover:border-ink transition-colors shadow-float">Thay đổi</button>
+    </div>
+</div>
+
+<main class="max-w-[1100px] mx-auto px-6 py-8 flex flex-col md:flex-row gap-8">
+    <!-- Filters Sidebar -->
+    <aside class="w-full md:w-64 flex-shrink-0 hidden md:block">
+        <h3 class="font-bold text-lg mb-4">Bộ lọc</h3>
+        <div class="space-y-6">
+            <div>
+                <h4 class="text-sm font-semibold mb-3">Thời gian khởi hành</h4>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" class="accent-ink w-4 h-4 filter-time" value="morning" checked/><span class="text-sm">Sáng (00:00 - 12:00)</span></label>
+                    <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" class="accent-ink w-4 h-4 filter-time" value="afternoon" checked/><span class="text-sm">Chiều (12:00 - 18:00)</span></label>
+                    <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" class="accent-ink w-4 h-4 filter-time" value="evening" checked/><span class="text-sm">Tối (18:00 - 24:00)</span></label>
+                </div>
+            </div>
+            <div class="border-t border-hairline pt-6">
+                <h4 class="text-sm font-semibold mb-3">Hãng hàng không</h4>
+                <div id="airline-filters" class="space-y-2">
+                    <!-- Airlines will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Flight List -->
+    <div class="flex-1">
+        <!-- Step Indicator for Flight Legs -->
+        <div id="flight-steps" class="hidden mb-6 flex flex-wrap items-center gap-4">
+        </div>
+
+        <h2 id="list-title" class="text-xl font-bold mb-4">Các chuyến bay có sẵn</h2>
+
+        <div id="flight-results" class="space-y-4">
+            <!-- Loading State -->
+            <div class="text-center py-20 text-muted">
+                <span class="material-symbols-outlined text-5xl mb-4 block animate-pulse">flight</span>
+                <p class="text-lg font-medium">Đang tìm chuyến bay tốt nhất...</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Floating Footer (Visible when flight selected) -->
+<div id="floating-footer" class="fixed bottom-0 left-0 w-full bg-white border-t border-hairline p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] transform translate-y-full transition-transform duration-300 z-50">
+    <div class="max-w-[1100px] mx-auto flex justify-between items-center">
+        <div>
+            <div class="text-sm text-muted mb-0.5">Tổng cộng</div>
+            <div class="text-xl font-bold text-ink" id="footer-total">0 ₫</div>
+        </div>
+        <button id="btn-continue" class="h-12 px-8 bg-rausch hover:bg-rausch-active text-white font-bold rounded-xl transition-colors shadow-sm">
+            Tiếp tục
+        </button>
+    </div>
+</div>
+
+<script src="/shared.js"></script>
+<script>
+    let searchParams = null;
+    let mcData = null;
+    let rawDataSteps = [];
+    let selectedFlights = [];
+    let currentStep = 1;
+    let totalSteps = 1;
+
+    let filterState = {
+        timeRanges: ['morning', 'afternoon', 'evening'],
+        airlines: []
+    };
+
+    const AIRLINE_COLORS = {
+        'VN': '#FFCC00',
+        'VJ': '#E91E63',
+        'QH': '#4CAF50',
+        'BL': '#FF5722',
+        'SQ': '#F5A623',
+        'TG': '#9C27B0'
+    };
+
+    function getAirlineColor(code) {
+        return AIRLINE_COLORS[code] || '#6a6a6a';
+    }
+
+    function initAirlineFilters(flights) {
+        const airlineSet = new Set();
+        flights.forEach(f => {
+            if (f.airlineCode) airlineSet.add(f.airlineCode);
+        });
+
+        const container = document.getElementById('airline-filters');
+        if (airlineSet.size === 0) {
+            container.innerHTML = '<p class="text-xs text-muted">Không có thông tin hãng bay</p>';
+            return;
+        }
+
+        const sortedAirlines = Array.from(airlineSet).sort();
+        filterState.airlines = [...sortedAirlines];
+
+        container.innerHTML = sortedAirlines.map(code => {
+            const name = getAirlineDisplayName(code);
+            return `<label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" class="accent-ink w-4 h-4 filter-airline" value="${code}" checked/>
+                <span class="text-sm">${name}</span>
+            </label>`;
+        }).join('');
+
+        container.querySelectorAll('.filter-airline').forEach(cb => {
+            cb.addEventListener('change', () => {
+                filterState.airlines = Array.from(container.querySelectorAll('.filter-airline:checked')).map(c => c.value);
+                renderFlights();
+            });
+        });
+    }
+
+    function getAirlineDisplayName(code) {
+        const names = {
+            'VN': 'Vietnam Airlines',
+            'VJ': 'VietJet Air',
+            'QH': 'Bamboo Airways',
+            'BL': 'Jetstar Pacific',
+            'SQ': 'Singapore Airlines',
+            'TG': 'Thai Airways'
+        };
+        return names[code] || code;
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        renderNavbar('home');
+        if (!requireAuth('Vui lòng đăng nhập để tìm chuyến bay')) return;
+
+        document.querySelectorAll('.filter-time').forEach(cb => {
+            cb.addEventListener('change', () => {
+                filterState.timeRanges = Array.from(document.querySelectorAll('.filter-time:checked')).map(c => c.value);
+                renderFlights();
+            });
+        });
+
+        // Parse URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        searchParams = {
+            type: urlParams.get('type') || 'oneway',
+            pax: parseInt(urlParams.get('pax') || '1'),
+            adult: parseInt(urlParams.get('adult') || '1'),
+            child: parseInt(urlParams.get('child') || '0'),
+            infant: parseInt(urlParams.get('infant') || '0'),
+            cls: urlParams.get('cls') || 'Economy',
+            staff: urlParams.get('staff') === 'true'
+        };
+
+        if (searchParams.type === 'multicity') {
+            mcData = JSON.parse(urlParams.get('mc') || '[]');
+            totalSteps = mcData.length;
+            searchParams.dep = mcData[0].dep;
+            searchParams.arr = mcData[mcData.length - 1].arr;
+            searchParams.date = mcData[0].date;
+        } else {
+            searchParams.dep = urlParams.get('dep');
+            searchParams.arr = urlParams.get('arr');
+            searchParams.date = urlParams.get('date');
+            searchParams.returnDate = urlParams.get('returnDate');
+            if (searchParams.type === 'roundtrip') totalSteps = 2;
+        }
+
+        selectedFlights = new Array(totalSteps).fill(null);
+
+        document.getElementById('sum-dep').textContent = searchParams.dep;
+        document.getElementById('sum-arr').textContent = searchParams.arr;
+
+        let metaText = `${fmtDateStr(searchParams.date)} · ${searchParams.pax} Hành khách · ${searchParams.cls === 'Economy' ? 'Phổ thông' : 'Thương gia'}`;
+        if(searchParams.type === 'roundtrip') metaText += ` · Về: ${fmtDateStr(searchParams.returnDate)}`;
+        else if(searchParams.type === 'multicity') metaText += ` · Nhiều chặng (${totalSteps} chặng)`;
+        document.getElementById('sum-meta').textContent = metaText;
+
+        if (totalSteps > 1) {
+            const stepsContainer = document.getElementById('flight-steps');
+            stepsContainer.classList.remove('hidden');
+            for (let i = 1; i <= totalSteps; i++) {
+                let dateStr = '';
+                let label = '';
+                if (searchParams.type === 'roundtrip') {
+                    label = i === 1 ? '1. Chọn chuyến đi' : '2. Chọn chuyến về';
+                    dateStr = i === 1 ? fmtDateStr(searchParams.date) : fmtDateStr(searchParams.returnDate);
+                } else if (searchParams.type === 'multicity') {
+                    label = `${i}. Chặng ${i}`;
+                    dateStr = fmtDateStr(mcData[i-1].date);
+                }
+
+                stepsContainer.innerHTML += `
+                    <div id="step-${i}" class="flex-1 ${i === 1 ? 'bg-ink text-white' : 'bg-surface-soft text-muted border border-hairline'} p-3 rounded-xl flex items-center justify-between transition-colors min-w-[150px]">
+                        <span class="font-bold text-sm">${label}</span>
+                        <span id="step-${i}-date" class="text-xs ${i === 1 ? 'opacity-80' : ''}">${dateStr}</span>
+                    </div>
+                `;
+            }
+        }
+
+        await fetchFlights();
+    });
+
+    function fmtDateStr(dateStr) {
+        if(!dateStr) return '';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' });
+    }
+
+    function getTimeRange(hour) {
+        if (hour >= 0 && hour < 12) return 'morning';
+        if (hour >= 12 && hour < 18) return 'afternoon';
+        return 'evening';
+    }
+
+    function applyFilters(flights) {
+        return flights.filter(f => {
+            const depHour = new Date(f.departureTime).getHours();
+            const timeRange = getTimeRange(depHour);
+            if (!filterState.timeRanges.includes(timeRange)) return false;
+            if (filterState.airlines.length > 0 && f.airlineCode && !filterState.airlines.includes(f.airlineCode)) return false;
+            return true;
+        });
+    }
+
+    async function fetchFlights() {
+        const grid = document.getElementById('flight-results');
+        grid.innerHTML = `
+            <div class="text-center py-20 text-muted">
+                <span class="material-symbols-outlined text-5xl mb-4 block animate-pulse">flight</span>
+                <p class="text-lg font-medium">Đang tìm chuyến bay tốt nhất...</p>
+            </div>
+        `;
+
+try {
+    if (searchParams.type === 'multicity') {
+      if (rawDataSteps.every(r => r)) {
+      } else {
+        const reqBody = {
+          legs: mcData.map(leg => ({
+            departureAirport: leg.dep,
+            arrivalAirport: leg.arr,
+            departureDate: leg.date.split('T')[0],
+            seatClass: searchParams.cls
+          })),
+          passengerCount: searchParams.pax,
+          infantCount: searchParams.infant
+        };
+        const res = await api('POST', '/Flights/search-multi-city', reqBody);
+        if (res.legResults && Array.isArray(res.legResults)) {
+          for (let i = 0; i < res.legResults.length; i++) {
+            rawDataSteps[i] = res.legResults[i] || [];
+          }
+        }
+      }
+    } else {
+      if (!rawDataSteps[0]) {
+        const q = new URLSearchParams({
+          departureAirport: searchParams.dep,
+          arrivalAirport: searchParams.arr,
+          departureDate: searchParams.date,
+          passengerCount: searchParams.pax,
+          infantCount: searchParams.infant,
+          seatClass: searchParams.cls
+        });
+        if (searchParams.returnDate) q.set('returnDate', searchParams.returnDate);
+
+                    const res = await api('GET', `/Flights/search?${q}`);
+                    if (searchParams.type === 'roundtrip') {
+                        rawDataSteps[0] = res.outboundFlights || [];
+                        rawDataSteps[1] = res.returnFlights || [];
+                    } else {
+                        rawDataSteps[0] = res.outboundFlights || res || [];
+                    }
+                }
+            }
+            initAirlineFilters(rawDataSteps[currentStep - 1] || []);
+            renderFlights();
+        } catch (e) {
+            grid.innerHTML = `<div class="text-center py-20 text-red-500 font-medium"><span class="material-symbols-outlined text-4xl mb-2 block">error</span>${e.message}</div>`;
+        }
+    }
+
+    function renderFlights() {
+        const grid = document.getElementById('flight-results');
+        const allFlights = rawDataSteps[currentStep - 1] || [];
+        const flightsToRender = applyFilters(allFlights);
+
+        if (searchParams.type === 'roundtrip') {
+            if (currentStep === 1) {
+                document.getElementById('list-title').textContent = `Chuyến đi: ${searchParams.dep} → ${searchParams.arr}`;
+            } else {
+                document.getElementById('list-title').textContent = `Chuyến về: ${searchParams.arr} → ${searchParams.dep}`;
+            }
+        } else if (searchParams.type === 'multicity') {
+            const leg = mcData[currentStep - 1];
+            document.getElementById('list-title').textContent = `Chặng ${currentStep}: ${leg.dep} → ${leg.arr}`;
+        } else {
+            document.getElementById('list-title').textContent = `Các chuyến bay có sẵn (${flightsToRender.length} chuyến)`;
+        }
+
+        if (!flightsToRender.length) {
+            grid.innerHTML = `<div class="text-center py-20"><span class="material-symbols-outlined text-4xl mb-4 text-muted block">search_off</span><p class="font-medium text-ink">Không tìm thấy chuyến bay phù hợp với bộ lọc</p></div>`;
+            return;
+        }
+
+        grid.innerHTML = flightsToRender.map(f => {
+            const dur = diffMin(f.departureTime, f.arrivalTime);
+            const isSelected = selectedFlights[currentStep - 1]?.flightId === f.flightId;
+            const airlineName = f.airlineName || f.airlineCode || 'SkyHmH Airlines';
+            const airlineColor = getAirlineColor(f.airlineCode || 'VN');
+
+            return `
+            <div onclick="selectFlight(${f.flightId}, ${f.price})" class="flight-card cursor-pointer rounded-2xl p-6 bg-white ${isSelected ? 'selected' : ''}">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background-color: ${airlineColor}">
+                            ${f.airlineCode || 'HMH'}
+                        </div>
+                        <div>
+                            <div class="font-bold text-ink">${f.flightNumber}</div>
+                            <div class="text-xs text-muted">${airlineName}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xl font-bold text-ink">${fmt(f.price)}</div>
+                        <div class="text-xs text-muted">/khách</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-ink tracking-tight">${fmtTime(f.departureTime)}</div>
+                        <div class="text-sm font-medium text-muted">${f.departureAirport}</div>
+                    </div>
+
+                    <div class="flex-1 px-8 flex flex-col items-center">
+                        <span class="text-xs font-semibold text-muted mb-2">${durStr(dur)}</span>
+                        <div class="w-full relative flex items-center justify-center">
+                            <div class="h-px bg-hairline w-full absolute"></div>
+                            <span class="material-symbols-outlined text-muted bg-white px-2 relative z-10 text-[20px]">flight_takeoff</span>
+                        </div>
+                        <span class="text-xs text-muted mt-2">Bay thẳng</span>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-ink tracking-tight">${fmtTime(f.arrivalTime)}</div>
+                        <div class="text-sm font-medium text-muted">${f.arrivalAirport}</div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function selectFlight(flightId, price) {
+        const list = rawDataSteps[currentStep - 1] || [];
+        const flight = list.find(x => x.flightId === flightId);
+        if (!flight) return;
+
+        selectedFlights[currentStep - 1] = flight;
+
+        renderFlights();
+        updateFooter();
+    }
+
+    function updateFooter() {
+        const footer = document.getElementById('floating-footer');
+
+        if (selectedFlights[currentStep - 1]) {
+            let total = 0;
+            for (let i = 0; i < totalSteps; i++) {
+                if (selectedFlights[i]) total += selectedFlights[i].price * searchParams.pax;
+            }
+            document.getElementById('footer-total').textContent = fmt(total);
+            footer.classList.remove('translate-y-full');
+
+            const btn = document.getElementById('btn-continue');
+            if (currentStep < totalSteps) {
+                btn.textContent = `Chọn chặng tiếp theo`;
+                btn.onclick = () => {
+                    currentStep++;
+                    footer.classList.add('translate-y-full');
+                    updateStepUI();
+                    initAirlineFilters(rawDataSteps[currentStep - 1] || []);
+                    fetchFlights();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+            } else {
+                const allSelected = selectedFlights.every(f => f !== null);
+                if (allSelected) {
+                    btn.textContent = 'Tiếp tục';
+                    btn.onclick = () => proceedToPayout();
+                } else {
+                    btn.textContent = `Chọn chặng tiếp theo`;
+                    btn.onclick = () => {
+                        const nextStep = selectedFlights.findIndex(f => f === null) + 1;
+                        if (nextStep > 0 && nextStep <= totalSteps) {
+                            currentStep = nextStep;
+                            footer.classList.add('translate-y-full');
+                            updateStepUI();
+                            initAirlineFilters(rawDataSteps[currentStep - 1] || []);
+                            fetchFlights();
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    };
+                }
+            }
+        }
+    }
+
+    function updateStepUI() {
+        if (totalSteps <= 1) return;
+
+        for (let i = 1; i <= totalSteps; i++) {
+            const stepEl = document.getElementById(`step-${i}`);
+            const dateEl = document.getElementById(`step-${i}-date`);
+            if (i < currentStep) {
+                stepEl.className = 'flex-1 bg-white border border-ink text-ink p-3 rounded-xl flex items-center justify-between transition-colors cursor-pointer hover:bg-surface-soft min-w-[150px]';
+                stepEl.onclick = () => {
+                    currentStep = i;
+                    updateStepUI();
+                    initAirlineFilters(rawDataSteps[currentStep - 1] || []);
+                    renderFlights();
+                    updateFooter();
+                };
+                if(dateEl) dateEl.className = 'text-xs';
+            } else if (i === currentStep) {
+                stepEl.className = 'flex-1 bg-ink text-white p-3 rounded-xl flex items-center justify-between transition-colors min-w-[150px]';
+                stepEl.onclick = null;
+                if(dateEl) dateEl.className = 'text-xs opacity-80';
+            } else {
+                stepEl.className = 'flex-1 bg-surface-soft text-muted p-3 rounded-xl flex items-center justify-between border border-hairline transition-colors min-w-[150px]';
+                stepEl.onclick = null;
+                if(dateEl) dateEl.className = 'text-xs';
+            }
+        }
+    }
+
+    function proceedToPayout() {
+        for (let i = 0; i < totalSteps; i++) {
+            if (!selectedFlights[i]) {
+                toast(`Vui lòng chọn chuyến bay cho ${totalSteps === 1 ? 'chuyến đi' : 'chặng ' + (i+1)}`, 'warning');
+                return;
+            }
+        }
+
+        sessionStorage.setItem('bookingData', JSON.stringify({
+            searchParams,
+            flights: selectedFlights
+        }));
+
+        const firstFlightId = selectedFlights[0]?.flightId || '';
+        const staffParam = searchParams.staff ? '&staff=true' : '';
+        window.location.href = `/payout.html?flightId=${firstFlightId}&pax=${searchParams.pax}&adult=${searchParams.adult}&child=${searchParams.child}&infant=${searchParams.infant}&cls=${searchParams.cls}${staffParam}`;
+    }
+</script>
+</body>
+</html>

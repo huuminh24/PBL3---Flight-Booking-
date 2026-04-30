@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Hóa đơn - SkyHmH</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script>tailwind.config = { darkMode: "class", theme: { extend: { colors: { rausch: "#ff385c", "rausch-active": "#e00b41", ink: "#222222", muted: "#6a6a6a", canvas: "#ffffff", hairline: "#dddddd" }, fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] } } } }</script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f6f6f6; color: #222; }
+    .invoice-page { max-width: 800px; }
+    .label { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700; color: #6a6a6a; }
+    .row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+    @media print {
+      body { background: #fff; }
+      .no-print { display: none !important; }
+      .invoice-page { margin: 0; box-shadow: none !important; }
+    }
+  </style>
+</head>
+
+<body class="text-ink antialiased">
+  <header class="no-print sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-zinc-100 shadow-sm"></header>
+
+  <main class="py-8 px-4 flex flex-col items-center">
+    <div class="invoice-page w-full mb-4 flex justify-between items-center no-print">
+      <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-zinc-500 hover:text-zinc-800 text-sm font-medium">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>Quay lại
+      </a>
+      <button id="btn-print" class="inline-flex items-center gap-2 h-10 px-5 bg-[#ff385c] hover:bg-[#e00b41] text-white font-semibold rounded-lg shadow-sm transition-colors">
+        <span class="material-symbols-outlined text-[20px]">print</span>🖨️ In hóa đơn
+      </button>
+    </div>
+
+    <article id="invoice-card" class="invoice-page w-full bg-white rounded-2xl shadow-sm border border-zinc-200 p-10">
+      <div id="invoice-loading" class="text-center py-20 text-zinc-400">
+        <span class="material-symbols-outlined text-5xl mb-4 block animate-pulse">hourglass_empty</span>
+        <p>Đang tải hóa đơn...</p>
+      </div>
+      <div id="invoice-error" class="hidden text-center py-20 text-red-500"></div>
+      <div id="invoice-body" class="hidden space-y-8"></div>
+    </article>
+  </main>
+
+  <script src="/shared.js"></script>
+  <script>
+    const bookingId = parseInt(getUrlParam('bookingId') || '0');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      renderNavbar(isStaff() ? 'staff' : 'history');
+      if (!requireAuth()) return;
+      document.getElementById('btn-print').onclick = () => window.print();
+      if (!bookingId) {
+        showError('Thiếu mã booking trên URL.');
+        return;
+      }
+      try {
+        const data = await api('GET', `/Bookings/${bookingId}/invoice`);
+        renderInvoice(data);
+      } catch (e) {
+        showError(e.message);
+      }
+    });
+
+    function showError(msg) {
+      document.getElementById('invoice-loading').classList.add('hidden');
+      const errEl = document.getElementById('invoice-error');
+      errEl.classList.remove('hidden');
+      errEl.innerHTML = `<span class="material-symbols-outlined text-5xl mb-3 block">error</span><p class="font-semibold">${msg}</p>`;
+    }
+
+    function renderInvoice(inv) {
+      document.getElementById('invoice-loading').classList.add('hidden');
+      const body = document.getElementById('invoice-body');
+      body.classList.remove('hidden');
+
+      const flightsRows = inv.flights.map(f => `
+        <tr>
+          <td class="py-2 text-xs text-zinc-500">Chặng ${f.legOrder}</td>
+          <td class="py-2 font-semibold">${f.flightNumber}</td>
+          <td class="py-2">${f.departureAirport} → ${f.arrivalAirport}</td>
+          <td class="py-2 text-zinc-600">${fmtDateTime(f.departureTime)}</td>
+          <td class="py-2 text-right font-semibold">${fmt(f.price)}</td>
+        </tr>`).join('');
+
+      const passengersRows = inv.passengers.map(p => `
+        <tr>
+          <td class="py-2">${escapeHtmlText(p.fullName)}</td>
+          <td class="py-2 text-zinc-500 text-sm">${p.gender === 'Male' ? 'Nam' : 'Nữ'}</td>
+          <td class="py-2 text-zinc-500 text-sm">${labelPaxType(p.passengerType)}</td>
+          <td class="py-2 text-zinc-500 text-sm">${p.dateOfBirth ? fmtDate(p.dateOfBirth) : '—'}</td>
+        </tr>`).join('');
+
+      const ticketsRows = inv.tickets.map(t => `
+        <tr>
+          <td class="py-2">#${t.ticketId}</td>
+          <td class="py-2">${escapeHtmlText(t.passengerFullName)}</td>
+          <td class="py-2">${t.flightNumber}</td>
+          <td class="py-2">${t.seatClass}</td>
+          <td class="py-2">${t.seatNumber || '<span class="text-zinc-400">Chưa chọn</span>'}</td>
+          <td class="py-2 text-right">${fmt(t.price)}</td>
+          <td class="py-2 text-right text-xs">${statusLabel(t.ticketStatus)}</td>
+        </tr>`).join('');
+
+      const payment = inv.payment;
+      const paymentBlock = payment ? `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div><div class="label">Phương thức</div><div class="font-semibold">${methodLabel(payment.paymentMethod)}</div></div>
+          <div><div class="label">Trạng thái</div><div class="font-semibold">${statusLabel(payment.paymentStatus)}</div></div>
+          <div><div class="label">Thanh toán lúc</div><div class="font-semibold">${fmtDateTime(payment.paidAt)}</div></div>
+          <div><div class="label">Mã chứng từ</div><div class="font-semibold">${payment.paymentReference || '—'}</div></div>
+        </div>
+      ` : '<p class="text-sm text-zinc-500 italic">Chưa có bản ghi thanh toán.</p>';
+
+      const discountRow = (payment && payment.discountAmount > 0)
+        ? `<div class="row text-emerald-600"><span>Giảm giá ${payment.couponCode ? `(${payment.couponCode})` : ''}</span><span>-${fmt(payment.discountAmount)}</span></div>`
+        : '';
+
+      body.innerHTML = `
+        <header class="flex justify-between items-start border-b border-zinc-200 pb-6">
+          <div>
+            <div class="flex items-center gap-2 text-[#ff385c] font-extrabold text-2xl">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">flight_takeoff</span>SkyHmH
+            </div>
+            <p class="text-xs text-zinc-500 mt-1">Hóa đơn điện tử · ${fmtDateTime(payment?.paidAt || inv.createdAt)}</p>
+          </div>
+          <div class="text-right">
+            <div class="label">Mã PNR</div>
+            <div class="font-mono font-bold text-[#ff385c] text-xl">${inv.pnrCode}</div>
+            <div class="text-xs text-zinc-500 mt-1">Booking #${inv.bookingId} · Kênh ${inv.bookingChannel === 'Staff' ? 'quầy' : 'website'}</div>
+          </div>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-3">
+            <h2 class="font-bold text-base">Thông tin liên hệ</h2>
+            <div class="text-sm">
+              <p><strong>Họ tên:</strong> ${escapeHtmlText(inv.contactFullName)}</p>
+              <p><strong>Email:</strong> ${escapeHtmlText(inv.contactEmail)}</p>
+              <p><strong>Số điện thoại:</strong> ${escapeHtmlText(inv.contactPhoneNumber)}</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <h2 class="font-bold text-base">Trạng thái</h2>
+            <div class="text-sm">
+              <p><strong>Booking:</strong> ${statusLabel(inv.bookingStatus)}</p>
+              <p><strong>Tạo lúc:</strong> ${fmtDateTime(inv.createdAt)}</p>
+              <p><strong>Hết hạn TT:</strong> ${fmtDateTime(inv.expiresAt)}</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="font-bold text-base mb-3">Chuyến bay</h2>
+          <table class="w-full text-sm">
+            <thead><tr class="text-xs text-zinc-500 border-b border-zinc-200">
+              <th class="py-2 text-left">#</th><th class="py-2 text-left">Số hiệu</th><th class="py-2 text-left">Tuyến</th><th class="py-2 text-left">Khởi hành</th><th class="py-2 text-right">Giá</th>
+            </tr></thead>
+            <tbody class="divide-y divide-zinc-100">${flightsRows}</tbody>
+          </table>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h2 class="font-bold text-base mb-3">Hành khách</h2>
+            <table class="w-full text-sm">
+              <thead><tr class="text-xs text-zinc-500 border-b border-zinc-200">
+                <th class="py-2 text-left">Họ tên</th><th class="py-2 text-left">Giới</th><th class="py-2 text-left">Loại</th><th class="py-2 text-left">Ngày sinh</th>
+              </tr></thead>
+              <tbody class="divide-y divide-zinc-100">${passengersRows}</tbody>
+            </table>
+          </div>
+          <div>
+            <h2 class="font-bold text-base mb-3">Vé</h2>
+            <table class="w-full text-sm">
+              <thead><tr class="text-xs text-zinc-500 border-b border-zinc-200">
+                <th class="py-2 text-left">ID</th><th class="py-2 text-left">Hành khách</th><th class="py-2 text-left">Chuyến</th><th class="py-2 text-left">Hạng</th><th class="py-2 text-left">Ghế</th><th class="py-2 text-right">Giá</th><th class="py-2 text-right">TT</th>
+              </tr></thead>
+              <tbody class="divide-y divide-zinc-100">${ticketsRows}</tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="border-t border-zinc-200 pt-6 space-y-3">
+          <h2 class="font-bold text-base">Thanh toán</h2>
+          ${paymentBlock}
+          <div class="bg-zinc-50 border border-zinc-200 rounded-xl p-5 mt-2 space-y-2 text-sm">
+            <div class="row"><span class="text-zinc-500">Tổng tiền vé</span><span>${fmt(inv.totalAmount)}</span></div>
+            ${discountRow}
+            <hr class="border-zinc-200"/>
+            <div class="row text-lg font-bold"><span>Đã thanh toán</span><span class="text-[#ff385c]">${fmt(payment ? payment.amount : inv.totalAmount)}</span></div>
+          </div>
+        </section>
+
+        <footer class="text-center text-xs text-zinc-500 border-t border-zinc-200 pt-4">
+          Đây là hóa đơn điện tử có giá trị tương đương biên nhận.<br/>
+          Cảm ơn quý khách đã tin tưởng SkyHmH.
+        </footer>
+      `;
+    }
+
+    function methodLabel(m) {
+      switch ((m || '').toLowerCase()) {
+        case 'cash': return 'Tiền mặt';
+        case 'banktransfer': return 'Chuyển khoản ngân hàng';
+        case 'vietqr': return 'VietQR';
+        case 'card': return 'Thẻ tín dụng';
+        case 'mockgateway': return 'Cổng giả lập (cũ)';
+        default: return m || '—';
+      }
+    }
+
+    function labelPaxType(t) {
+      if (t === 'Adult') return 'Người lớn';
+      if (t === 'Child') return 'Trẻ em';
+      if (t === 'Infant') return 'Em bé';
+      return t;
+    }
+
+    function escapeHtmlText(s) {
+      return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Hồ sơ cá nhân - SkyHmH</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script>tailwind.config = { darkMode: "class", theme: { extend: { colors: { rausch: "#ff385c", "rausch-active": "#e00b41", ink: "#222222", muted: "#6a6a6a", canvas: "#ffffff", hairline: "#dddddd" }, fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] } } } }</script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f6f6f6; color: #222; }
+    .field-label { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700; color: #71717a; }
+    .field-value { font-size: 15px; font-weight: 600; color: #18181b; }
+  </style>
+</head>
+
+<body class="text-zinc-900 antialiased">
+  <header class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-zinc-100 shadow-sm"></header>
+
+  <main class="max-w-[800px] mx-auto px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">Hồ sơ cá nhân</h1>
+        <p class="text-sm text-zinc-500">Xem và cập nhật thông tin cá nhân của tài khoản hiện đang đăng nhập.</p>
+      </div>
+      <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-zinc-500 hover:text-zinc-800 text-sm font-medium">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>Quay lại
+      </a>
+    </div>
+
+    <article class="bg-white rounded-2xl shadow-sm border border-zinc-200 p-6 md:p-8">
+      <div id="profile-loading" class="text-center py-16 text-zinc-400">
+        <span class="material-symbols-outlined text-5xl mb-3 block animate-pulse">hourglass_empty</span>
+        <p>Đang tải thông tin...</p>
+      </div>
+
+      <div id="profile-error" class="hidden text-center py-16 text-red-500"></div>
+
+      <div id="profile-body" class="hidden">
+        <div class="flex items-center gap-4 mb-8 pb-6 border-b border-zinc-100">
+          <div class="w-16 h-16 rounded-full bg-[#fff0f0] text-[#ff385c] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[36px]">person</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div id="p-fullName" class="text-xl font-bold truncate"></div>
+            <div id="p-email" class="text-sm text-zinc-500 truncate"></div>
+          </div>
+          <span id="p-role" class="text-xs font-semibold bg-[#fff0f0] text-[#ff385c] px-3 py-1 rounded-full"></span>
+        </div>
+
+        <form id="profile-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <div class="field-label mb-1">Họ và tên</div>
+            <input id="p-fullName-2" class="w-full rounded-xl border-zinc-200 focus:border-[#ff385c] focus:ring-[#ff385c]" required maxlength="100" />
+          </div>
+          <div>
+            <div class="field-label mb-1">Email</div>
+            <div id="p-email-2" class="field-value"></div>
+          </div>
+          <div>
+            <div class="field-label mb-1">Số điện thoại</div>
+            <input id="p-phone" class="w-full rounded-xl border-zinc-200 focus:border-[#ff385c] focus:ring-[#ff385c]" required maxlength="20" />
+          </div>
+          <div>
+            <div class="field-label mb-1">Vai trò</div>
+            <div id="p-role-2" class="field-value"></div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="field-label mb-1">Địa chỉ</div>
+            <input id="p-address" class="w-full rounded-xl border-zinc-200 focus:border-[#ff385c] focus:ring-[#ff385c]" maxlength="255" />
+          </div>
+          <div>
+            <div class="field-label mb-1">Ngày sinh</div>
+            <input id="p-dob" type="date" class="w-full rounded-xl border-zinc-200 focus:border-[#ff385c] focus:ring-[#ff385c]" />
+          </div>
+          <div>
+            <div class="field-label mb-1">Mã tài khoản</div>
+            <div id="p-account-id" class="field-value font-mono"></div>
+          </div>
+          <div class="md:col-span-2 flex justify-end">
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#ff385c] hover:bg-[#e00b41] text-white font-bold text-sm">Lưu thay đổi</button>
+          </div>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-zinc-100 text-xs text-zinc-500">
+          Email và vai trò không được chỉnh sửa tại đây. Khách hàng có thể tự cập nhật họ tên, số điện thoại, địa chỉ và ngày sinh.
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <script src="/shared.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      renderNavbar('profile');
+      if (!requireAuth()) return;
+
+      try {
+        const me = await api('GET', '/Auth/me');
+        renderProfile(me);
+        document.getElementById('profile-form').addEventListener('submit', saveProfile);
+      } catch (e) {
+        showError(e.message);
+      }
+    });
+
+    function renderProfile(me) {
+      document.getElementById('profile-loading').classList.add('hidden');
+      document.getElementById('profile-body').classList.remove('hidden');
+
+      const fullName = me.fullName || '(Chưa có tên)';
+      const roleLabel = me.role === 'Staff' ? 'Nhân viên' : (me.role === 'Customer' ? 'Khách hàng' : me.role || '—');
+
+      setText('p-fullName', fullName);
+      setText('p-email', me.email || '');
+      setText('p-role', roleLabel);
+
+      setValue('p-fullName-2', fullName === '(Chưa có tên)' ? '' : fullName);
+      setText('p-email-2', me.email || '—');
+      setValue('p-phone', me.phoneNumber || '');
+      setText('p-role-2', roleLabel);
+      setValue('p-address', me.address || '');
+      setValue('p-dob', me.dateOfBirth ? me.dateOfBirth.slice(0, 10) : '');
+      setText('p-account-id', '#' + me.accountId);
+    }
+
+    async function saveProfile(e) {
+      e.preventDefault();
+      try {
+        const payload = {
+          fullName: document.getElementById('p-fullName-2').value.trim(),
+          phoneNumber: document.getElementById('p-phone').value.trim(),
+          address: document.getElementById('p-address').value.trim() || null,
+          dateOfBirth: document.getElementById('p-dob').value || null
+        };
+        const updated = await api('PUT', '/Auth/me', payload);
+        renderProfile(updated);
+        toast('Đã cập nhật hồ sơ', 'success');
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    }
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function setValue(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.value = value;
+    }
+
+    function showError(msg) {
+      document.getElementById('profile-loading').classList.add('hidden');
+      const errEl = document.getElementById('profile-error');
+      errEl.classList.remove('hidden');
+      errEl.innerHTML = `<span class="material-symbols-outlined text-5xl mb-3 block">error</span><p class="font-semibold">${msg}</p>`;
+    }
+  </script>
+</body>
+
+</html>

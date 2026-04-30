@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Check-in - Chọn ghế - SkyHmH</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{rausch:"#ff385c","rausch-active":"#e00b41",ink:"#222222",muted:"#6a6a6a",canvas:"#ffffff",hairline:"#dddddd"},fontFamily:{sans:["Plus Jakarta Sans","sans-serif"]}}}}</script>
+<style>
+body{font-family:'Plus Jakarta Sans',sans-serif}
+.seat-btn{width:48px;height:48px;border-radius:10px;font-size:11px;font-weight:600;transition:all .2s;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.seat-btn.available{border:2px solid #ddd;background:#fff;color:#666}
+.seat-btn.available:hover{border-color:#ff385c;background:#fff5f5;color:#ff385c;transform:scale(1.05)}
+.seat-btn.selected{background:#ff385c;border-color:#ff385c;color:#fff;box-shadow:0 4px 12px rgba(255,56,92,.3);transform:scale(1.08)}
+.seat-btn.taken{background:#f4f4f5;color:#d4d4d8;cursor:not-allowed;border:1px solid #e4e4e7}
+.seat-btn.wrong-class{opacity:.4;cursor:not-allowed;border:1px dashed #ccc}
+</style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 antialiased">
+<header class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-zinc-100 shadow-sm"></header>
+
+<main class="max-w-[1100px] mx-auto px-6 py-8">
+  <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-zinc-500 hover:text-zinc-800 text-sm font-medium mb-4 transition-colors">
+    <span class="material-symbols-outlined text-[18px]">arrow_back</span>Quay lại
+  </a>
+  <h1 class="text-2xl font-bold mb-2">Check-in trực tuyến</h1>
+  <p id="flight-subtitle" class="text-sm text-zinc-500 mb-6"></p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Left: Seat Map -->
+    <div class="lg:col-span-7">
+      <div class="flex gap-6 mb-6 p-4 bg-white rounded-xl border border-zinc-200">
+        <div class="flex items-center gap-2"><div class="w-6 h-6 rounded-md border-2 border-zinc-300 bg-white"></div><span class="text-xs text-zinc-500">Trống</span></div>
+        <div class="flex items-center gap-2"><div class="w-6 h-6 rounded-md bg-[#ff385c]"></div><span class="text-xs text-zinc-500">Đã chọn</span></div>
+        <div class="flex items-center gap-2"><div class="w-6 h-6 rounded-md bg-zinc-100"></div><span class="text-xs text-zinc-500">Đã đặt</span></div>
+      </div>
+      <div class="bg-white rounded-xl border border-zinc-200 p-6">
+        <div id="seat-grid" class="flex flex-wrap gap-3 justify-center"></div>
+      </div>
+    </div>
+
+    <!-- Right: Summary -->
+    <div class="lg:col-span-5">
+      <div class="sticky top-28 bg-white border border-zinc-200 rounded-xl p-6 shadow-sm space-y-4">
+        <h3 class="font-bold text-lg">Thông tin check-in</h3>
+        <div id="checkin-info" class="text-sm text-zinc-600 space-y-2"></div>
+        <hr class="border-zinc-100"/>
+        <div id="selected-seat-display" class="text-sm text-zinc-500">Chưa chọn ghế</div>
+        <button id="btn-confirm-checkin" class="w-full h-12 bg-[#ff385c] hover:bg-[#e00b41] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          Xác nhận Check-in
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="/shared.js"></script>
+<script>
+const ticketId = parseInt(getUrlParam('ticketId') || '0');
+const flightId = parseInt(getUrlParam('flightId') || '0');
+const seatClass = getUrlParam('cls') || 'Economy';
+const paxName = getUrlParam('paxName') || getUrlParam('name') || 'Hành khách';
+let selectedSeat = null;
+let flightData = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  renderNavbar('home');
+  if (!requireAuth()) return;
+  if (!ticketId || !flightId) { toast('Thiếu thông tin check-in','error'); return; }
+
+  try {
+    flightData = await api('GET', `/Flights/${flightId}`);
+    document.getElementById('flight-subtitle').textContent =
+      `${flightData.flightNumber} · ${flightData.departureAirport} → ${flightData.arrivalAirport} · ${fmtDateTime(flightData.departureTime)}`;
+
+    document.getElementById('checkin-info').innerHTML = `
+      <p><strong>Hành khách:</strong> ${decodeURIComponent(paxName)}</p>
+      <p><strong>Hạng vé:</strong> ${seatClass==='Economy'?'Phổ thông':'Thương gia'}</p>
+      <p><strong>Chuyến bay:</strong> ${flightData.flightNumber}</p>
+    `;
+
+    const seats = await api('GET', `/Flights/${flightId}/seats`);
+    renderSeatMap(seats);
+  } catch(e) { toast(e.message, 'error'); }
+
+  document.getElementById('btn-confirm-checkin').onclick = confirmCheckIn;
+});
+
+function renderSeatMap(seats) {
+  const grid = document.getElementById('seat-grid');
+  grid.innerHTML = seats.map(s => {
+    const isWrongClass = s.seatClass !== seatClass;
+    const cssClass = !s.isAvailable ? 'taken' : (isWrongClass ? 'wrong-class' : 'available');
+    return `
+    <button class="seat-btn ${cssClass}"
+      data-id="${s.seatId}" data-number="${s.seatNumber}" data-class="${s.seatClass}"
+      ${cssClass === 'available' ? '' : 'disabled'} title="${s.seatNumber} (${s.seatClass})">
+      ${s.seatNumber}
+    </button>`;
+  }).join('');
+
+  grid.querySelectorAll('.seat-btn.available').forEach(btn => {
+    btn.onclick = () => toggleSeat(btn);
+  });
+}
+
+function toggleSeat(btn) {
+  const id = parseInt(btn.dataset.id);
+  if (btn.classList.contains('selected')) {
+    btn.classList.remove('selected');
+    btn.classList.add('available');
+    selectedSeat = null;
+  } else {
+    // Deselect previous
+    document.querySelectorAll('.seat-btn.selected').forEach(b => {
+      b.classList.remove('selected');
+      b.classList.add('available');
+    });
+    btn.classList.remove('available');
+    btn.classList.add('selected');
+    selectedSeat = { id, number: btn.dataset.number, seatClass: btn.dataset.class };
+  }
+  updateSummary();
+}
+
+function updateSummary() {
+  const display = document.getElementById('selected-seat-display');
+  const btn = document.getElementById('btn-confirm-checkin');
+  if (!selectedSeat) {
+    display.innerHTML = '<p class="text-zinc-400">Chưa chọn ghế</p>';
+    btn.disabled = true;
+  } else {
+    display.innerHTML = `<div class="flex justify-between items-center py-2 border-b border-zinc-50">
+      <span class="font-medium text-zinc-800">${decodeURIComponent(paxName)}</span>
+      <span class="font-semibold text-zinc-700">Ghế ${selectedSeat.number} (${selectedSeat.seatClass})</span>
+    </div>`;
+    btn.disabled = false;
+  }
+}
+
+async function confirmCheckIn() {
+  if (!selectedSeat) { toast('Vui lòng chọn ghế','error'); return; }
+  try {
+    // Both Staff and Customer use the same /checkin endpoint
+    const result = await api('POST', '/checkin', {
+      ticketId: ticketId,
+      seatId: selectedSeat.id
+    });
+    toast(result.message, 'success');
+    setTimeout(() => {
+      window.location.href = isStaff() ? '/staff.html' : '/historytransaction.html';
+    }, 1500);
+  } catch(e) { toast(e.message, 'error'); }
+}
+</script>
+</body>
+</html>
