@@ -39,6 +39,9 @@ public class CheckInController : ControllerBase
     {
         try
         {
+            if (request == null || request.TicketId <= 0 || request.SeatId <= 0)
+                return BadRequest(new { message = "Thông tin check-in không hợp lệ. Vui lòng cung cấp TicketId và SeatId." });
+            
             var (accountId, role) = GetCurrentUser();
             var result = await _checkInService.CheckInTicketAsync(request, role, accountId);
             return Ok(result);
@@ -61,6 +64,9 @@ public class CheckInController : ControllerBase
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(pnr))
+                return BadRequest(new { message = "Vui lòng nhập mã PNR." });
+            
             var (accountId, role) = GetCurrentUser();
             var result = await _checkInService.SearchForCheckInAsync(pnr, role, accountId);
 

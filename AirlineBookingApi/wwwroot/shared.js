@@ -70,12 +70,38 @@ function setBtnLoading(btn, loading, loadingText = 'Đang xử lý...') {
   if (loading) {
     btn._oldText = btn._oldText || btn.innerHTML;
     btn.disabled = true;
-    btn.classList.add('opacity-60');
+    btn.classList.add('opacity-60', 'cursor-not-allowed');
     btn.innerHTML = loadingText;
   } else {
     btn.disabled = false;
-    btn.classList.remove('opacity-60');
+    btn.classList.remove('opacity-60', 'cursor-not-allowed');
     if (btn._oldText) btn.innerHTML = btn._oldText;
+  }
+}
+
+// ── Loading Overlay ──
+function showLoadingOverlay(message = 'Đang xử lý...') {
+  let overlay = document.getElementById('global-loading-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'global-loading-overlay';
+    overlay.className = 'fixed inset-0 z-[1000] bg-black/50 backdrop-blur-sm flex items-center justify-center';
+    overlay.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 shadow-2xl max-w-sm mx-4 text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff385c] mx-auto mb-4"></div>
+        <p class="text-zinc-700 font-medium">${message}</p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+  overlay.classList.remove('hidden');
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('global-loading-overlay');
+  if (overlay) {
+    overlay.classList.add('hidden');
+    setTimeout(() => overlay.remove(), 300);
   }
 }
 
@@ -461,6 +487,17 @@ async function loadAirports() {
     { code: 'Ha Noi', name: 'Hà Nội (HAN)' }
   ];
 }
+
+// ── Global Error Handler ──
+window.addEventListener('error', (event) => {
+  console.error('Global error:', event.error);
+  toast('Đã xảy ra lỗi không mong muốn. Vui lòng tải lại trang.', 'error');
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled rejection:', event.reason);
+  toast('Đã xảy ra lỗi không mong muốn. Vui lòng tải lại trang.', 'error');
+});
 
 // ── Init on every page ──
 document.addEventListener('DOMContentLoaded', () => {

@@ -101,12 +101,12 @@ public class CheckInService : ICheckInService
 
         var query = _context.Bookings
             .Include(b => b.Tickets)
-                .ThenInclude(t => t.Passenger)
+            .ThenInclude(t => t.Passenger)
             .Include(b => b.Tickets)
-                .ThenInclude(t => t.Seat)
+            .ThenInclude(t => t.Seat)
             .Include(b => b.Tickets)
-                .ThenInclude(t => t.Flight)
-            .Where(b => b.PnrCode.Contains(pnrCode));
+            .ThenInclude(t => t.Flight)
+            .Where(b => b.PnrCode != null && b.PnrCode.Contains(pnrCode));
 
         if (currentRole == AppConstants.CustomerRoleName)
         {

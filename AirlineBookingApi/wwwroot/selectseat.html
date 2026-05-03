@@ -10,9 +10,16 @@
 const urlParams = new URLSearchParams(window.location.search);
 const ticketId = urlParams.get('ticketId');
 const flightId = urlParams.get('flightId');
-const cls = urlParams.get('cls');
-const name = urlParams.get('name') || urlParams.get('paxName') || '';
-window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${cls}&paxName=${encodeURIComponent(name)}`;
+const cls = urlParams.get('cls') || 'Economy';
+const name = urlParams.get('name') || urlParams.get('paxName') || 'Hành khách';
+
+// Validate required parameters
+if (!ticketId || !flightId) {
+  // Redirect to home if missing critical parameters
+  window.location.href = '/';
+} else {
+  window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${encodeURIComponent(cls)}&paxName=${encodeURIComponent(name)}`;
+}
 </script>
 </head>
 <body></body>

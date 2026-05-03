@@ -16,6 +16,30 @@ body{font-family:'Plus Jakarta Sans',sans-serif}
 .seat-btn.selected{background:#ff385c;border-color:#ff385c;color:#fff;box-shadow:0 4px 12px rgba(255,56,92,.3);transform:scale(1.08)}
 .seat-btn.taken{background:#f4f4f5;color:#d4d4d8;cursor:not-allowed;border:1px solid #e4e4e7}
 .seat-btn.wrong-class{opacity:.4;cursor:not-allowed;border:1px dashed #ccc}
+
+/* Mobile responsiveness for seat grid */
+@media (max-width: 768px) {
+  #seat-grid {
+    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+    gap: 8px;
+    justify-content: center;
+  }
+  .seat-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 10px;
+  }
+}
+
+/* Accessibility improvements */
+.seat-btn:focus {
+  outline: 2px solid #ff385c;
+  outline-offset: 2px;
+}
+
+.seat-btn[disabled]:focus {
+  outline: 2px solid #ccc;
+}
 </style>
 </head>
 <body class="bg-zinc-50 text-zinc-900 antialiased">
@@ -141,18 +165,38 @@ function updateSummary() {
 }
 
 async function confirmCheckIn() {
-  if (!selectedSeat) { toast('Vui lòng chọn ghế','error'); return; }
+  if (!selectedSeat) {
+    toast('Vui lòng chọn ghế', 'error');
+    return;
+  }
+  
+  const btn = document.getElementById('btn-confirm-checkin');
+  setBtnLoading(btn, true, 'Đang xử lý check-in...');
+  
   try {
     // Both Staff and Customer use the same /checkin endpoint
     const result = await api('POST', '/checkin', {
       ticketId: ticketId,
       seatId: selectedSeat.id
     });
-    toast(result.message, 'success');
-    setTimeout(() => {
-      window.location.href = isStaff() ? '/staff.html' : '/historytransaction.html';
-    }, 1500);
-  } catch(e) { toast(e.message, 'error'); }
+    
+    if (result && result.message) {
+      toast(result.message, 'success');
+      setTimeout(() => {
+        const redirectUrl = isStaff() ? '/staff.html?tab=checkin' : '/historytransaction.html';
+        window.location.href = redirectUrl;
+      }, 1500);
+    } else {
+      toast('Check-in thành công', 'success');
+      setTimeout(() => {
+        const redirectUrl = isStaff() ? '/staff.html?tab=checkin' : '/historytransaction.html';
+        window.location.href = redirectUrl;
+      }, 1500);
+    }
+  } catch(e) {
+    setBtnLoading(btn, false);
+    toast(e.message || 'Đã xảy ra lỗi khi check-in', 'error');
+  }
 }
 </script>
 </body>

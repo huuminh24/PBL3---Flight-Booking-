@@ -39,8 +39,9 @@ public class StaffCustomersController : ControllerBase
         if (!string.IsNullOrWhiteSpace(q))
         {
             customersQuery = customersQuery.Where(x =>
-                x.Email.Contains(q)
-                || (x.Profile != null && (x.Profile.FullName.Contains(q) || x.Profile.PhoneNumber.Contains(q))));
+                x.Email != null && x.Email.Contains(q)
+                || (x.Profile != null && x.Profile.FullName != null && x.Profile.FullName.Contains(q))
+                || (x.Profile != null && x.Profile.PhoneNumber != null && x.Profile.PhoneNumber.Contains(q)));
         }
 
         var customers = await customersQuery
