@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>SkyNest - Đặt vé máy bay</title>
+    <title>SkyHmH - Đặt vé máy bay</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
@@ -26,7 +26,7 @@
                         "on-tertiary-fixed-variant": "#005234",
                         "surface-container-lowest": "#ffffff",
                         "luxe-purple": "#460479",
-                        "surface-tint": "#ff385c",
+                        "surface-tint": "#be0038",
                         "muted": "#6a6a6a",
                         "on-secondary-fixed": "#1b1c1c",
                         "canvas": "#ffffff",
@@ -40,7 +40,7 @@
                         "secondary-fixed-dim": "#c8c6c5",
                         "on-primary-fixed": "#40000d",
                         "rausch-disabled": "#ffd1da",
-                        "primary": "#ff385c",
+                        "primary": "#ba0036",
                         "legal-blue": "#428bff",
                         "surface-container-low": "#fff0f0",
                         "hairline": "#dddddd",
@@ -177,11 +177,11 @@
                 <img alt="Aerial view of a commercial airplane flying over white clouds at sunset with warm golden hour light"
                     class="w-full h-full object-cover"
                     src="/plane.jpg"
-                    style="" />
+                    />
                 <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
             </div>
             <div class="relative z-10 w-full max-w-5xl px-6 md:px-20 mt-[-100px]">
-                <h1 class="text-canvas text-display-xl font-display-xl mb-xl text-center shadow-sm" style="">Khám phá
+                <h1 class="text-canvas text-display-xl font-display-xl mb-xl text-center shadow-sm">Khám phá
                     điểm đến tiếp theo</h1>
                 <!-- Tab Buttons -->
                 <div class="flex justify-center mb-4">
@@ -284,32 +284,35 @@
                         <!-- Normal Search Pill -->
                         <div id="normal-search-pill"
                             class="bg-surface-container-lowest rounded-full flex items-stretch divide-x divide-hairline border border-hairline mx-auto w-full h-16">
-                            <div
-                                class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft rounded-l-full cursor-pointer transition-colors group">
-                                <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
-                                    style="">Khởi hành từ</label>
-                                <select id="input-dep"
-                                    class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none">
-                                    <option value="Da Nang">Đà Nẵng (DAD)</option>
-                                    <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
-                                    <option value="Ha Noi">Hà Nội (HAN)</option>
-                                </select>
+                            <!-- Departure + Arrival wrapper with centered swap button -->
+                            <div class="flex-[2] flex items-stretch relative">
+                                <div class="flex-1 flex flex-col justify-center px-lg pr-6 hover:bg-surface-soft rounded-l-full cursor-pointer transition-colors group">
+                                    <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5">Khởi hành từ</label>
+                                    <div class="relative">
+                                        <input id="input-dep" type="text" readonly
+                                            class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none"
+                                            placeholder="Chọn điểm đi" value="Đà Nẵng (DAD)" data-value="Da Nang">
+                                        <div id="dropdown-dep" class="hidden absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+                                <div class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft cursor-pointer transition-colors group border-l border-hairline">
+                                    <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5">Điểm đến</label>
+                                    <div class="relative">
+                                        <input id="input-arr" type="text" readonly
+                                            class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none"
+                                            placeholder="Chọn điểm đến" value="TP. Hồ Chí Minh (SGN)" data-value="Ho Chi Minh">
+                                        <div id="dropdown-arr" class="hidden absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+                                <!-- Swap button - absolute centered between departure and arrival -->
+                                <button onclick="swapDepartureAndArrival()" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-[#ff385c] text-white rounded-full shadow-md hover:bg-[#e00b41] transition-colors z-50 border-2 border-white text-base flex items-center justify-center">
+                                    ⇄
+                                </button>
                             </div>
                             <div
                                 class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft cursor-pointer transition-colors group border-l border-hairline">
                                 <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
-                                    style="">Điểm đến</label>
-                                <select id="input-arr"
-                                    class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none">
-                                    <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
-                                    <option value="Da Nang">Đà Nẵng (DAD)</option>
-                                    <option value="Ha Noi">Hà Nội (HAN)</option>
-                                </select>
-                            </div>
-                            <div
-                                class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft cursor-pointer transition-colors group border-l border-hairline">
-                                <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
-                                    style="">Ngày đi</label>
+                                    >Ngày đi</label>
                                 <input id="input-date"
                                     class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full placeholder-muted-soft cursor-pointer truncate leading-tight outline-none"
                                     type="date" />
@@ -318,16 +321,16 @@
                                 class="flex-1 flex items-center justify-between pl-lg pr-2 hover:bg-surface-soft rounded-r-full cursor-pointer transition-colors group relative border-l border-hairline opacity-50 pointer-events-none">
                                 <div class="flex flex-col justify-center h-full w-full pr-2">
                                     <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
-                                        style="">Ngày về</label>
+                                        >Ngày về</label>
                                     <input id="input-return-date"
                                         class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full placeholder-muted-soft cursor-pointer truncate leading-tight outline-none"
                                         type="date" disabled />
                                 </div>
                             </div>
                             <button id="btn-submit-search"
-                                class="bg-rausch hover:bg-rausch-active text-canvas rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-float flex-shrink-0 relative z-10 ml-2"
-                                style="">
-                                <span class="material-symbols-outlined text-[20px]" style="">search</span>
+                                class="bg-rausch hover:bg-rausch-active text-canvas rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-float flex-shrink-0 relative z-10 ml-2 mr-2 self-center"
+                                >
+                                <span class="material-symbols-outlined text-[20px]">search</span>
                             </button>
                         </div>
                         <!-- Multi-city Container -->
@@ -402,19 +405,19 @@
     <nav
         class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 md:hidden pb-safe bg-white dark:bg-zinc-900 border-t border-zinc-100 dark:border-zinc-800 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] font-['Plus_Jakarta_Sans'] text-[10px] font-semibold">
         <a class="flex flex-col items-center justify-center text-rose-500 dark:text-rose-400 opacity-80 active:scale-90 transition-transform w-full h-full"
-            href="#" style="">
-            <span class="material-symbols-outlined mb-1" style="">search</span>
-            <span class="" style="">Khám phá</span>
+            href="#">
+            <span class="material-symbols-outlined mb-1">search</span>
+            <span>Khám phá</span>
         </a>
         <a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 opacity-80 active:scale-90 transition-transform w-full h-full"
-            href="#" style="">
-            <span class="material-symbols-outlined mb-1" style="">flight_takeoff</span>
-            <span class="" style="">Chuyến đi</span>
+            href="#">
+            <span class="material-symbols-outlined mb-1">flight_takeoff</span>
+            <span>Chuyến đi</span>
         </a>
         <a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 opacity-80 active:scale-90 transition-transform w-full h-full"
-            href="#" style="">
-            <span class="material-symbols-outlined mb-1" style="">person</span>
-            <span class="" style="">Tài khoản</span>
+            href="#">
+            <span class="material-symbols-outlined mb-1">person</span>
+            <span>Tài khoản</span>
         </a>
     </nav>
 
@@ -437,19 +440,18 @@
                 document.querySelector('main').classList.replace('pt-20', 'pt-32');
             }
 
-            // Init Default Date — today + 3 days, or 2026-05-01 if within range (seed data)
-            const today = new Date();
-            const defaultDate = new Date(today);
-            defaultDate.setDate(defaultDate.getDate() + 3);
-            const seedDate = new Date('2026-05-01');
-            // Use seed date if it's in the future and close to today+3, otherwise use dynamic date
-            if (seedDate > today) {
-                document.getElementById('input-date').value = '2026-05-01';
-            } else {
-                document.getElementById('input-date').value = defaultDate.toISOString().split('T')[0];
-            }
-            // Set min date to today
-            document.getElementById('input-date').min = today.toISOString().split('T')[0];
+            // Load airports dynamically from API
+            loadAirports();
+
+            // Init Default Date — today in Vietnam timezone (UTC+7)
+            const now = new Date();
+            const vietnamOffset = 7 * 60; // UTC+7 in minutes
+            const localOffset = now.getTimezoneOffset(); // local offset in minutes (negative for east of UTC)
+            const vietnamTime = new Date(now.getTime() + (vietnamOffset + localOffset) * 60000);
+            const todayStr = vietnamTime.toISOString().split('T')[0];
+
+            document.getElementById('input-date').value = todayStr;
+            document.getElementById('input-date').min = todayStr;
 
             // Toggle Pax Popup
             const paxBtn = document.getElementById('btn-pax-toggle');
@@ -482,10 +484,12 @@
 
                 if (typeof requireAuth === 'function' && !requireAuth('Vui lòng đăng nhập để tìm kiếm chuyến bay')) return;
 
-                const dep = document.getElementById('input-dep').value;
-                const arr = document.getElementById('input-arr').value;
+                const dep = document.getElementById('input-dep').dataset.value;
+                const arr = document.getElementById('input-arr').dataset.value;
                 const date = document.getElementById('input-date').value;
 
+                if (!dep || dep === 'undefined') { alert('Vui lòng chọn điểm đi!'); return; }
+                if (!arr || arr === 'undefined') { alert('Vui lòng chọn điểm đến!'); return; }
                 if (dep === arr) { alert('Điểm đi và điểm đến phải khác nhau!'); return; }
                 if (!date) { alert('Vui lòng chọn ngày đi!'); return; }
 
@@ -578,18 +582,22 @@
             const idx = legs.length + 1;
             const div = document.createElement('div');
             div.className = "multicity-leg flex flex-col md:flex-row gap-2 bg-surface-container-lowest border border-hairline rounded-xl p-2 items-center";
+            const depOptions = airportList.length > 0 ? buildAirportOptions(lastArr) : `
+                        <option value="Da Nang" ${lastArr === 'Da Nang' ? 'selected' : ''}>Đà Nẵng (DAD)</option>
+                        <option value="Ho Chi Minh" ${lastArr === 'Ho Chi Minh' ? 'selected' : ''}>TP. Hồ Chí Minh (SGN)</option>
+                        <option value="Ha Noi" ${lastArr === 'Ha Noi' ? 'selected' : ''}>Hà Nội (HAN)</option>`;
+            const arrOptions = airportList.length > 0 ? buildAirportOptions('') : `
+                        <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
+                        <option value="Da Nang">Đà Nẵng (DAD)</option>
+                        <option value="Ha Noi">Hà Nội (HAN)</option>`;
             div.innerHTML = `
                 <span class="font-bold text-sm text-ink px-2">Chặng ${idx}</span>
                 <div class="flex-1 flex gap-2 w-full">
                     <select class="leg-dep flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
-                        <option value="Da Nang" ${lastArr === 'Da Nang' ? 'selected' : ''}>Đà Nẵng (DAD)</option>
-                        <option value="Ho Chi Minh" ${lastArr === 'Ho Chi Minh' ? 'selected' : ''}>TP. Hồ Chí Minh (SGN)</option>
-                        <option value="Ha Noi" ${lastArr === 'Ha Noi' ? 'selected' : ''}>Hà Nội (HAN)</option>
+                        ${depOptions}
                     </select>
                     <select class="leg-arr flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
-                        <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
-                        <option value="Da Nang">Đà Nẵng (DAD)</option>
-                        <option value="Ha Noi">Hà Nội (HAN)</option>
+                        ${arrOptions}
                     </select>
                     <input class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink" type="date" />
                 </div>
@@ -618,16 +626,157 @@
             });
         }
 
+        // Global airport list for dynamic population
+        let airportList = [];
+
+        function buildAirportOptions(selectedValue) {
+            const labelMap = {
+                'Đà Nẵng': 'Đà Nẵng (DAD)',
+                'TP. Hồ Chí Minh': 'TP. Hồ Chí Minh (SGN)',
+                'Hà Nội': 'Hà Nội (HAN)',
+                'Cần Thơ': 'Cần Thơ (VCA)',
+                'Huế': 'Huế (HUI)',
+                'Phú Quốc': 'Phú Quốc (PQC)',
+                'Nha Trang': 'Nha Trang (NTR)',
+                'Hải Phòng': 'Hải Phòng (HPH)',
+                'Bangkok': 'Bangkok (BKK)',
+                'Singapore': 'Singapore (SIN)',
+                'Tokyo': 'Tokyo (TYO)',
+                'Seoul': 'Seoul (SEL)',
+                'Kuala Lumpur': 'Kuala Lumpur (KUL)'
+            };
+            const list = airportList.length > 0 ? airportList : Object.keys(labelMap);
+            return list.map(a => {
+                const label = labelMap[a] || a;
+                const sel = a === selectedValue ? ' selected' : '';
+                return `<option value="${a.replace(/"/g, '&quot;')}"${sel}>${label}</option>`;
+            }).join('');
+        }
+
         async function loadAirports() {
             try {
                 const airports = await api('GET', '/Flights/airports');
                 if (!Array.isArray(airports) || airports.length === 0) return;
-                const dl = document.getElementById('airports');
-                if (!dl) return;
-                dl.innerHTML = airports.map(a => `<option value="${String(a).replace(/"/g, '&quot;')}"></option>`).join('');
+                airportList = airports;
+                populateAirportSelects();
             } catch (e) {
-                // keep current static datalist
+                // keep current static options as fallback
             }
+        }
+
+        // Custom searchable dropdown for airports (Airbnb style)
+        function getAirportLabel(code) {
+            const labelMap = {
+                'Đà Nẵng': 'Đà Nẵng (DAD)',
+                'TP. Hồ Chí Minh': 'TP. Hồ Chí Minh (SGN)',
+                'Hà Nội': 'Hà Nội (HAN)',
+                'Cần Thơ': 'Cần Thơ (VCA)',
+                'Huế': 'Huế (HUI)',
+                'Phú Quốc': 'Phú Quốc (PQC)',
+                'Nha Trang': 'Nha Trang (NTR)',
+                'Hải Phòng': 'Hải Phòng (HPH)',
+                'Bangkok': 'Bangkok (BKK)',
+                'Singapore': 'Singapore (SIN)',
+                'Tokyo': 'Tokyo (TYO)',
+                'Seoul': 'Seoul (SEL)',
+                'Kuala Lumpur': 'Kuala Lumpur (KUL)'
+            };
+            return labelMap[code] || code;
+        }
+
+        function buildAirportDropdownItems(filterText, excludeCode) {
+            const labelMap = {
+                'Đà Nẵng': 'Đà Nẵng (DAD)',
+                'TP. Hồ Chí Minh': 'TP. Hồ Chí Minh (SGN)',
+                'Hà Nội': 'Hà Nội (HAN)',
+                'Cần Thơ': 'Cần Thơ (VCA)',
+                'Huế': 'Huế (HUI)',
+                'Phú Quốc': 'Phú Quốc (PQC)',
+                'Nha Trang': 'Nha Trang (NTR)',
+                'Hải Phòng': 'Hải Phòng (HPH)',
+                'Bangkok': 'Bangkok (BKK)',
+                'Singapore': 'Singapore (SIN)',
+                'Tokyo': 'Tokyo (TYO)',
+                'Seoul': 'Seoul (SEL)',
+                'Kuala Lumpur': 'Kuala Lumpur (KUL)'
+            };
+            const term = (filterText || '').toLowerCase();
+            const list = airportList.length > 0 ? airportList : Object.keys(labelMap);
+            return list
+                .filter(a => a !== excludeCode)
+                .filter(a => {
+                    if (!term) return true;
+                    const label = (labelMap[a] || a).toLowerCase();
+                    return a.toLowerCase().includes(term) || label.includes(term);
+                })
+                .map(a => {
+                    const label = labelMap[a] || a;
+                    return `<div class="airport-item px-4 py-3 hover:bg-surface-soft cursor-pointer transition-colors border-b border-hairline last:border-0" data-code="${a.replace(/"/g, '&quot;')}">
+                        <div class="font-bold text-ink">${label.split(' (')[0]}</div>
+                        <div class="text-xs text-muted">${a}</div>
+                    </div>`;
+                }).join('') || '<div class="px-4 py-3 text-muted text-sm">Không tìm thấy sân bay</div>';
+        }
+
+        function setupAirportDropdown(inputId, dropdownId, otherInputId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            if (!input || !dropdown) return;
+
+            input.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const otherCode = document.getElementById(otherInputId)?.dataset.value;
+                dropdown.innerHTML = buildAirportDropdownItems('', otherCode);
+                dropdown.classList.remove('hidden');
+                // Close other dropdowns
+                document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
+                    if (d.id !== dropdownId) d.classList.add('hidden');
+                });
+            });
+
+            dropdown.addEventListener('click', (e) => {
+                const item = e.target.closest('.airport-item');
+                if (!item) return;
+                const code = item.dataset.code;
+                const label = getAirportLabel(code);
+                input.value = label;
+                input.dataset.value = code;
+                dropdown.classList.add('hidden');
+            });
+        }
+
+        function populateAirportSelects() {
+            if (airportList.length === 0) return;
+            setupAirportDropdown('input-dep', 'dropdown-dep', 'input-arr');
+            setupAirportDropdown('input-arr', 'dropdown-arr', 'input-dep');
+
+            // Set default values if not already set
+            const depInput = document.getElementById('input-dep');
+            const arrInput = document.getElementById('input-arr');
+
+            if (!depInput.dataset.value && airportList.length > 0) {
+                depInput.dataset.value = airportList[0];
+                depInput.value = getAirportLabel(airportList[0]);
+            }
+            if (!arrInput.dataset.value && airportList.length > 1) {
+                arrInput.dataset.value = airportList[1];
+                arrInput.value = getAirportLabel(airportList[1]);
+            }
+
+            // Close dropdowns on outside click
+            document.addEventListener('click', () => {
+                document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.classList.add('hidden'));
+            });
+
+            // Multi-city selects remain as <select> for simplicity
+            document.querySelectorAll('.leg-dep, .leg-arr').forEach(sel => {
+                const cur = sel.value;
+                sel.innerHTML = airportList.map(a => {
+                    const label = getAirportLabel(a);
+                    const selected = a === cur ? ' selected' : '';
+                    return `<option value="${a.replace(/"/g, '&quot;')}"${selected}>${label}</option>`;
+                }).join('');
+            });
         }
 
         // Flight Type Logic
@@ -715,14 +864,29 @@
             document.getElementById('btn-pax-infant-dec').disabled = paxState.infant <= 0;
         }
 
-        // Seat Class Logic
-        function setSeatClass(val, label) {
-            seatClassVal = val;
-            document.getElementById('class-display-text').textContent = label;
-            document.getElementById('class-popup').classList.add('hidden');
-        }
+// Seat Class Logic
+ function setSeatClass(val, label) {
+ seatClassVal = val;
+ document.getElementById('class-display-text').textContent = label;
+ document.getElementById('class-popup').classList.add('hidden');
+ }
+
+ // Swap departure and arrival
+ function swapDepartureAndArrival() {
+ const depInput = document.getElementById('input-dep');
+ const arrInput = document.getElementById('input-arr');
+
+ // Swap values
+ const tempValue = depInput.value;
+ const tempDataValue = depInput.dataset.value;
+
+ depInput.value = arrInput.value;
+ depInput.dataset.value = arrInput.dataset.value;
+
+ arrInput.value = tempValue;
+ arrInput.dataset.value = tempDataValue;
+ }
     </script>
 </body>
 
 </html>
-

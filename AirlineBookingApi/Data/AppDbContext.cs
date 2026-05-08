@@ -261,42 +261,9 @@ public class AppDbContext : DbContext
       .HasForeignKey(x => x.FlightId)
       .OnDelete(DeleteBehavior.Cascade);
 
-      entity.HasData(
-        new Seat { Id = 1, FlightId = 1, SeatNumber = "E01", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 2, FlightId = 1, SeatNumber = "E02", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 3, FlightId = 1, SeatNumber = "E03", SeatClass = "Economy", IsAvailable = false, CreatedAt = seedCreatedAt },
-        new Seat { Id = 4, FlightId = 1, SeatNumber = "E04", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 5, FlightId = 1, SeatNumber = "E05", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 6, FlightId = 1, SeatNumber = "B01", SeatClass = "Business", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 7, FlightId = 1, SeatNumber = "B02", SeatClass = "Business", IsAvailable = false, CreatedAt = seedCreatedAt },
-        new Seat { Id = 8, FlightId = 1, SeatNumber = "B03", SeatClass = "Business", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 9, FlightId = 2, SeatNumber = "E01", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 10, FlightId = 2, SeatNumber = "E02", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 11, FlightId = 2, SeatNumber = "E03", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 12, FlightId = 2, SeatNumber = "E04", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 13, FlightId = 2, SeatNumber = "E05", SeatClass = "Economy", IsAvailable = false, CreatedAt = seedCreatedAt },
-        new Seat { Id = 14, FlightId = 2, SeatNumber = "B01", SeatClass = "Business", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 15, FlightId = 2, SeatNumber = "B02", SeatClass = "Business", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 16, FlightId = 2, SeatNumber = "B03", SeatClass = "Business", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 17, FlightId = 3, SeatNumber = "E01", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 18, FlightId = 3, SeatNumber = "E02", SeatClass = "Economy", IsAvailable = false, CreatedAt = seedCreatedAt },
-        new Seat { Id = 19, FlightId = 3, SeatNumber = "E03", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 20, FlightId = 3, SeatNumber = "E04", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 21, FlightId = 3, SeatNumber = "E05", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 22, FlightId = 3, SeatNumber = "B01", SeatClass = "Business", IsAvailable = false, CreatedAt = seedCreatedAt },
-        new Seat { Id = 23, FlightId = 3, SeatNumber = "B02", SeatClass = "Business", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 24, FlightId = 3, SeatNumber = "B03", SeatClass = "Business", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 25, FlightId = 4, SeatNumber = "E01", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 26, FlightId = 4, SeatNumber = "E02", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 27, FlightId = 4, SeatNumber = "E03", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 28, FlightId = 4, SeatNumber = "E04", SeatClass = "Economy", IsAvailable = false, CreatedAt = seedCreatedAt },
-        new Seat { Id = 29, FlightId = 4, SeatNumber = "E05", SeatClass = "Economy", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 30, FlightId = 4, SeatNumber = "B01", SeatClass = "Business", IsAvailable = true, CreatedAt = seedCreatedAt },
-        new Seat { Id = 31, FlightId = 4, SeatNumber = "B02", SeatClass = "Business", IsAvailable = false, CreatedAt = seedCreatedAt },
-        new Seat { Id = 32, FlightId = 4, SeatNumber = "B03", SeatClass = "Business", IsAvailable = true, CreatedAt = seedCreatedAt }
-      // Seats for VN2002 / VN3002 are seeded via raw SQL in AddMultiCityFlightsAndPaymentCoupon
-      // migration (looked up by FlightNumber), so they are intentionally not declared as HasData here.
-      );
+      // Seats are seeded via raw SQL in migrations (CleanSeatsAndExpandTo84, etc.).
+      // HasData removed to avoid Id conflicts with migration-generated seat rows.
+      // All seats now use modern row-column format: E{row}{col} and B{row}{col}.
     });
 
     modelBuilder.Entity<Booking>(entity =>

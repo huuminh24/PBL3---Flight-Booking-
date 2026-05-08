@@ -4,6 +4,7 @@ using AirlineBookingApi.Data;
 using AirlineBookingApi.Models.DTOs.Flights;
 using AirlineBookingApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace AirlineBookingApi.Services.Implementations;
@@ -12,13 +13,15 @@ public class FlightService : IFlightService
 {
     private readonly AppDbContext _dbContext;
     private readonly decimal _overbookingRatio;
+    private readonly ILogger<FlightService> _logger;
 
-    public FlightService(AppDbContext dbContext, IOptions<BookingSettings> bookingOptions)
+    public FlightService(AppDbContext dbContext, IOptions<BookingSettings> bookingOptions, ILogger<FlightService> logger)
     {
         _dbContext = dbContext;
         _overbookingRatio = bookingOptions?.Value?.OverbookingRatio > 0
             ? bookingOptions.Value.OverbookingRatio
             : AppConstants.DefaultOverbookingRatio;
+        _logger = logger;
     }
 
     public async Task<List<string>> GetAirportsAsync()
@@ -89,24 +92,42 @@ if (request.ReturnDate.HasValue)
         return result;
     }
 
-private async Task<List<FlightSearchResponseDto>> SearchSingleDirectionAsync(string depAirport, string arrAirport, DateTime date, string seatClass, int paxCount, int infantCount = 0, int? depTimeFrom = null, int? depTimeTo = null, List<string>? airlines = null)
-{
+private static readonly TimeZoneInfo VietnamTimeZone = TimeZoneInfo.CreateCustomTimeZone(
+      "Vietnam", TimeSpan.FromHours(7), "Vietnam Standard Time", "VST");
+
+  private (DateTime utcStart, DateTime utcEnd) GetUtcDayRange(DateTime localDate)
+  {
+    var localDayStart = DateTime.SpecifyKind(localDate.Date, DateTimeKind.Unspecified);
+    var utcStart = TimeZoneInfo.ConvertTimeToUtc(localDayStart, VietnamTimeZone);
+    var utcEnd = TimeZoneInfo.ConvertTimeToUtc(localDayStart.AddDays(1), VietnamTimeZone);
+    return (utcStart, utcEnd);
+  }
+
+  private async Task<List<FlightSearchResponseDto>> SearchSingleDirectionAsync(string depAirport, string arrAirport, DateTime date, string seatClass, int paxCount, int infantCount = 0, int? depTimeFrom = null, int? depTimeTo = null, List<string>? airlines = null)
+  {
+    // Convert local Vietnam date to UTC range
+    var (utcDayStart, utcDayEnd) = GetUtcDayRange(date);
+
+  var nowUtc = DateTime.UtcNow;
+
   var query = _dbContext.Flights
   .Include(x => x.FlightPrices)
   .Include(x => x.Seats)
   .Include(x => x.Airline)
   .Where(x => x.DepartureAirport.ToLower() == depAirport
   && x.ArrivalAirport.ToLower() == arrAirport
-  && x.DepartureTime.Date == date);
+  && x.DepartureTime >= utcDayStart && x.DepartureTime < utcDayEnd
+  && x.DepartureTime >= nowUtc);
 
   if (depTimeFrom.HasValue)
   {
-    query = query.Where(x => x.DepartureTime.Hour >= depTimeFrom.Value);
+    // DepartureTime is UTC; add 7h to compare against Vietnam local hour
+    query = query.Where(x => x.DepartureTime.AddHours(7).Hour >= depTimeFrom.Value);
   }
 
   if (depTimeTo.HasValue)
   {
-    query = query.Where(x => x.DepartureTime.Hour < depTimeTo.Value);
+    query = query.Where(x => x.DepartureTime.AddHours(7).Hour < depTimeTo.Value);
   }
 
   if (airlines != null && airlines.Count > 0)
@@ -118,7 +139,6 @@ private async Task<List<FlightSearchResponseDto>> SearchSingleDirectionAsync(str
 
   var flightIds = flights.Select(f => f.Id).ToList();
 
-  var nowUtc = DateTime.UtcNow;
   var bookedCounts = await _dbContext.Tickets
   .Where(t => flightIds.Contains(t.FlightId)
       && t.SeatClass == seatClass
@@ -143,8 +163,15 @@ private async Task<List<FlightSearchResponseDto>> SearchSingleDirectionAsync(str
     var selectedPrice = flight.FlightPrices
     .FirstOrDefault(price => price.SeatClass == seatClass);
 
-    if (selectedPrice is null || availableSeatCount < seatsNeeded)
+    if (selectedPrice is null)
     {
+      _logger.LogWarning("[FlightSearch] Chuyến bay {FlightId} ({FlightNumber}) không có giá cho hạng {SeatClass} — bị bỏ qua.", flight.Id, flight.FlightNumber, seatClass);
+      return null;
+    }
+
+    if (availableSeatCount < seatsNeeded)
+    {
+      _logger.LogDebug("[FlightSearch] Chuyến bay {FlightId} không đủ chỗ: cần {Needed}, còn {Available}.", flight.Id, seatsNeeded, availableSeatCount);
       return null;
     }
 
@@ -248,26 +275,27 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
 
     var legs = request.Legs;
     var seatClass = legs[0].SeatClass.Trim();
-    var adultCount = request.PassengerCount - request.InfantCount;
 
     var legResults = new List<List<FlightSearchResponseDto>>();
 
     for (int i = 0; i < legs.Count; i++)
     {
       var leg = legs[i];
-      var normalizedDep = leg.DepartureAirport.Trim();
-      var normalizedArr = leg.ArrivalAirport.Trim();
+      var normalizedDep = leg.DepartureAirport.Trim().ToLower();
+      var normalizedArr = leg.ArrivalAirport.Trim().ToLower();
+
+      var normalizedAirlines = request.Airlines?.Select(a => a.Trim().ToLower()).Where(a => !string.IsNullOrEmpty(a)).ToList();
 
       var results = await SearchSingleDirectionAsync(
         normalizedDep,
         normalizedArr,
         leg.DepartureDate.Date,
         seatClass,
-        adultCount,
+        request.PassengerCount,
         request.InfantCount,
         request.DepartureTimeFrom,
         request.DepartureTimeTo,
-        request.Airlines);
+        normalizedAirlines);
 
       legResults.Add(results);
     }
@@ -287,6 +315,8 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
       throw new InvalidOperationException("Tối đa 6 chặng bay cho mỗi lần tìm kiếm.");
     }
 
+    var vietnamToday = DateTime.UtcNow.AddHours(7).Date;
+
     for (int i = 0; i < request.Legs.Count; i++)
     {
       var leg = request.Legs[i];
@@ -301,7 +331,7 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
         throw new InvalidOperationException($"Chặng {i + 1}: Điểm đi phải khác điểm đến.");
       }
 
-      if (leg.DepartureDate.Date < DateTime.Today)
+      if (leg.DepartureDate.Date < vietnamToday)
       {
         throw new InvalidOperationException($"Chặng {i + 1}: Ngày bay không được nhỏ hơn ngày hiện tại.");
       }
@@ -349,7 +379,8 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
             throw new InvalidOperationException("Điểm đi phải khác điểm đến.");
         }
 
-        if (request.DepartureDate.Date < DateTime.Today)
+        var vietnamToday = DateTime.UtcNow.AddHours(7).Date;
+        if (request.DepartureDate.Date < vietnamToday)
         {
             throw new InvalidOperationException("Ngày bay không được nhỏ hơn ngày hiện tại.");
         }

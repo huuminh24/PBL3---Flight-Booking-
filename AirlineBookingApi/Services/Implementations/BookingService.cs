@@ -350,13 +350,12 @@ public class BookingService : IBookingService
     private async Task<string> GeneratePnrCodeAsync()
     {
         const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        var random = new Random();
         const int maxAttempts = 10;
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
             var suffix = new string(Enumerable.Range(0, 4)
-                .Select(_ => chars[random.Next(chars.Length)])
+                .Select(_ => chars[Random.Shared.Next(chars.Length)])
                 .ToArray());
 
             var pnrCode = $"BK{DateTime.UtcNow:yy}{suffix}";

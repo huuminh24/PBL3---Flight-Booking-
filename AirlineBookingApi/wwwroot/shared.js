@@ -49,6 +49,13 @@ async function api(method, path, body) {
   const text = await res.text();
   let data; try { data = JSON.parse(text); } catch { data = text; }
   if (!res.ok) {
+    // Auto-logout on 401 Unauthorized (token expired or invalid)
+    // Never redirect for /Auth/me endpoint - let the caller handle the error
+    if (res.status === 401 && getToken() && !path.startsWith('/Auth/') && path !== '/Auth/me') {
+      clearAuth();
+      window.location.href = '/';
+      return;
+    }
     const msg = data?.errors ? Object.values(data.errors).flat().join('. ')
       : (data?.message || data?.title || `Lỗi ${res.status}`);
     throw new Error(msg);
@@ -70,38 +77,12 @@ function setBtnLoading(btn, loading, loadingText = 'Đang xử lý...') {
   if (loading) {
     btn._oldText = btn._oldText || btn.innerHTML;
     btn.disabled = true;
-    btn.classList.add('opacity-60', 'cursor-not-allowed');
+    btn.classList.add('opacity-60');
     btn.innerHTML = loadingText;
   } else {
     btn.disabled = false;
-    btn.classList.remove('opacity-60', 'cursor-not-allowed');
+    btn.classList.remove('opacity-60');
     if (btn._oldText) btn.innerHTML = btn._oldText;
-  }
-}
-
-// ── Loading Overlay ──
-function showLoadingOverlay(message = 'Đang xử lý...') {
-  let overlay = document.getElementById('global-loading-overlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'global-loading-overlay';
-    overlay.className = 'fixed inset-0 z-[1000] bg-black/50 backdrop-blur-sm flex items-center justify-center';
-    overlay.innerHTML = `
-      <div class="bg-white rounded-2xl p-6 shadow-2xl max-w-sm mx-4 text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff385c] mx-auto mb-4"></div>
-        <p class="text-zinc-700 font-medium">${message}</p>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-  }
-  overlay.classList.remove('hidden');
-}
-
-function hideLoadingOverlay() {
-  const overlay = document.getElementById('global-loading-overlay');
-  if (overlay) {
-    overlay.classList.add('hidden');
-    setTimeout(() => overlay.remove(), 300);
   }
 }
 
@@ -201,7 +182,10 @@ function fmt(n) { return new Intl.NumberFormat('vi-VN').format(n) + ' VND'; }
 function fmtDate(s) { if (!s) return ''; return new Date(s + (s.endsWith('Z') ? '' : 'Z')).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }); }
 function fmtTime(s) { if (!s) return ''; return new Date(s + (s.endsWith('Z') ? '' : 'Z')).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit' }); }
 function fmtDateTime(s) { return fmtDate(s) + ' ' + fmtTime(s); }
-function diffMin(a, b) { return Math.round((new Date(b) - new Date(a)) / 60000); }
+function diffMin(a, b) {
+  const toUtc = s => new Date(s + (s && !s.endsWith('Z') ? 'Z' : ''));
+  return Math.round((toUtc(b) - toUtc(a)) / 60000);
+}
 function durStr(m) { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${m % 60}m` : `${m}m`; }
 
 // ── Toast notification ──
@@ -484,20 +468,20 @@ async function loadAirports() {
   return [
     { code: 'Da Nang', name: 'Đà Nẵng (DAD)' },
     { code: 'Ho Chi Minh', name: 'TP. Hồ Chí Minh (SGN)' },
-    { code: 'Ha Noi', name: 'Hà Nội (HAN)' }
+    { code: 'Ha Noi', name: 'Hà Nội (HAN)' },
+    { code: 'Bangkok', name: 'Bangkok (BKK)' },
+    { code: 'Singapore', name: 'Singapore (SIN)' }
   ];
 }
 
-// ── Global Error Handler ──
-window.addEventListener('error', (event) => {
-  console.error('Global error:', event.error);
-  toast('Đã xảy ra lỗi không mong muốn. Vui lòng tải lại trang.', 'error');
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled rejection:', event.reason);
-  toast('Đã xảy ra lỗi không mong muốn. Vui lòng tải lại trang.', 'error');
-});
+// ── Airline logo helper ──
+function airlineLogoHtml(code, name, color) {
+  const safeCode = code || 'HMH';
+  const safeColor = color || '#6a6a6a';
+  const imgSrc = `/images/airline/${safeCode}.png`;
+  
+  return `<img src="${imgSrc}" alt="${name || safeCode}" class="w-10 h-10 rounded-full object-cover border border-zinc-200 bg-white" onerror="this.onerror=null; this.outerHTML='<div class=\\'w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm\\' style=\\'background-color: ${safeColor}\\'>${safeCode}</div>'" />`;
+}
 
 // ── Init on every page ──
 document.addEventListener('DOMContentLoaded', () => {

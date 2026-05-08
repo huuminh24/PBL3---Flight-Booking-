@@ -60,25 +60,27 @@ async function searchCheckIn() {
   }
 }
 
+function esc(s) { return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
+
 function renderBookingCard(b) {
   const windowBadge = renderWindowBadge(b);
   const ticketsHtml = b.tickets.map(t => {
-    const safeName = (t.passengerFullName || '').replace(/'/g, "\\'");
+    const safeName = encodeURIComponent(t.passengerFullName || '');
     if (t.isCheckedIn) {
       return `<div class="flex justify-between items-center p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-        <div><span class="font-medium">${t.passengerFullName}</span><span class="text-xs text-zinc-500 ml-2">${t.passengerType} · Ghế ${t.seatNumber || 'N/A'} · ${t.seatClass}</span></div>
+        <div><span class="font-medium">${esc(t.passengerFullName)}</span><span class="text-xs text-zinc-500 ml-2">${esc(t.passengerType)} · Ghế ${esc(t.seatNumber || 'N/A')} · ${esc(t.seatClass)}</span></div>
         <span class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">✓ Đã check-in</span>
       </div>`;
     }
     if (t.ticketStatus === 'Paid') {
       const action = renderCheckinAction(b, t, safeName);
       return `<div class="flex justify-between items-center p-3 rounded-lg bg-zinc-50 border border-zinc-200">
-        <div><span class="font-medium">${t.passengerFullName}</span><span class="text-xs text-zinc-500 ml-2">${t.passengerType} · Ghế ${t.seatNumber || 'Chưa chọn'} · ${t.seatClass}</span></div>
+        <div><span class="font-medium">${esc(t.passengerFullName)}</span><span class="text-xs text-zinc-500 ml-2">${esc(t.passengerType)} · Ghế ${esc(t.seatNumber || 'Chưa chọn')} · ${esc(t.seatClass)}</span></div>
         ${action}
       </div>`;
     }
     return `<div class="flex justify-between items-center p-3 rounded-lg bg-zinc-50 border border-zinc-200">
-      <div><span class="font-medium">${t.passengerFullName}</span><span class="text-xs text-zinc-500 ml-2">${t.passengerType} · ${t.seatClass}</span></div>
+      <div><span class="font-medium">${esc(t.passengerFullName)}</span><span class="text-xs text-zinc-500 ml-2">${esc(t.passengerType)} · ${esc(t.seatClass)}</span></div>
       <span class="text-xs text-zinc-400">${statusLabel(t.ticketStatus)}</span>
     </div>`;
   }).join('');
@@ -130,7 +132,7 @@ function renderCheckinAction(b, t, safeName) {
   if (b.checkInWindowStatus === 'Closed') {
     return `<span class="text-xs text-red-500 font-medium">Đã quá hạn — ra quầy</span>`;
   }
-  return `<button onclick="goCheckIn(${t.ticketId}, ${b.flightId}, '${t.seatClass}', '${safeName}')" class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-4 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế &amp; Check-in</button>`;
+  return `<button onclick="goCheckIn(${t.ticketId}, ${b.flightId}, '${esc(t.seatClass)}', decodeURIComponent('${safeName}'))" class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-4 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế &amp; Check-in</button>`;
 }
 
 function formatDuration(minutes) {
@@ -142,7 +144,7 @@ function formatDuration(minutes) {
 }
 
 function goCheckIn(ticketId, flightId, cls, name) {
-  window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${cls}&paxName=${encodeURIComponent(name)}`;
+  window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${encodeURIComponent(cls)}&paxName=${encodeURIComponent(name)}`;
 }
 </script>
 </body>

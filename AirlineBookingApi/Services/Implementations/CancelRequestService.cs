@@ -177,7 +177,7 @@ public class CancelRequestService : ICancelRequestService
                 .Where(t => t.BookingId == booking.Id)
                 .ToListAsync();
 
-            if (allTickets.All(t => t.TicketStatus == AppConstants.CancelledStatus || t.TicketStatus == AppConstants.CancelRequestedTicketStatus))
+            if (allTickets.All(t => t.TicketStatus == AppConstants.CancelledStatus))
             {
                 booking.BookingStatus = AppConstants.CancelledStatus;
             }

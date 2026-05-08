@@ -58,25 +58,40 @@ namespace AirlineBookingApi.Migrations
                 FETCH NEXT FROM c INTO @flightId;
                 WHILE @@FETCH_STATUS = 0
                 BEGIN
-                    DECLARE @i INT = 1;
-                    WHILE @i <= 8
+                    -- Economy seats: 9 rows × 6 cols = 54 (E1A-E9F)
+                    DECLARE @r INT = 1;
+                    WHILE @r <= 9
                     BEGIN
-                        IF NOT EXISTS (SELECT 1 FROM Seats WHERE FlightId = @flightId AND SeatNumber = CONCAT('E', @i))
-                            INSERT INTO Seats (FlightId, SeatNumber, SeatClass, IsAvailable, CreatedAt, UpdatedAt)
-                            VALUES (@flightId, CONCAT('E', @i), 'Economy', 1, GETUTCDATE(), GETUTCDATE());
-                        SET @i += 1;
-                    END;
+                        DECLARE @c2 INT = 1;
+                        WHILE @c2 <= 6
+                        BEGIN
+                            DECLARE @sn NVARCHAR(10) = CONCAT('E', @r, CHAR(64 + @c2));
+                            IF NOT EXISTS (SELECT 1 FROM Seats WHERE FlightId = @flightId AND SeatNumber = @sn)
+                                INSERT INTO Seats (FlightId, SeatNumber, SeatClass, IsAvailable, CreatedAt, UpdatedAt)
+                                VALUES (@flightId, @sn, 'Economy', 1, GETUTCDATE(), GETUTCDATE());
+                            SET @c2 += 1;
+                        END
+                        SET @r += 1;
+                    END
 
-                    SET @i = 1;
-                    WHILE @i <= 4
+                    -- Business seats: 7 rows × 2 cols = 14 (B1A-B7B)
+                    SET @r = 1;
+                    WHILE @r <= 7
                     BEGIN
-                        IF NOT EXISTS (SELECT 1 FROM Seats WHERE FlightId = @flightId AND SeatNumber = CONCAT('B', @i))
-                            INSERT INTO Seats (FlightId, SeatNumber, SeatClass, IsAvailable, CreatedAt, UpdatedAt)
-                            VALUES (@flightId, CONCAT('B', @i), 'Business', 1, GETUTCDATE(), GETUTCDATE());
-                        SET @i += 1;
-                    END;
+                        SET @c2 = 1;
+                        WHILE @c2 <= 2
+                        BEGIN
+                            SET @sn = CONCAT('B', @r, CHAR(64 + @c2));
+                            IF NOT EXISTS (SELECT 1 FROM Seats WHERE FlightId = @flightId AND SeatNumber = @sn)
+                                INSERT INTO Seats (FlightId, SeatNumber, SeatClass, IsAvailable, CreatedAt, UpdatedAt)
+                                VALUES (@flightId, @sn, 'Business', 1, GETUTCDATE(), GETUTCDATE());
+                            SET @c2 += 1;
+                        END
+                        SET @r += 1;
+                    END
+
                     FETCH NEXT FROM c INTO @flightId;
-                END;
+                END
                 CLOSE c;
                 DEALLOCATE c;
 
@@ -112,10 +127,10 @@ namespace AirlineBookingApi.Migrations
                         VALUES (@bookingId, CONCAT(N'Khách Vé Tồn ', @n), CASE WHEN @n % 2 = 0 THEN 'Female' ELSE 'Male' END, 'Adult', GETUTCDATE(), GETUTCDATE());
                         SET @passengerId = SCOPE_IDENTITY();
 
-                        SELECT @seatId = Id FROM Seats WHERE FlightId = @oversellFlightId AND SeatClass = 'Economy' AND SeatNumber = CONCAT('E', @n);
+                        SELECT @seatId = Id FROM Seats WHERE FlightId = @oversellFlightId AND SeatClass = 'Economy' AND SeatNumber = CONCAT('E', @n, 'A');
 
                         INSERT INTO Tickets (BookingId, PassengerId, BookingFlightId, FlightId, SeatId, SeatClass, Price, TicketStatus, AllowCancellation, IsCheckedIn, CreatedAt, UpdatedAt)
-                        VALUES (@bookingId, @passengerId, @bfId, @oversellFlightId, CASE WHEN @n <= 8 THEN @seatId ELSE NULL END, 'Economy', @amount, 'Paid', 1, CASE WHEN @n <= 6 THEN 1 ELSE 0 END, GETUTCDATE(), GETUTCDATE());
+                        VALUES (@bookingId, @passengerId, @bfId, @oversellFlightId, CASE WHEN @n <= 9 THEN @seatId ELSE NULL END, 'Economy', @amount, 'Paid', 1, CASE WHEN @n <= 6 THEN 1 ELSE 0 END, GETUTCDATE(), GETUTCDATE());
                         SET @ticketId = SCOPE_IDENTITY();
 
                         INSERT INTO Payments (BookingId, PaymentMethod, Amount, DiscountAmount, CouponCode, PaymentStatus, PaidAt, PaymentReference, CreatedAt, UpdatedAt)

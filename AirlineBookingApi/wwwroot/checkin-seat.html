@@ -10,58 +10,287 @@
 <script>tailwind.config={darkMode:"class",theme:{extend:{colors:{rausch:"#ff385c","rausch-active":"#e00b41",ink:"#222222",muted:"#6a6a6a",canvas:"#ffffff",hairline:"#dddddd"},fontFamily:{sans:["Plus Jakarta Sans","sans-serif"]}}}}</script>
 <style>
 body{font-family:'Plus Jakarta Sans',sans-serif}
-.seat-btn{width:48px;height:48px;border-radius:10px;font-size:11px;font-weight:600;transition:all .2s;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.seat-btn.available{border:2px solid #ddd;background:#fff;color:#666}
-.seat-btn.available:hover{border-color:#ff385c;background:#fff5f5;color:#ff385c;transform:scale(1.05)}
-.seat-btn.selected{background:#ff385c;border-color:#ff385c;color:#fff;box-shadow:0 4px 12px rgba(255,56,92,.3);transform:scale(1.08)}
-.seat-btn.taken{background:#f4f4f5;color:#d4d4d8;cursor:not-allowed;border:1px solid #e4e4e7}
-.seat-btn.wrong-class{opacity:.4;cursor:not-allowed;border:1px dashed #ccc}
 
-/* Mobile responsiveness for seat grid */
-@media (max-width: 768px) {
-  #seat-grid {
-    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
-    gap: 8px;
-    justify-content: center;
-  }
-  .seat-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 10px;
-  }
+/* ── Airplane container ── */
+.airplane-wrap{
+  position:relative;
+  width:100%;
+  max-width:480px;
+  margin:0 auto;
 }
 
-/* Accessibility improvements */
-.seat-btn:focus {
-  outline: 2px solid #ff385c;
-  outline-offset: 2px;
+/* ── Fuselage ── */
+.fuselage{
+  position:relative;
+  background:linear-gradient(180deg,#fafbfc 0%,#f1f5f9 100%);
+  border:2.5px solid #cbd5e1;
+  border-radius:48px 48px 16px 16px;
+  padding:28px 20px 20px;
+  box-shadow:0 4px 24px rgba(0,0,0,.06);
+  max-height:none;
+  overflow:visible;
+}
+/* Nose tip */
+.fuselage::before{
+  content:'✈';
+  position:absolute;
+  top:-18px;left:50%;
+  transform:translateX(-50%);
+  font-size:18px;
+  color:#94a3b8;
 }
 
-.seat-btn[disabled]:focus {
-  outline: 2px solid #ccc;
+/* ── Section header (Business / Economy label) ── */
+.section-header{
+  text-align:center;
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:#475569;
+  padding:8px 0;
+  margin:6px 0;
+}
+.section-header + .col-labels{margin-top:0}
+.section-label{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  background:#e2e8f0;
+  padding:3px 14px;
+  border-radius:20px;
+  font-size:10px;
+  color:#334155;
+}
+
+/* ── Column labels ── */
+.col-labels{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  margin-bottom:4px;
+  padding:4px 0;
+  position:sticky;
+  top:0;
+  background:#fafbfc;
+  z-index:1;
+}
+.col-labels .lbl{
+  display:flex;align-items:center;justify-content:center;
+  width:44px;height:18px;
+  font-size:11px;font-weight:700;color:#94a3b8;
+}
+.col-labels .aisle-spacer{width:24px}
+
+/* ── Seat row ── */
+.seat-row{ 
+  display:flex; 
+  align-items:center; 
+  justify-content:center; 
+  gap:3px; 
+  margin-bottom:4px; 
+  padding:0 4px;
+  transition:transform .15s ease;
+}
+.seat-row:hover{transform:translateY(-1px)}
+.seat-row .aisle{
+  width:24px;
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.seat-row .aisle::after{
+  content:'';
+  width:2px;height:28px;
+  background:#cbd5e1;
+  border-radius:1px;
+}
+
+/* ── Row number ── */
+.row-num{
+  width:22px;
+  text-align:center;
+  font-size:10px;
+  font-weight:700;
+  color:#94a3b8;
+  flex-shrink:0;
+  line-height:1;
+}
+
+/* ── Individual seat ── */
+.seat{
+  width:44px;height:44px;
+  border-radius:8px;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  transition:all .15s ease;
+  border:2px solid #d1d5db;
+  background:#fff;
+  color:#374151;
+}
+
+
+/* ── Seat states (override base) ── */
+.seat.available{
+  border:2px solid #d1d5db;
+  background:#fff;
+  color:#374151;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.seat.available:hover{
+  border-color:#ff385c;
+  background:#fff1f3;
+  color:#ff385c;
+  transform:translateY(-1px);
+  box-shadow:0 2px 8px rgba(255,56,92,.15);
+}
+.seat.selected{
+  background:#ff385c;
+  border-color:#e00b41;
+  color:#fff;
+  box-shadow:0 2px 12px rgba(255,56,92,.3);
+  transform:translateY(-1px);
+}
+.seat.taken,
+.seat.wrong-class{
+  cursor:not-allowed;
+  opacity:.6;
+}
+.seat.taken{
+  background:#f1f5f9;
+  border-color:#e2e8f0;
+  color:#94a3b8;
+}
+
+.seat.wrong-class{
+  background:#f9fafb;
+  border:1.5px dashed #e5e7eb;
+  color:#d1d5db;
+}
+
+/* Business seats - same size as economy, premium look */
+.seat.biz{width:44px;height:44px;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.seat.biz.available{border-color:#e5e7eb;background:#fafafa}
+.seat.biz.available:hover{border-color:#ff385c;background:#fff1f3}
+.seat.biz.selected{
+  box-shadow:0 4px 16px rgba(255,56,92,.3);
+  animation:pulse 2s infinite;
+}
+.seat.biz.taken{background:#f8fafc;border-color:#e5e7eb}
+
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,56,92,.4)}
+  50%{box-shadow:0 0 0 6px rgba(255,56,92,0)}
+}
+
+/* ── Section divider (simplified) ── */
+.section-divider{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:12px 0;
+  padding:8px 0;
+  border-top:1px dashed #cbd5e1;
+  border-bottom:1px dashed #cbd5e1;
+}
+.section-divider span{
+  font-size:10px;
+  font-weight:600;
+  color:#64748b;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  background:#f8fafc;
+  padding:4px 12px;
+  border-radius:12px;
+}
+
+/* ── Restroom indicator ── */
+.restroom-indicator{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  margin:8px 0;
+  padding:6px 12px;
+  background:#f1f5f9;
+  border-radius:8px;
+}
+.restroom-indicator .icon{
+  font-size:14px;
+  color:#64748b;
+}
+.restroom-indicator .label{
+  font-size:9px;
+  font-weight:600;
+  color:#64748b;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+/* ── Legend ── */
+.legend{
+  display:flex;flex-wrap:wrap;gap:14px;
+  padding:10px 16px;
+  background:#fff;border:1px solid #e2e8f0;border-radius:10px;
+}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#64748b}
+.legend-swatch{width:20px;height:20px;border-radius:5px;flex-shrink:0}
+.legend-indicator{
+  width:12px;height:3px;border-radius:2px;flex-shrink:0}
+
+/* ── Focus ── */
+.seat:focus-visible{outline:2px solid #ff385c;outline-offset:2px}
+.seat[disabled]:focus-visible{outline:2px solid #cbd5e1}
+
+/* ── Mobile ── */
+@media(max-width:520px){
+  .seat{width:38px;height:38px;font-size:8px}
+  .seat-row .aisle{width:18px}
+  .seat-row .aisle::after{height:24px}
+  .col-labels .lbl{width:38px}
+  .col-labels .aisle-spacer{width:18px}
+  .fuselage{padding:22px 12px 16px;border-radius:36px 36px 12px 12px}
+  .row-num{width:16px;font-size:9px}
 }
 </style>
 </head>
 <body class="bg-zinc-50 text-zinc-900 antialiased">
 <header class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-zinc-100 shadow-sm"></header>
 
-<main class="max-w-[1100px] mx-auto px-6 py-8">
+<main class="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
   <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-zinc-500 hover:text-zinc-800 text-sm font-medium mb-4 transition-colors">
     <span class="material-symbols-outlined text-[18px]">arrow_back</span>Quay lại
   </a>
   <h1 class="text-2xl font-bold mb-2">Check-in trực tuyến</h1>
   <p id="flight-subtitle" class="text-sm text-zinc-500 mb-6"></p>
 
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
     <!-- Left: Seat Map -->
     <div class="lg:col-span-7">
-      <div class="flex gap-6 mb-6 p-4 bg-white rounded-xl border border-zinc-200">
-        <div class="flex items-center gap-2"><div class="w-6 h-6 rounded-md border-2 border-zinc-300 bg-white"></div><span class="text-xs text-zinc-500">Trống</span></div>
-        <div class="flex items-center gap-2"><div class="w-6 h-6 rounded-md bg-[#ff385c]"></div><span class="text-xs text-zinc-500">Đã chọn</span></div>
-        <div class="flex items-center gap-2"><div class="w-6 h-6 rounded-md bg-zinc-100"></div><span class="text-xs text-zinc-500">Đã đặt</span></div>
+      <!-- Legend -->
+      <div class="legend mb-5">
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:#fff;border:2px solid #d1d5db"></div>
+          <span>Trống</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:#ff385c;border:2px solid #e00b41"></div>
+          <span>Đã chọn</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:#e5e7eb;border:2px solid #d1d5db"></div>
+          <span>Đã đặt</span>
+        </div>
       </div>
-      <div class="bg-white rounded-xl border border-zinc-200 p-6">
-        <div id="seat-grid" class="flex flex-wrap gap-3 justify-center"></div>
+
+      <!-- Airplane -->
+      <div class="airplane-wrap">
+        <div class="fuselage" id="seat-map-fuselage"></div>
       </div>
     </div>
 
@@ -112,24 +341,181 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-confirm-checkin').onclick = confirmCheckIn;
 });
 
-function renderSeatMap(seats) {
-  const grid = document.getElementById('seat-grid');
-  grid.innerHTML = seats.map(s => {
-    const isWrongClass = s.seatClass !== seatClass;
-    const cssClass = !s.isAvailable ? 'taken' : (isWrongClass ? 'wrong-class' : 'available');
-    return `
-    <button class="seat-btn ${cssClass}"
-      data-id="${s.seatId}" data-number="${s.seatNumber}" data-class="${s.seatClass}"
-      ${cssClass === 'available' ? '' : 'disabled'} title="${s.seatNumber} (${s.seatClass})">
-      ${s.seatNumber}
-    </button>`;
-  }).join('');
+/* ─────────────────────────────────────────────
+   Parse seat number — MODERN FORMAT ONLY
+   E1A → {row:1, col:'A'}   B6B → {row:6, col:'B'}
+   Fallback: 1A → {row:1, col:'A'} (no prefix)
+   ───────────────────────────────────────────── */
+function parseSeatNumber(num) {
+  // Try standard format with prefix (E1A, B6B)
+  const m = num.match(/^([EB])(\d+)([A-Z])$/i);
+  if (m) return { prefix:m[1].toUpperCase(), row:parseInt(m[2]), col:m[3].toUpperCase() };
+  
+  // Fallback: try format without prefix (1A, 6B)
+  const m2 = num.match(/^(\d+)([A-Z])$/i);
+  if (m2) return { prefix:'', row:parseInt(m2[1]), col:m2[2].toUpperCase() };
+  
+  // If still no match, return invalid but preserve original label
+  return { prefix:'?', row:0, col:null, originalLabel: num };
+}
 
-  grid.querySelectorAll('.seat-btn.available').forEach(btn => {
+/* ─────────────────────────────────────────────
+   Detect layout from seat data (modern only)
+   ───────────────────────────────────────────── */
+function detectLayout(seatList) {
+  const parsed = seatList.map(s => parseSeatNumber(s.seatNumber));
+  const colSet = new Set(); parsed.forEach(p => { if(p.col) colSet.add(p.col); });
+  const cols = [...colSet].sort();
+  const rowSet = new Set(); parsed.forEach(p => rowSet.add(p.row));
+  const rows = [...rowSet].sort((a,b) => a-b);
+  return { cols, rows };
+}
+
+/* ─────────────────────────────────────────────
+   Build column header labels (A B C | D E F)
+   ───────────────────────────────────────────── */
+function buildColumnLabels(cols) {
+  const hasAisle = cols.length > 2;
+  let h = '<div class="col-labels">';
+  if (!hasAisle) {
+    cols.forEach(c => { h += `<div class="lbl">${c}</div>`; });
+  } else {
+    const half = Math.ceil(cols.length / 2);
+    const left  = cols.slice(0, half);
+    const right = cols.slice(half);
+    left.forEach(c => { h += `<div class="lbl">${c}</div>`; });
+    h += '<div class="aisle-spacer"></div>';
+    right.forEach(c => { h += `<div class="lbl">${c}</div>`; });
+  }
+  h += '</div>';
+  return h;
+}
+
+/* ─────────────────────────────────────────────
+   Build seat rows (modern format: row-col grid)
+   ───────────────────────────────────────────── */
+function buildSeatRows(seatList, layout, classType) {
+  const { cols, rows } = layout;
+  const hasAisle = cols.length > 2;
+  const seatCls = classType === 'biz' ? 'biz' : '';
+
+  // Build row→col→seat lookup
+  const rowMap = {};
+  seatList.forEach(s => {
+    const p = parseSeatNumber(s.seatNumber);
+    if (!rowMap[p.row]) rowMap[p.row] = {};
+    rowMap[p.row][p.col] = s;
+  });
+
+  let html = '';
+  rows.forEach(rowNum => {
+    const rowSeats = rowMap[rowNum] || {};
+    html += '<div class="seat-row">';
+    html += `<div class="row-num">${rowNum}</div>`;
+    if (!hasAisle) {
+      cols.forEach(col => {
+        const s = rowSeats[col];
+        html += s ? buildSeatBtn(s, seatCls, cols) : `<div class="seat ${seatCls}" style="visibility:hidden"></div>`;
+      });
+    } else {
+      const half = Math.ceil(cols.length / 2);
+      const leftCols  = cols.slice(0, half);
+      const rightCols = cols.slice(half);
+      leftCols.forEach(col => {
+        const s = rowSeats[col];
+        html += s ? buildSeatBtn(s, seatCls, cols) : `<div class="seat ${seatCls}" style="visibility:hidden"></div>`;
+      });
+      html += '<div class="aisle"></div>';
+      rightCols.forEach(col => {
+        const s = rowSeats[col];
+        html += s ? buildSeatBtn(s, seatCls, cols) : `<div class="seat ${seatCls}" style="visibility:hidden"></div>`;
+      });
+    }
+    html += `<div class="row-num">${rowNum}</div>`;
+    html += '</div>';
+  });
+  return html;
+}
+
+function buildSeatBtn(s, extraClass, allCols) {
+  const isWrongClass = s.seatClass !== seatClass;
+  const state = !s.isAvailable ? 'taken' : (isWrongClass ? 'wrong-class' : 'available');
+  const clickable = state === 'available';
+  const label = s.seatNumber;
+  const p = parseSeatNumber(s.seatNumber);
+
+  // If seat number format is invalid (no col), use original label
+  const displayLabel = p.originalLabel || s.seatNumber;
+  const displayCol = p.col || '';
+
+  return `<button class="seat ${state} ${extraClass}"
+    data-id="${s.seatId}" data-number="${s.seatNumber}" data-class="${s.seatClass}"
+    data-target="${clickable}" ${clickable ? '' : 'disabled'}
+    title="${s.seatNumber} · ${s.seatClass==='Economy'?'Phổ thông':'Thương gia'}${!s.isAvailable?' (Đã đặt)':''}"
+    aria-label="Ghế ${s.seatNumber} ${s.seatClass} ${!s.isAvailable?'đã đặt':isWrongClass?'không phù hợp hạng vé':'còn trống'}">
+  </button>`;
+}
+
+/* ─────────────────────────────────────────────
+   Main render
+   ───────────────────────────────────────────── */
+function renderSeatMap(seats) {
+  const bizSeats  = seats.filter(s => s.seatClass === 'Business').sort((a,b) => a.seatNumber.localeCompare(b.seatNumber));
+  const econSeats = seats.filter(s => s.seatClass === 'Economy').sort((a,b) => a.seatNumber.localeCompare(b.seatNumber));
+
+  const fuselage = document.getElementById('seat-map-fuselage');
+  let html = '';
+
+  // ── Business class ──
+  if (bizSeats.length > 0) {
+    const bizL = detectLayout(bizSeats);
+    html += `<div class="section-header">
+      <span class="section-label">
+        <span class="material-symbols-outlined" style="font-size:12px">workspace_premium</span>
+        Thương gia · Business
+      </span>
+    </div>`;
+    html += buildColumnLabels(bizL.cols);
+    html += buildSeatRows(bizSeats, bizL, 'biz');
+  }
+
+  // ── Single divider between classes ──
+  if (bizSeats.length > 0 && econSeats.length > 0) {
+    html += `<div class="section-divider">
+      <span class="material-symbols-outlined" style="font-size:16px">wc</span>
+      <span>Nhà vệ sinh · Thương gia / Phổ thông</span>
+      <span class="material-symbols-outlined" style="font-size:16px">wc</span>
+    </div>`;
+  }
+
+  // ── Economy class ──
+  if (econSeats.length > 0) {
+    const econL = detectLayout(econSeats);
+    html += `<div class="section-header">
+      <span class="section-label">
+        <span class="material-symbols-outlined" style="font-size:12px">airline_seat_recline_normal</span>
+        Phổ thông · Economy
+      </span>
+    </div>`;
+    html += buildColumnLabels(econL.cols);
+    html += buildSeatRows(econSeats, econL, 'econ');
+    html += `<div class="restroom-indicator">
+      <span class="material-symbols-outlined icon">wc</span>
+      <span class="label">Nhà vệ sinh</span>
+    </div>`;
+  }
+
+  fuselage.innerHTML = html;
+
+  // Click handlers
+  fuselage.querySelectorAll('.seat.available[data-target="true"]').forEach(btn => {
     btn.onclick = () => toggleSeat(btn);
   });
 }
 
+/* ─────────────────────────────────────────────
+   Seat selection
+   ───────────────────────────────────────────── */
 function toggleSeat(btn) {
   const id = parseInt(btn.dataset.id);
   if (btn.classList.contains('selected')) {
@@ -137,14 +523,13 @@ function toggleSeat(btn) {
     btn.classList.add('available');
     selectedSeat = null;
   } else {
-    // Deselect previous
-    document.querySelectorAll('.seat-btn.selected').forEach(b => {
+    document.querySelectorAll('.seat.selected').forEach(b => {
       b.classList.remove('selected');
       b.classList.add('available');
     });
     btn.classList.remove('available');
     btn.classList.add('selected');
-    selectedSeat = { id, number: btn.dataset.number, seatClass: btn.dataset.class };
+    selectedSeat = { id, number:btn.dataset.number, seatClass:btn.dataset.class };
   }
   updateSummary();
 }
@@ -156,43 +541,36 @@ function updateSummary() {
     display.innerHTML = '<p class="text-zinc-400">Chưa chọn ghế</p>';
     btn.disabled = true;
   } else {
-    display.innerHTML = `<div class="flex justify-between items-center py-2 border-b border-zinc-50">
-      <span class="font-medium text-zinc-800">${decodeURIComponent(paxName)}</span>
-      <span class="font-semibold text-zinc-700">Ghế ${selectedSeat.number} (${selectedSeat.seatClass})</span>
-    </div>`;
+    const classLabel = selectedSeat.seatClass === 'Economy' ? 'Phổ thông' : 'Thương gia';
+    display.innerHTML = `
+      <div class="flex items-center gap-3 py-3 px-4 bg-[#fff1f3] rounded-lg border border-[#fecdd3]">
+        <div class="w-10 h-10 rounded-lg bg-[#ff385c] text-white flex items-center justify-center font-bold text-sm">
+          ${selectedSeat.number}
+        </div>
+        <div>
+          <p class="font-semibold text-zinc-800">${decodeURIComponent(paxName)}</p>
+          <p class="text-xs text-zinc-500">Ghế ${selectedSeat.number} · ${classLabel}</p>
+        </div>
+      </div>`;
     btn.disabled = false;
   }
 }
 
+/* ─────────────────────────────────────────────
+   Check-in
+   ───────────────────────────────────────────── */
 async function confirmCheckIn() {
-  if (!selectedSeat) {
-    toast('Vui lòng chọn ghế', 'error');
-    return;
-  }
-  
+  if (!selectedSeat) { toast('Vui lòng chọn ghế', 'error'); return; }
+
   const btn = document.getElementById('btn-confirm-checkin');
   setBtnLoading(btn, true, 'Đang xử lý check-in...');
-  
+
   try {
-    // Both Staff and Customer use the same /checkin endpoint
-    const result = await api('POST', '/checkin', {
-      ticketId: ticketId,
-      seatId: selectedSeat.id
-    });
-    
-    if (result && result.message) {
-      toast(result.message, 'success');
-      setTimeout(() => {
-        const redirectUrl = isStaff() ? '/staff.html?tab=checkin' : '/historytransaction.html';
-        window.location.href = redirectUrl;
-      }, 1500);
-    } else {
-      toast('Check-in thành công', 'success');
-      setTimeout(() => {
-        const redirectUrl = isStaff() ? '/staff.html?tab=checkin' : '/historytransaction.html';
-        window.location.href = redirectUrl;
-      }, 1500);
-    }
+    const result = await api('POST', '/checkin', { ticketId, seatId: selectedSeat.id });
+    toast(result?.message || 'Check-in thành công', 'success');
+    setTimeout(() => {
+      window.location.href = isStaff() ? '/staff.html?tab=checkin' : '/historytransaction.html';
+    }, 1500);
   } catch(e) {
     setBtnLoading(btn, false);
     toast(e.message || 'Đã xảy ra lỗi khi check-in', 'error');

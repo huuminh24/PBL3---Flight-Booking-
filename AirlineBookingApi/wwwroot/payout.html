@@ -128,7 +128,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (cn && !cn.value) cn.value = me.fullName || '';
       if (ce && !ce.value) ce.value = me.email || '';
       if (cp && !cp.value) cp.value = me.phoneNumber || '';
-    } catch (_) { /* silent — không phá vỡ flow */ }
+    } catch (e) {
+      toast('Không thể tải thông tin liên hệ tự động. Vui lòng nhập thủ công.', 'warning');
+    }
   }
 
   initStaffCustomerSection();
@@ -376,11 +378,13 @@ function renderPassengerForms() {
     c.innerHTML += `
     <div class="border border-zinc-100 rounded-lg p-4">
       <h3 class="font-semibold mb-3 flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[#ff385c]/10 text-[#ff385c] flex items-center justify-center text-sm font-bold">${i+1}</span>Hành khách ${i+1}</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="space-y-3">
         <input id="pax-name-${i}" type="text" placeholder="Họ tên" class="input-field"/>
-        <select id="pax-gender-${i}" class="input-field"><option value="Male">Nam</option><option value="Female">Nữ</option></select>
-        <select id="pax-type-${i}" class="input-field"><option value="Adult" ${defaultType==='Adult'?'selected':''}>Người lớn</option><option value="Child" ${defaultType==='Child'?'selected':''}>Trẻ em</option><option value="Infant" ${defaultType==='Infant'?'selected':''}>Em bé</option></select>
-        <input id="pax-dob-${i}" type="date" class="input-field" placeholder="Ngày sinh"/>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <select id="pax-gender-${i}" class="input-field"><option value="Male">Nam</option><option value="Female">Nữ</option></select>
+          <select id="pax-type-${i}" class="input-field"><option value="Adult" ${defaultType==='Adult'?'selected':''}>Người lớn</option><option value="Child" ${defaultType==='Child'?'selected':''}>Trẻ em</option><option value="Infant" ${defaultType==='Infant'?'selected':''}>Em bé</option></select>
+          <input id="pax-dob-${i}" type="date" class="input-field" placeholder="Ngày sinh"/>
+        </div>
       </div>
     </div>`;
   }
