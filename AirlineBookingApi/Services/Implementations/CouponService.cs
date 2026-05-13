@@ -56,7 +56,7 @@ public class CouponService : ICouponService
 
         if (rowsAffected == 0)
         {
-            throw new InvalidOperationException("Ma giam gia da het luot su dung hoac da het han.");
+            throw new InvalidOperationException("Mã giảm giá đã hết lượt sử dụng hoặc đã hết hạn.");
         }
     }
 }

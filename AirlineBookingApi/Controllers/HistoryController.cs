@@ -70,11 +70,6 @@ public class HistoryController : ControllerBase
     {
         var result = await _historyService.SearchBookingsAsync(request);
 
-        if (!result.Any())
-        {
-            return NotFound(new { message = "Không tìm thấy dữ liệu phù hợp." });
-        }
-
         return Ok(result);
     }
 }

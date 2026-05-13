@@ -64,5 +64,5 @@ public class InvoicePaymentDto
     public decimal Amount { get; set; }
     public string? CouponCode { get; set; }
     public string? PaymentReference { get; set; }
-    public DateTime PaidAt { get; set; }
+    public DateTime? PaidAt { get; set; }
 }

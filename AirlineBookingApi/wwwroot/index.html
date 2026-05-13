@@ -741,7 +741,7 @@
 
                                         <input
                                             class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink"
-                                            type="date" />
+                                            type="text" placeholder="dd/mm/yyyy" />
                                     </div>
 
                                     <button onclick="removeLeg(this)"
@@ -781,7 +781,7 @@
 
                                         <input
                                             class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink"
-                                            type="date" />
+                                            type="text" placeholder="dd/mm/yyyy" />
                                     </div>
 
                                     <button onclick="removeLeg(this)" class="p-2 text-muted hover:text-rausch disabled:opacity-50" disabled><span
@@ -865,10 +865,93 @@
         let seatClassVal = 'Economy';
         let flightType = 'oneway';
         let todayStr = '';
+        let fpDep = null;
+        let fpRet = null;
 
 
 
         const isStaffBookingMode = (getUrlParam('staff') === 'true');
+
+        const SEARCH_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+        function isValidSearchDate(value) {
+            if (typeof value !== 'string' || !SEARCH_DATE_PATTERN.test(value)) return false;
+
+            const [year, month, day] = value.split('-').map(Number);
+            const parsed = new Date(Date.UTC(year, month - 1, day));
+
+            return parsed.getUTCFullYear() === year
+                && parsed.getUTCMonth() === month - 1
+                && parsed.getUTCDate() === day;
+        }
+
+        function parseSearchDate(value) {
+            if (!isValidSearchDate(value)) return null;
+
+            const [year, month, day] = value.split('-').map(Number);
+            return new Date(Date.UTC(year, month - 1, day));
+        }
+
+        function getStrictSearchDateValue(input) {
+            if (!input) return '';
+
+            const rawValue = input.dataset?.dateValue || input.value || '';
+            return isValidSearchDate(rawValue) ? rawValue : '';
+        }
+
+        function getSearchInputValue(input) {
+            if (!input) return '';
+
+            const rawValue = input.dataset?.value || input.value || '';
+            return rawValue.trim();
+        }
+
+        function clearReturnDate() {
+            const returnInput = document.getElementById('input-return-date');
+
+            if (fpRet) {
+                fpRet.clear();
+            } else if (returnInput) {
+                returnInput.value = '';
+            }
+
+            if (returnInput) {
+                returnInput.dataset.dateValue = '';
+            }
+        }
+
+        function setReturnDateEnabled(enabled) {
+            const returnContainer = document.getElementById('return-date-container');
+            const returnInput = document.getElementById('input-return-date');
+
+            if (returnContainer) {
+                returnContainer.classList.toggle('opacity-50', !enabled);
+                returnContainer.classList.toggle('pointer-events-none', !enabled);
+            }
+
+            if (returnInput) {
+                returnInput.disabled = !enabled;
+            }
+
+            if (fpRet && fpRet._input) {
+                fpRet._input.disabled = !enabled;
+            }
+
+            if (!enabled) {
+                clearReturnDate();
+            }
+        }
+
+        function requireStrictSearchDate(input, emptyMessage) {
+            const value = getStrictSearchDateValue(input);
+
+            if (!value) {
+                alert(emptyMessage);
+                return null;
+            }
+
+            return value;
+        }
 
 
 
@@ -917,9 +1000,6 @@
             // Load airports dynamically from API
             loadAirports();
 
-            // Init multi-city custom dropdowns (even before API returns — uses fallback list on click)
-            initMulticityDropdowns();
-
 
 
             // Init Default Date — today in Vietnam timezone (UTC+7)
@@ -936,26 +1016,56 @@
 
             document.getElementById('input-date').value = todayStr;
             document.getElementById('input-date').min = todayStr;
-            document.querySelectorAll('.leg-date').forEach(el => el.min = todayStr);
+            document.getElementById('input-date').dataset.dateValue = todayStr;
+            document.getElementById('input-date').readOnly = true;
+            document.getElementById('input-return-date').readOnly = true;
+            document.querySelectorAll('.leg-date').forEach(el => {
+                el.min = todayStr;
+                el.readOnly = true;
+            });
 
-            const fpDep = flatpickr('#input-date', {
+            // Init multi-city custom dropdowns (even before API returns — uses fallback list on click)
+            initMulticityDropdowns();
+
+            fpDep = flatpickr('#input-date', {
                 locale: 'vi',
                 dateFormat: 'Y-m-d',
                 altInput: true,
                 altFormat: 'd/m/Y',
-                allowInput: true,
+                allowInput: false,
                 minDate: todayStr,
                 onChange: (selectedDates, dateStr) => {
-                    if (fpRet) fpRet.set('minDate', dateStr);
+                    const normalizedDate = isValidSearchDate(dateStr) ? dateStr : '';
+
+                    document.getElementById('input-date').dataset.dateValue = normalizedDate;
+
+                    if (fpRet && normalizedDate) fpRet.set('minDate', normalizedDate);
                 }
             });
-            const fpRet = flatpickr('#input-return-date', {
+            fpRet = flatpickr('#input-return-date', {
                 locale: 'vi',
                 dateFormat: 'Y-m-d',
                 altInput: true,
                 altFormat: 'd/m/Y',
-                allowInput: true,
+                allowInput: false,
                 minDate: todayStr
+            });
+
+            document.querySelectorAll('.leg-date:not([data-fp-init])').forEach(el => {
+                el.dataset.fpInit = 'true';
+                flatpickr(el, {
+                    locale: 'vi',
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                    allowInput: false,
+                    minDate: todayStr,
+                    onChange: (selectedDates, dateStr, instance) => {
+                        if (instance && instance.element) {
+                            instance.element.dataset.dateValue = isValidSearchDate(dateStr) ? dateStr : '';
+                        }
+                    }
+                });
             });
 
             // Toggle Pax Popup
@@ -1077,14 +1187,14 @@
                 e.stopPropagation();
                 if (typeof requireAuth === 'function' && !requireAuth('Vui lòng đăng nhập để tìm kiếm chuyến bay')) return;
 
-                const dep = document.getElementById('input-dep').dataset.value;
-                const arr = document.getElementById('input-arr').dataset.value;
-                const date = document.getElementById('input-date').value;
+                const dep = getSearchInputValue(document.getElementById('input-dep'));
+                const arr = getSearchInputValue(document.getElementById('input-arr'));
+                const date = requireStrictSearchDate(document.getElementById('input-date'), 'Vui lòng chọn ngày đi!');
 
                 if (!dep) { alert('Vui lòng chọn điểm đi!'); return; }
                 if (!arr) { alert('Vui lòng chọn điểm đến!'); return; }
                 if (dep === arr) { alert('Điểm đi và điểm đến phải khác nhau!'); return; }
-                if (!date) { alert('Vui lòng chọn ngày đi!'); return; }
+                if (!date) return;
 
                 const totalPax = paxState.adult + paxState.child + paxState.infant;
 
@@ -1110,11 +1220,11 @@
 
                 if (flightType === 'roundtrip') {
 
-                    const returnDate = document.getElementById('input-return-date').value;
+                    const returnDate = requireStrictSearchDate(document.getElementById('input-return-date'), 'Vui lòng chọn ngày về!');
 
-                    if (!returnDate) { alert('Vui lòng chọn ngày về!'); return; }
+                    if (!returnDate) return;
 
-                    if (new Date(returnDate) < new Date(date)) { alert('Ngày về phải sau ngày đi!'); return; }
+                    if (parseSearchDate(returnDate).getTime() < parseSearchDate(date).getTime()) { alert('Ngày về phải sau ngày đi!'); return; }
 
                     params.set('returnDate', returnDate);
 
@@ -1162,11 +1272,15 @@
 
                 legs.forEach((leg, i) => {
 
-                    const dep = (leg.querySelector('.leg-dep-input') || leg.querySelector('.leg-dep')).dataset.value || (leg.querySelector('.leg-dep-input') || leg.querySelector('.leg-dep')).value;
+                    const depInput = leg.querySelector('.leg-dep-input') || leg.querySelector('.leg-dep');
+                    const arrInput = leg.querySelector('.leg-arr-input') || leg.querySelector('.leg-arr');
+                    const dateInput = leg.querySelector('.leg-date');
 
-                    const arr = (leg.querySelector('.leg-arr-input') || leg.querySelector('.leg-arr')).dataset.value || (leg.querySelector('.leg-arr-input') || leg.querySelector('.leg-arr')).value;
+                    const dep = getSearchInputValue(depInput);
 
-                    const date = leg.querySelector('.leg-date').value;
+                    const arr = getSearchInputValue(arrInput);
+
+                    const date = requireStrictSearchDate(dateInput, `Chặng ${i + 1}: Vui lòng chọn ngày đi!`);
 
 
 
@@ -1176,11 +1290,11 @@
 
                     if (dep === arr) { alert(`Chặng ${i + 1}: Điểm đi và điểm đến phải khác nhau!`); valid = false; return; }
 
-                    if (!date) { alert(`Chặng ${i + 1}: Vui lòng chọn ngày đi!`); valid = false; return; }
+                    if (!date) { valid = false; return; }
 
 
 
-                    if (prevDate && new Date(date) < new Date(prevDate)) {
+                    if (prevDate && parseSearchDate(date).getTime() < parseSearchDate(prevDate).getTime()) {
 
                         alert(`Chặng ${i + 1}: Ngày bay không được trước ngày của chặng trước đó!`); valid = false; return;
 
@@ -1380,6 +1494,24 @@
                     dropdown.classList.add('hidden');
                 });
             });
+
+            // Init Flatpickr for all leg-date inputs not yet initialized
+            document.querySelectorAll('.leg-date:not([data-fp-init])').forEach(el => {
+                el.dataset.fpInit = 'true';
+                flatpickr(el, {
+                    locale: 'vi',
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                    allowInput: false,
+                    minDate: todayStr,
+                    onChange: (selectedDates, dateStr, instance) => {
+                        if (instance && instance.element) {
+                            instance.element.dataset.dateValue = isValidSearchDate(dateStr) ? dateStr : '';
+                        }
+                    }
+                });
+            });
         }
 
 
@@ -1439,7 +1571,7 @@
                         </div>
                     </div>
 
-                    <input class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink" type="date" min="${todayStr}" />
+                    <input class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink" type="text" placeholder="dd/mm/yyyy" />
 
                 </div>
 
@@ -1711,44 +1843,36 @@
                 normalPill.classList.remove('hidden');
 
                 mcContainer.classList.add('hidden');
+                mcContainer.classList.remove('flex');
 
-
+                btnMulticity.classList.remove('bg-surface-soft');
+                btnMulticity.classList.add('hover:bg-surface-soft');
 
                 if (type === 'oneway') {
 
                     btnOneway.classList.add('bg-surface-soft');
-
                     btnOneway.classList.remove('hover:bg-surface-soft');
-
-                    returnContainer.classList.add('opacity-50', 'pointer-events-none');
-
-                    if (fpRet) fpRet._input.disabled = true;
-
-                    if (fpRet) fpRet.clear();
+                    setReturnDateEnabled(false);
 
                 } else if (type === 'roundtrip') {
 
                     btnRoundtrip.classList.add('bg-surface-soft');
-
                     btnRoundtrip.classList.remove('hover:bg-surface-soft');
-
-                    returnContainer.classList.remove('opacity-50', 'pointer-events-none');
-
-                    if (fpRet) fpRet._input.disabled = false;
+                    setReturnDateEnabled(true);
 
                 }
 
             } else if (type === 'multicity') {
 
                 btnMulticity.classList.add('bg-surface-soft');
-
                 btnMulticity.classList.remove('hover:bg-surface-soft');
 
                 normalPill.classList.add('hidden');
 
                 mcContainer.classList.remove('hidden');
-
                 mcContainer.classList.add('flex');
+
+                setReturnDateEnabled(false);
 
             }
 

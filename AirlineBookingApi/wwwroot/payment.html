@@ -1,413 +1,826 @@
 <!DOCTYPE html>
+
 <html lang="vi">
 
+
+
 <head>
+
   <meta charset="utf-8" />
+
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+
   <title>Thanh toán - SkyHmH</title>
+
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
   <script>tailwind.config = { darkMode: "class", theme: { extend: { colors: { rausch: "#ff385c", "rausch-active": "#e00b41", ink: "#222222", muted: "#6a6a6a", canvas: "#ffffff", hairline: "#dddddd" }, fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] } } } }</script>
+
   <style>
+
     body { font-family: 'Plus Jakarta Sans', sans-serif }
+
     .input-field { width: 100%; height: 44px; padding: 0 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; transition: border-color .2s }
+
     .input-field:focus { border-color: #ff385c; outline: none; box-shadow: 0 0 0 1px #ff385c }
+
     .method-panel { display: none }
+
     .method-card.active .method-panel { display: block }
+
     .method-card { transition: border-color .15s, background-color .15s }
+
     .method-card.active { border-color: #ff385c; background-color: #fff5f7 }
+
   </style>
+
 </head>
 
+
+
 <body class="bg-zinc-50 text-zinc-900 antialiased">
+
   <header class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-zinc-100 shadow-sm"></header>
 
+
+
   <main class="max-w-[1100px] mx-auto px-6 py-8">
+
     <div class="flex justify-between items-start mb-6 flex-wrap gap-3">
+
       <h1 class="text-2xl font-bold">Thanh toán</h1>
+
       <div id="countdown-pill" class="hidden flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2 rounded-full font-semibold text-sm">
+
         <span class="material-symbols-outlined text-[18px]">timer</span>
+
         <span>Còn lại: <span id="countdown-value" class="font-mono font-bold">15:00</span></span>
+
       </div>
+
     </div>
+
+
 
     <div id="expired-banner" class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 font-semibold flex items-center gap-3">
+
       <span class="material-symbols-outlined">error</span>
+
       <span>Booking đã hết hạn. <a href="/" class="underline">Đặt vé lại</a></span>
+
     </div>
+
+
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
       <!-- Left: Forms -->
+
       <div class="lg:col-span-7 space-y-6">
+
         <!-- Booking Info -->
+
         <div class="bg-white border border-zinc-200 rounded-xl p-6">
+
           <h2 class="font-bold mb-4 flex items-center gap-2">
+
             <span class="material-symbols-outlined text-emerald-500">check_circle</span>
+
             Đặt vé thành công!
+
           </h2>
+
           <div id="booking-info" class="text-sm space-y-2 text-zinc-600"></div>
+
         </div>
+
+
 
         <!-- Payment Methods -->
+
         <div class="bg-white border border-zinc-200 rounded-xl p-6">
+
           <h2 class="font-bold mb-4">Phương thức thanh toán</h2>
+
           <div id="method-list" class="space-y-3"></div>
+
         </div>
+
+
 
         <!-- Coupon -->
+
         <div class="bg-white border border-zinc-200 rounded-xl p-6">
+
           <h2 class="font-bold mb-4">Mã giảm giá</h2>
+
           <div class="flex gap-3">
+
             <input id="coupon-code" type="text" placeholder="Nhập mã: WELCOME10, SUMMER20..." class="input-field flex-1" />
+
             <button id="btn-coupon" class="h-11 px-5 border-2 border-zinc-800 text-zinc-800 font-semibold rounded-lg hover:bg-zinc-800 hover:text-white transition-colors">Áp dụng</button>
+
           </div>
+
           <div id="coupon-result" class="mt-3 text-sm"></div>
+
         </div>
+
+
 
         <button id="btn-pay" disabled
+
           class="w-full h-12 bg-[#ff385c] hover:bg-[#e00b41] text-white font-semibold rounded-lg transition-colors disabled:bg-zinc-300 disabled:cursor-not-allowed">
+
           Thanh toán ngay
+
         </button>
+
         <div id="payment-result" class="mt-4"></div>
+
       </div>
+
+
 
       <!-- Right: Summary -->
+
       <div class="lg:col-span-5">
+
         <div class="sticky top-28 bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+
           <h3 class="font-bold mb-4">Tóm tắt đơn hàng</h3>
+
           <div id="order-summary" class="text-sm space-y-2"></div>
+
         </div>
+
       </div>
+
     </div>
+
   </main>
 
+
+
   <script src="/shared.js"></script>
+
   <script>
+
     const bookingId = parseInt(getUrlParam('bookingId') || '0');
+
     const pnr = getUrlParam('pnr') || '';
+
     const total = parseFloat(getUrlParam('total') || '0');
+
     const queryChannel = getUrlParam('channel');
+
     let expiresAt = getUrlParam('expiresAt');
+
     let bookingChannel = '';
+
     let discountPercent = 0;
+
     let couponCode = '';
+
     let selectedMethod = null;
+
     let countdownTimer = null;
+
     let isExpired = false;
 
+
+
     document.addEventListener('DOMContentLoaded', async () => {
+
       renderNavbar('home');
+
       if (!requireAuth()) return;
+
+
 
       if (!bookingId) { toast('Thiếu mã booking', 'error'); return; }
 
+
+
       // Hydrate booking metadata: prefer URL param then API
+
       try {
+
         const inv = await api('GET', `/Bookings/${bookingId}/invoice`);
+
         bookingChannel = inv.bookingChannel || '';
+
         if (!expiresAt && inv.expiresAt) expiresAt = inv.expiresAt;
+
         if (inv.bookingStatus && inv.bookingStatus !== 'PendingPayment') {
+
           // Already paid / cancelled -> short-circuit to history
+
           toast(`Booking đang ở trạng thái ${statusLabel(inv.bookingStatus)}`, 'info');
+
         }
+
       } catch (e) {
+
         // Continue with URL params; the user might still finish payment.
+
       }
+
+
 
       const isStaffChannel = bookingChannel === 'Staff' || queryChannel === 'staff';
 
+
+
       document.getElementById('booking-info').innerHTML = `
+
         <p><strong>Mã PNR:</strong> <span class="font-mono text-[#ff385c] font-bold text-base">${pnr}</span></p>
+
         <p><strong>Mã booking:</strong> #${bookingId}</p>
+
         <p><strong>Kênh:</strong> ${bookingChannel === 'Staff' ? 'Đặt qua quầy (Staff)' : 'Đặt online'}</p>
+
         <p class="text-zinc-400 mt-2">Vui lòng hoàn tất thanh toán trước khi đồng hồ về 0.</p>
+
       `;
 
+
+
       renderMethods(isStaffChannel);
+
       renderOrderSummary();
+
       startCountdown();
 
+
+
       document.getElementById('btn-coupon').onclick = applyCoupon;
+
       document.getElementById('btn-pay').onclick = processPayment;
+
     });
 
+
+
     /* ── Methods rendering ──────────────────────────────────────── */
+
     function renderMethods(isStaffChannel) {
+
       const methods = [];
+
       methods.push({ key: 'VietQR', label: 'VietQR', icon: 'qr_code_2', defaultChecked: !isStaffChannel });
+
       methods.push({ key: 'BankTransfer', label: 'Chuyển khoản ngân hàng', icon: 'account_balance' });
+
       methods.push({ key: 'Card', label: 'Thẻ tín dụng', icon: 'credit_card' });
+
       if (isStaffChannel && isStaff()) {
+
         methods.push({ key: 'Cash', label: 'Tiền mặt', icon: 'payments', defaultChecked: true });
+
       }
+
+
 
       const list = document.getElementById('method-list');
+
       list.innerHTML = methods.map(m => `
+
         <div class="method-card border border-zinc-200 rounded-lg overflow-hidden" data-method="${m.key}">
+
           <label class="flex items-center gap-3 p-4 cursor-pointer">
+
             <input type="radio" name="method" value="${m.key}" ${m.defaultChecked ? 'checked' : ''} class="accent-[#ff385c]" />
+
             <span class="material-symbols-outlined text-zinc-500">${m.icon}</span>
+
             <span class="font-medium">${m.label}</span>
+
           </label>
+
           <div class="method-panel border-t border-zinc-100 p-4 bg-zinc-50/60">
+
             ${renderPanel(m.key)}
+
           </div>
+
         </div>
+
       `).join('');
 
+
+
       list.querySelectorAll('input[name="method"]').forEach(rb => {
+
         rb.addEventListener('change', () => selectMethod(rb.value));
+
       });
+
+
 
       const initial = methods.find(m => m.defaultChecked) || methods[0];
+
       if (initial) selectMethod(initial.key);
+
     }
+
+
 
     function renderPanel(method) {
+
       if (method === 'VietQR') {
+
         return `
+
           <p class="text-sm text-zinc-600 mb-3">Quét mã VietQR bên dưới (ngân hàng MB · STK 0123456789).</p>
+
           <div class="flex flex-col items-center gap-3">
+
             <img id="qr-image" alt="VietQR" class="w-48 h-48 border border-zinc-200 rounded-lg bg-white" />
+
             <p class="text-xs text-zinc-500">Sau khi chuyển, nhấn nút bên dưới để xác nhận.</p>
+
             <button type="button" id="btn-qr-confirm" class="h-10 px-5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors">
+
               Tôi đã chuyển khoản
+
             </button>
+
             <p id="qr-confirmed" class="hidden text-xs text-emerald-600 font-semibold">✓ Đã xác nhận chuyển khoản</p>
+
           </div>
+
         `;
+
       }
+
       if (method === 'BankTransfer') {
+
         return `
+
           <p class="text-sm text-zinc-600 mb-3">Nhập 4 số cuối tài khoản đã chuyển và họ tên chủ tài khoản.</p>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
             <input id="bt-last4" type="text" inputmode="numeric" maxlength="4" placeholder="4 số cuối STK" class="input-field" />
+
             <input id="bt-name" type="text" placeholder="Tên chủ tài khoản" class="input-field" />
+
           </div>
+
         `;
+
       }
+
       if (method === 'Card') {
+
         return `
+
           <p class="text-sm text-zinc-600 mb-3">Nhập thông tin thẻ (giả lập, sẽ kiểm tra Luhn cơ bản).</p>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
             <input id="card-number" type="text" inputmode="numeric" maxlength="19" placeholder="Số thẻ" class="input-field md:col-span-2" />
+
             <input id="card-name" type="text" placeholder="Tên trên thẻ" class="input-field md:col-span-2" />
+
             <input id="card-expiry" type="text" maxlength="5" placeholder="MM/YY" class="input-field" />
+
             <input id="card-cvv" type="text" inputmode="numeric" maxlength="4" placeholder="CVV" class="input-field" />
+
           </div>
+
         `;
+
       }
+
       if (method === 'Cash') {
+
         return `
+
           <p class="text-sm text-zinc-600 mb-3">Nhân viên thu tiền mặt và xác nhận đã nhận đủ.</p>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
             <input id="cash-received" type="text" inputmode="numeric" placeholder="Số tiền nhận" class="input-field" />
+
           </div>
+
         `;
+
       }
+
       return '';
+
     }
+
+
 
     function selectMethod(method) {
+
       selectedMethod = method;
+
       document.querySelectorAll('.method-card').forEach(card => {
+
         card.classList.toggle('active', card.dataset.method === method);
+
       });
 
+
+
       // Wire panel-specific listeners after render
+
       if (method === 'VietQR') {
+
         const img = document.getElementById('qr-image');
+
         if (img) img.src = `https://img.vietqr.io/image/MB-0123456789-compact2.png?amount=${Math.max(0, finalAmount())}&addInfo=${encodeURIComponent(pnr)}`;
+
         const btn = document.getElementById('btn-qr-confirm');
+
         if (btn) btn.onclick = () => {
+
           btn.disabled = true;
+
           btn.classList.add('opacity-60');
+
           document.getElementById('qr-confirmed')?.classList.remove('hidden');
+
           updatePayButton();
+
         };
+
       } else if (method === 'BankTransfer') {
+
         ['bt-last4', 'bt-name'].forEach(id => bindInput(id));
+
       } else if (method === 'Card') {
+
         ['card-number', 'card-name', 'card-expiry', 'card-cvv'].forEach(id => bindInput(id));
+
       } else if (method === 'Cash') {
+
         const c = document.getElementById('cash-received');
+
         if (c) {
+
           c.value = String(Math.round(finalAmount()));
+
           bindInput('cash-received');
+
         }
+
       }
+
+
 
       updatePayButton();
+
     }
+
+
 
     function bindInput(id) {
+
       const el = document.getElementById(id);
+
       if (!el) return;
+
       el.addEventListener('input', updatePayButton);
+
     }
+
+
 
     /* ── Validation ─────────────────────────────────────────────── */
+
     function isMethodValid() {
+
       if (isExpired) return false;
+
       if (!selectedMethod) return false;
+
       if (selectedMethod === 'VietQR') {
+
         return document.getElementById('qr-confirmed')?.classList.contains('hidden') === false;
+
       }
+
       if (selectedMethod === 'BankTransfer') {
+
         const last4 = (document.getElementById('bt-last4')?.value || '').trim();
+
         const name = (document.getElementById('bt-name')?.value || '').trim();
+
         return /^\d{4}$/.test(last4) && name.length >= 2;
+
       }
+
       if (selectedMethod === 'Card') {
+
         const num = (document.getElementById('card-number')?.value || '').replace(/\s/g, '');
+
         const name = (document.getElementById('card-name')?.value || '').trim();
+
         const expiry = (document.getElementById('card-expiry')?.value || '').trim();
+
         const cvv = (document.getElementById('card-cvv')?.value || '').trim();
+
         return /^\d{12,19}$/.test(num) && luhn(num) && name.length >= 2 && /^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry) && /^\d{3,4}$/.test(cvv);
+
       }
+
       if (selectedMethod === 'Cash') {
+
         const amt = parseInt((document.getElementById('cash-received')?.value || '').replace(/\D/g, ''));
+
         return amt >= Math.round(finalAmount());
+
       }
+
       return false;
+
     }
+
+
 
     function luhn(num) {
+
       let sum = 0, alt = false;
+
       for (let i = num.length - 1; i >= 0; i--) {
+
         let n = parseInt(num.charAt(i), 10);
+
         if (alt) { n *= 2; if (n > 9) n -= 9; }
+
         sum += n; alt = !alt;
+
       }
+
       return sum % 10 === 0;
+
     }
+
+
 
     function updatePayButton() {
+
       const btn = document.getElementById('btn-pay');
+
       btn.disabled = !isMethodValid();
+
     }
+
+
 
     /* ── Coupon / summary ──────────────────────────────────────── */
+
     function finalAmount() {
+
       const discount = total * discountPercent / 100;
+
       return total - discount;
+
     }
+
+
 
     function renderOrderSummary() {
+
       const discount = total * discountPercent / 100;
+
       const final = finalAmount();
+
       document.getElementById('order-summary').innerHTML = `
+
         <div class="flex justify-between"><span class="text-zinc-500">Tổng vé</span><span>${fmt(total)}</span></div>
+
         ${discountPercent > 0 ? `<div class="flex justify-between text-emerald-600"><span>Giảm ${discountPercent}% (${couponCode})</span><span>-${fmt(discount)}</span></div>` : ''}
+
         <hr class="border-zinc-100 my-2"/>
+
         <div class="flex justify-between text-base font-bold"><span>Thanh toán</span><span class="text-[#ff385c]">${fmt(final)}</span></div>`;
+
     }
+
+
 
     async function applyCoupon() {
+
       const code = document.getElementById('coupon-code').value.trim();
+
       if (!code) { toast('Nhập mã giảm giá', 'warning'); return; }
+
       try {
+
         const r = await api('POST', '/Coupons/validate', { code });
+
         const el = document.getElementById('coupon-result');
+
         if (r.isValid) {
+
           discountPercent = r.discountPercent;
+
           couponCode = r.code;
+
           el.innerHTML = `<span class="text-emerald-600">✓ ${r.message}</span>`;
+
           renderOrderSummary();
+
           // Refresh QR amount if VietQR is currently active.
+
           if (selectedMethod === 'VietQR') selectMethod('VietQR');
+
         } else {
+
           el.innerHTML = `<span class="text-red-500">✕ ${r.message}</span>`;
+
         }
+
       } catch (e) { toast(e.message, 'error'); }
+
     }
+
+
 
     /* ── Countdown / expiry ────────────────────────────────────── */
+
     function startCountdown() {
+
       if (!expiresAt) return;
+
       const pill = document.getElementById('countdown-pill');
+
       pill.classList.remove('hidden');
 
+
+
       const update = () => {
+
         const remainingMs = new Date(expiresAt + (expiresAt.endsWith('Z') ? '' : 'Z')) - new Date();
+
         if (remainingMs <= 0) {
+
           document.getElementById('countdown-value').textContent = '00:00';
+
           pill.classList.remove('bg-amber-50', 'border-amber-200', 'text-amber-700');
+
           pill.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
+
           markExpired();
+
           clearInterval(countdownTimer);
+
           return;
+
         }
-        const totalSec = Math.floor(remainingMs / 1000);
-        const m = Math.floor(totalSec / 60);
-        const s = totalSec % 60;
+
+        const total = Math.floor(remainingMs / 1000);
+
+        const m = Math.floor(total / 60);
+
+        const s = total % 60;
+
         document.getElementById('countdown-value').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
       };
 
+
+
       update();
+
       countdownTimer = setInterval(update, 1000);
+
     }
+
+
 
     function markExpired() {
+
       isExpired = true;
+
       document.getElementById('expired-banner').classList.remove('hidden');
+
       const btn = document.getElementById('btn-pay');
+
       btn.disabled = true;
+
       btn.textContent = 'Booking đã hết hạn';
+
     }
+
+
 
     /* ── Submit ────────────────────────────────────────────────── */
+
     async function processPayment() {
+
       if (!isMethodValid()) { toast('Vui lòng nhập đầy đủ thông tin thanh toán hợp lệ', 'warning'); return; }
+
       const btn = document.getElementById('btn-pay');
+
       setBtnLoading(btn, true, 'Đang thanh toán...');
+
       try {
+
         const payload = {
+
           bookingId,
+
           paymentMethod: selectedMethod,
+
           isSuccess: true
+
         };
+
         if (couponCode) payload.couponCode = couponCode;
+
         if (selectedMethod === 'Card') {
+
           const num = document.getElementById('card-number').value.replace(/\s/g, '');
+
           payload.cardLast4 = num.slice(-4);
+
         } else if (selectedMethod === 'BankTransfer') {
+
           payload.bankAccountLast4 = document.getElementById('bt-last4').value.trim();
+
         } else if (selectedMethod === 'VietQR') {
+
           payload.qrTransactionId = `QR-${pnr}-${Date.now()}`;
+
         }
 
+
+
         const data = await api('POST', '/Payments', payload);
+
         clearInterval(countdownTimer);
 
+
+
         document.getElementById('payment-result').innerHTML = `
+
           <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-6 text-center space-y-3">
+
             <span class="material-symbols-outlined text-emerald-500 text-5xl block">task_alt</span>
+
             <h3 class="font-bold text-lg text-emerald-700">Thanh toán thành công!</h3>
+
             <p class="text-sm text-emerald-600">Trạng thái: ${statusLabel(data.paymentStatus)} · Số tiền: ${fmt(data.amount)}</p>
+
             ${data.discountAmount > 0 ? `<p class="text-sm text-emerald-600">Giảm giá: -${fmt(data.discountAmount)} (${data.couponCode})</p>` : ''}
+
             ${data.paymentReference ? `<p class="text-xs text-emerald-700">Mã chứng từ: ${data.paymentReference}</p>` : ''}
+
             <div class="flex flex-col md:flex-row justify-center gap-3 pt-2">
+
               <a href="/invoice.html?bookingId=${bookingId}" class="h-11 px-6 inline-flex items-center justify-center bg-zinc-900 hover:bg-zinc-700 text-white font-semibold rounded-lg transition-colors gap-2">
+
                 <span class="material-symbols-outlined text-[20px]">receipt_long</span>Xem &amp; In hóa đơn
+
               </a>
+
               <a href="/" class="h-11 px-6 inline-flex items-center justify-center border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold rounded-lg transition-colors">
+
                 Về trang chủ
+
               </a>
+
             </div>
+
           </div>`;
+
         btn.disabled = true;
+
         btn.classList.add('opacity-50');
+
         btn.textContent = 'Đã thanh toán';
+
         toast('Thanh toán thành công!', 'success');
+
       } catch (e) {
+
         setBtnLoading(btn, false);
+
         document.getElementById('payment-result').innerHTML = `<div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm">✕ ${e.message}</div>`;
+
         if (/h\u1ebft h\u1ea1n/i.test(e.message)) markExpired();
+
       }
+
     }
+
   </script>
+
 </body>
 
+
+
 </html>
+

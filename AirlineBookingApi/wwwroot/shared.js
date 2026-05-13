@@ -53,7 +53,8 @@ async function api(method, path, body) {
     // Never redirect for /Auth/me endpoint - let the caller handle the error
     if (res.status === 401 && getToken() && !path.startsWith('/Auth/') && path !== '/Auth/me') {
       clearAuth();
-      window.location.href = '/';
+      toast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'warning');
+      setTimeout(() => { window.location.href = '/'; }, 1500);
       return;
     }
     const msg = data?.errors ? Object.values(data.errors).flat().join('. ')

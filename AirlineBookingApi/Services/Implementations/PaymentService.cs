@@ -40,10 +40,7 @@ public class PaymentService : IPaymentService
         }
         else if (currentRole == AppConstants.StaffRoleName)
         {
-            if (booking.CreatedByAccountId != currentAccountId && booking.CustomerAccountId != currentAccountId)
-            {
-                throw new InvalidOperationException("Staff chỉ được thanh toán booking mình đang xử lý hoặc booking liên quan.");
-            }
+            // Staff có thể thanh toán bất kỳ booking nào
         }
         else
         {

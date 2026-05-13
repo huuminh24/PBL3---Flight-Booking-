@@ -69,7 +69,7 @@
       document.getElementById('invoice-loading').classList.add('hidden');
       const errEl = document.getElementById('invoice-error');
       errEl.classList.remove('hidden');
-      errEl.innerHTML = `<span class="material-symbols-outlined text-5xl mb-3 block">error</span><p class="font-semibold">${msg}</p>`;
+      errEl.innerHTML = `<span class="material-symbols-outlined text-5xl mb-3 block">error</span><p class="font-semibold">${escapeHtmlText(msg)}</p>`;
     }
 
     function renderInvoice(inv) {
@@ -80,8 +80,8 @@
       const flightsRows = inv.flights.map(f => `
         <tr>
           <td class="py-2 text-xs text-zinc-500">Chặng ${f.legOrder}</td>
-          <td class="py-2 font-semibold">${f.flightNumber}</td>
-          <td class="py-2">${f.departureAirport} → ${f.arrivalAirport}</td>
+          <td class="py-2 font-semibold">${escapeHtmlText(f.flightNumber)}</td>
+          <td class="py-2">${escapeHtmlText(f.departureAirport)} → ${escapeHtmlText(f.arrivalAirport)}</td>
           <td class="py-2 text-zinc-600">${fmtDateTime(f.departureTime)}</td>
           <td class="py-2 text-right font-semibold">${fmt(f.price)}</td>
         </tr>`).join('');
@@ -98,9 +98,9 @@
         <tr>
           <td class="py-2">#${t.ticketId}</td>
           <td class="py-2">${escapeHtmlText(t.passengerFullName)}</td>
-          <td class="py-2">${t.flightNumber}</td>
-          <td class="py-2">${t.seatClass}</td>
-          <td class="py-2">${t.seatNumber || '<span class="text-zinc-400">Chưa chọn</span>'}</td>
+          <td class="py-2">${escapeHtmlText(t.flightNumber)}</td>
+          <td class="py-2">${escapeHtmlText(t.seatClass)}</td>
+          <td class="py-2">${escapeHtmlText(t.seatNumber) || '<span class="text-zinc-400">Chưa chọn</span>'}</td>
           <td class="py-2 text-right">${fmt(t.price)}</td>
           <td class="py-2 text-right text-xs">${statusLabel(t.ticketStatus)}</td>
         </tr>`).join('');
@@ -110,13 +110,13 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div><div class="label">Phương thức</div><div class="font-semibold">${methodLabel(payment.paymentMethod)}</div></div>
           <div><div class="label">Trạng thái</div><div class="font-semibold">${statusLabel(payment.paymentStatus)}</div></div>
-          <div><div class="label">Thanh toán lúc</div><div class="font-semibold">${fmtDateTime(payment.paidAt)}</div></div>
-          <div><div class="label">Mã chứng từ</div><div class="font-semibold">${payment.paymentReference || '—'}</div></div>
+          <div><div class="label">Thanh toán lúc</div><div class="font-semibold">${payment.paidAt ? fmtDateTime(payment.paidAt) : '—'}</div></div>
+          <div><div class="label">Mã chứng từ</div><div class="font-semibold">${escapeHtmlText(payment.paymentReference || '') || '—'}</div></div>
         </div>
       ` : '<p class="text-sm text-zinc-500 italic">Chưa có bản ghi thanh toán.</p>';
 
       const discountRow = (payment && payment.discountAmount > 0)
-        ? `<div class="row text-emerald-600"><span>Giảm giá ${payment.couponCode ? `(${payment.couponCode})` : ''}</span><span>-${fmt(payment.discountAmount)}</span></div>`
+        ? `<div class="row text-emerald-600"><span>Giảm giá ${payment.couponCode ? `(${escapeHtmlText(payment.couponCode)})` : ''}</span><span>-${fmt(payment.discountAmount)}</span></div>`
         : '';
 
       body.innerHTML = `
@@ -125,11 +125,11 @@
             <div class="flex items-center gap-2 text-[#ff385c] font-extrabold text-2xl">
               <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">flight_takeoff</span>SkyHmH
             </div>
-            <p class="text-xs text-zinc-500 mt-1">Hóa đơn điện tử · ${fmtDateTime(payment?.paidAt || inv.createdAt)}</p>
+            <p class="text-xs text-zinc-500 mt-1">Hóa đơn điện tử · ${payment?.paidAt ? fmtDateTime(payment.paidAt) : fmtDateTime(inv.createdAt)}</p>
           </div>
           <div class="text-right">
             <div class="label">Mã PNR</div>
-            <div class="font-mono font-bold text-[#ff385c] text-xl">${inv.pnrCode}</div>
+            <div class="font-mono font-bold text-[#ff385c] text-xl">${escapeHtmlText(inv.pnrCode)}</div>
             <div class="text-xs text-zinc-500 mt-1">Booking #${inv.bookingId} · Kênh ${inv.bookingChannel === 'Staff' ? 'quầy' : 'website'}</div>
           </div>
         </header>
@@ -220,14 +220,6 @@
       return t;
     }
 
-    function escapeHtmlText(s) {
-      return String(s ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
   </script>
 </body>
 
