@@ -44,14 +44,7 @@ public class CancelRequestService : ICancelRequestService
                 throw new InvalidOperationException("Bạn không có quyền yêu cầu hủy vé của người khác.");
             }
         }
-        else if (currentRole == AppConstants.StaffRoleName)
-        {
-            if (booking.CreatedByAccountId != currentAccountId && booking.CustomerAccountId != currentAccountId)
-            {
-                throw new InvalidOperationException("Staff không có quyền xử lý vé này.");
-            }
-        }
-        else
+        else if (currentRole != AppConstants.StaffRoleName)
         {
             throw new InvalidOperationException("Role hiện tại không được phép yêu cầu hủy vé.");
         }

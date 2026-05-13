@@ -249,13 +249,7 @@
 
             selectedFlights = new Array(totalSteps).fill(null);
 
-            document.getElementById('sum-dep').textContent = searchParams.dep;
-            document.getElementById('sum-arr').textContent = searchParams.arr;
-
-            let metaText = `${fmtDateStr(searchParams.date)} · ${searchParams.pax} Hành khách · ${searchParams.cls === 'Economy' ? 'Phổ thông' : 'Thương gia'}`;
-            if (searchParams.type === 'roundtrip') metaText += ` · Về: ${fmtDateStr(searchParams.returnDate)}`;
-            else if (searchParams.type === 'multicity') metaText += ` · Nhiều chặng (${totalSteps} chặng)`;
-            document.getElementById('sum-meta').textContent = metaText;
+            updateSearchSummary();
 
             if (totalSteps > 1) {
                 const stepsContainer = document.getElementById('flight-steps');
@@ -297,7 +291,7 @@
 
         function applyFilters(flights) {
             return flights.filter(f => {
-                const depHour = new Date(f.departureTime).getHours();
+                const depHour = getVietnamHour(f.departureTime);
                 const timeRange = getTimeRange(depHour);
                 if (!filterState.timeRanges.includes(timeRange)) return false;
                 if (filterState.airlines.length > 0 && f.airlineCode && !filterState.airlines.includes(f.airlineCode)) return false;
@@ -316,7 +310,8 @@
 
             try {
                 if (searchParams.type === 'multicity') {
-                    if (rawDataSteps.every(r => r)) {
+                    if (rawDataSteps[currentStep - 1] !== undefined) {
+                        // Skip fetch: current step data already cached
                     } else {
                         const reqBody = {
                             legs: mcData.map(leg => ({
@@ -332,6 +327,9 @@
                         if (res.legResults && Array.isArray(res.legResults)) {
                             for (let i = 0; i < res.legResults.length; i++) {
                                 rawDataSteps[i] = res.legResults[i] || [];
+                                if (rawDataSteps[i].length === 0) {
+                                    toast(`Không có chuyến bay cho chặng ${i + 1}`, 'warning');
+                                }
                             }
                         }
                     }
@@ -488,6 +486,37 @@
             }
         }
 
+        function updateSearchSummary() {
+            if (!searchParams) return;
+            const depEl = document.getElementById('sum-dep');
+            const arrEl = document.getElementById('sum-arr');
+            const metaEl = document.getElementById('sum-meta');
+
+            if (searchParams.type === 'multicity' && mcData && mcData[currentStep - 1]) {
+                depEl.textContent = mcData[currentStep - 1].dep;
+                arrEl.textContent = mcData[currentStep - 1].arr;
+            } else if (searchParams.type === 'roundtrip') {
+                if (currentStep === 1) {
+                    depEl.textContent = searchParams.dep;
+                    arrEl.textContent = searchParams.arr;
+                } else {
+                    depEl.textContent = searchParams.arr;
+                    arrEl.textContent = searchParams.dep;
+                }
+            } else {
+                depEl.textContent = searchParams.dep;
+                arrEl.textContent = searchParams.arr;
+            }
+
+            let metaText = `${fmtDateStr(searchParams.date)} · ${searchParams.pax} Hành khách · ${searchParams.cls === 'Economy' ? 'Phổ thông' : 'Thương gia'}`;
+            if (searchParams.type === 'roundtrip') {
+                metaText += ` · Về: ${fmtDateStr(searchParams.returnDate)}`;
+            } else if (searchParams.type === 'multicity') {
+                metaText = `Chặng ${currentStep}/${totalSteps} · ${fmtDateStr(mcData[currentStep - 1]?.date)} · ${searchParams.pax} Hành khách · ${searchParams.cls === 'Economy' ? 'Phổ thông' : 'Thương gia'}`;
+            }
+            metaEl.textContent = metaText;
+        }
+
         function updateStepUI() {
             if (totalSteps <= 1) return;
 
@@ -498,6 +527,13 @@
                     stepEl.className = 'flex-1 bg-white border border-ink text-ink p-3 rounded-xl flex items-center justify-between transition-colors cursor-pointer hover:bg-surface-soft min-w-[150px]';
                     stepEl.onclick = () => {
                         currentStep = i;
+                        const hasLaterSelection = selectedFlights.slice(i).some(f => f !== null);
+                        if (hasLaterSelection) {
+                            toast(`Bạn đang thay đổi chặng ${i}. Các lựa chọn sau sẽ cần được xác nhận lại.`, 'warning');
+                        }
+                        for (let j = i; j < totalSteps; j++) {
+                            selectedFlights[j] = null;
+                        }
                         updateStepUI();
                         initAirlineFilters(rawDataSteps[currentStep - 1] || []);
                         renderFlights();
@@ -514,6 +550,7 @@
                     if (dateEl) dateEl.className = 'text-xs';
                 }
             }
+            updateSearchSummary();
         }
 
         function proceedToPayout() {
@@ -529,9 +566,8 @@
                 flights: selectedFlights
             }));
 
-            const firstFlightId = selectedFlights[0]?.flightId || '';
             const staffParam = searchParams.staff ? '&staff=true' : '';
-            window.location.href = `/payout.html?flightId=${firstFlightId}&pax=${searchParams.pax}&adult=${searchParams.adult}&child=${searchParams.child}&infant=${searchParams.infant}&cls=${searchParams.cls}${staffParam}`;
+            window.location.href = `/payout.html?pax=${searchParams.pax}&adult=${searchParams.adult}&child=${searchParams.child}&infant=${searchParams.infant}&cls=${searchParams.cls}${staffParam}`;
         }
     </script>
 </body>

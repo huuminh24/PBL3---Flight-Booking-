@@ -6,6 +6,9 @@
 <title>Staff Dashboard - SkyHmH</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script>tailwind.config={darkMode:"class",theme:{extend:{colors:{rausch:"#ff385c","rausch-active":"#e00b41",ink:"#222222",muted:"#6a6a6a",canvas:"#ffffff",hairline:"#dddddd"},fontFamily:{sans:["Plus Jakarta Sans","sans-serif"]}}}}</script>
@@ -17,6 +20,21 @@ body{font-family:'Plus Jakarta Sans',sans-serif}
 .tab-content{display:none}.tab-content.active{display:block}
 .input-field{width:100%;height:48px;padding:0 16px;border:1px solid #ddd;border-radius:8px;font-size:14px;transition:border-color .2s}
 .input-field:focus{border-color:#ff385c;outline:none;box-shadow:0 0 0 1px #ff385c}
+select.input-field{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236a6a6a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:18px 18px;padding-right:36px}
+.custom-select-wrap{position:relative}
+.custom-select-panel{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #dddddd;border-radius:12px;box-shadow:rgba(0,0,0,0.02) 0 0 0 1px,rgba(0,0,0,0.04) 0 2px 6px 0,rgba(0,0,0,0.1) 0 4px 8px 0;padding:8px 0;z-index:100;max-height:260px;overflow-y:auto;display:none}
+.custom-select-panel.open{display:block}
+.custom-select-option{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;padding:10px 16px;font-size:14px;font-weight:500;color:#222222;background:none;border:none;cursor:pointer}
+.custom-select-option:hover{background:#f7f7f7}
+.custom-select-option.selected{font-weight:600}
+.flatpickr-calendar{border-radius:14px;box-shadow:rgba(0,0,0,0.02) 0 0 0 1px,rgba(0,0,0,0.04) 0 2px 6px 0,rgba(0,0,0,0.1) 0 4px 8px 0;border:none;font-family:'Plus Jakarta Sans',sans-serif}
+.flatpickr-day{border-radius:9999px;height:40px;width:40px;line-height:40px;font-size:14px;color:#222222}
+.flatpickr-day.selected,.flatpickr-day.selected:hover{background:#222222;border-color:#222222;color:#ffffff;border-radius:9999px}
+.flatpickr-day:hover{background:#f7f7f7;border-color:transparent}
+.flatpickr-day.inRange{background:#f7f7f7;border-color:transparent;box-shadow:-5px 0 0 #f7f7f7,5px 0 0 #f7f7f7}
+.flatpickr-months .flatpickr-month{color:#222222;fill:#222222}
+.flatpickr-current-month{font-size:14px;font-weight:600}
+.flatpickr-weekday{color:#6a6a6a;font-size:12px;font-weight:600}
 .kpi-card{background:#fff;border:1px solid #e4e4e7;border-radius:12px;padding:20px;text-align:center}
 .kpi-value{font-size:24px;font-weight:800;color:#18181b}.kpi-label{font-size:12px;color:#71717a;margin-top:4px}
 </style>
@@ -58,23 +76,45 @@ body{font-family:'Plus Jakarta Sans',sans-serif}
     </div>
     <div class="bg-white border border-zinc-200 rounded-xl p-4 mb-4">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div><label class="text-xs text-zinc-500 mb-1 block">Ngày</label><input id="fl-date" type="date" class="input-field"/></div>
+        <div><label class="text-xs text-zinc-500 mb-1 block">Ngày</label><input id="fl-date" type="text" class="input-field" placeholder="dd/mm/yyyy"/></div>
         <div><label class="text-xs text-zinc-500 mb-1 block">Điểm đi</label>
-          <select id="fl-dep" class="input-field"><option value="">Tất cả</option><option value="Da Nang">Đà Nẵng (DAD)</option><option value="Ho Chi Minh">TP. HCM (SGN)</option><option value="Ha Noi">Hà Nội (HAN)</option></select>
+          <div class="custom-select-wrap">
+            <button type="button" class="input-field flex items-center justify-between" id="fl-dep-btn" data-value="" onclick="toggleStaffSelect('fl-dep-panel', this)">
+              <span id="fl-dep-label">Tất cả</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div class="custom-select-panel" id="fl-dep-panel">
+              <button type="button" class="custom-select-option selected" data-opt-value="" onclick="selectStaffOption('fl-dep-btn','fl-dep-label','fl-dep-panel','','Tất cả','loadFlightList')">Tất cả <span class="material-symbols-outlined text-[14px] text-rausch">check</span></button>
+            </div>
+          </div>
         </div>
         <div><label class="text-xs text-zinc-500 mb-1 block">Điểm đến</label>
-          <select id="fl-arr" class="input-field"><option value="">Tất cả</option><option value="Da Nang">Đà Nẵng (DAD)</option><option value="Ho Chi Minh">TP. HCM (SGN)</option><option value="Ha Noi">Hà Nội (HAN)</option></select>
+          <div class="custom-select-wrap">
+            <button type="button" class="input-field flex items-center justify-between" id="fl-arr-btn" data-value="" onclick="toggleStaffSelect('fl-arr-panel', this)">
+              <span id="fl-arr-label">Tất cả</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div class="custom-select-panel" id="fl-arr-panel">
+              <button type="button" class="custom-select-option selected" data-opt-value="" onclick="selectStaffOption('fl-arr-btn','fl-arr-label','fl-arr-panel','','Tất cả','loadFlightList')">Tất cả <span class="material-symbols-outlined text-[14px] text-rausch">check</span></button>
+            </div>
+          </div>
         </div>
         <div><label class="text-xs text-zinc-500 mb-1 block">Trạng thái</label>
-          <select id="fl-status" class="input-field">
-            <option value="">Tất cả</option>
-            <option value="Scheduled">Scheduled</option>
-            <option value="Boarding">Boarding</option>
-            <option value="Departed">Departed</option>
-            <option value="Arrived">Arrived</option>
-            <option value="Delayed">Delayed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
+          <div class="custom-select-wrap">
+            <button type="button" class="input-field flex items-center justify-between" id="fl-status-btn" data-value="" onclick="toggleStaffSelect('fl-status-panel', this)">
+              <span id="fl-status-label">Tất cả</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div class="custom-select-panel" id="fl-status-panel">
+              <button type="button" class="custom-select-option selected" data-opt-value="" onclick="selectStaffOption('fl-status-btn','fl-status-label','fl-status-panel','','Tất cả','loadFlightList')">Tất cả <span class="material-symbols-outlined text-[14px] text-rausch">check</span></button>
+              <button type="button" class="custom-select-option" data-opt-value="Scheduled" onclick="selectStaffOption('fl-status-btn','fl-status-label','fl-status-panel','Scheduled','Scheduled','loadFlightList')">Scheduled</button>
+              <button type="button" class="custom-select-option" data-opt-value="Boarding" onclick="selectStaffOption('fl-status-btn','fl-status-label','fl-status-panel','Boarding','Boarding','loadFlightList')">Boarding</button>
+              <button type="button" class="custom-select-option" data-opt-value="Departed" onclick="selectStaffOption('fl-status-btn','fl-status-label','fl-status-panel','Departed','Departed','loadFlightList')">Departed</button>
+              <button type="button" class="custom-select-option" data-opt-value="Arrived" onclick="selectStaffOption('fl-status-btn','fl-status-label','fl-status-panel','Arrived','Arrived','loadFlightList')">Arrived</button>
+              <button type="button" class="custom-select-option" data-opt-value="Delayed" onclick="selectStaffOption('fl-status-btn','fl-status-label','fl-status-panel','Delayed','Delayed','loadFlightList')">Delayed</button>
+              <button type="button" class="custom-select-option" data-opt-value="Cancelled" onclick="selectStaffOption('fl-status-btn','fl-status-label','fl-status-panel','Cancelled','Cancelled','loadFlightList')">Cancelled</button>
+            </div>
+          </div>
         </div>
       </div>
       <div id="fl-filter-summary" class="text-xs text-zinc-500 mt-3"></div>
@@ -93,19 +133,71 @@ body{font-family:'Plus Jakarta Sans',sans-serif}
     </div>
     <div class="bg-white border border-zinc-200 rounded-xl p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div><label class="text-xs text-zinc-500 mb-1 block">Từ ngày</label><input id="r-from" type="date" class="input-field"/></div>
-        <div><label class="text-xs text-zinc-500 mb-1 block">Đến ngày</label><input id="r-to" type="date" class="input-field"/></div>
+        <div><label class="text-xs text-zinc-500 mb-1 block">Từ ngày</label><input id="r-from" type="text" class="input-field" placeholder="dd/mm/yyyy"/></div>
+        <div><label class="text-xs text-zinc-500 mb-1 block">Đến ngày</label><input id="r-to" type="text" class="input-field" placeholder="dd/mm/yyyy"/></div>
         <div><label class="text-xs text-zinc-500 mb-1 block">Trạng thái TT</label>
-          <select id="r-status" class="input-field"><option value="">Tất cả</option><option value="Paid">Đã thanh toán</option><option value="Failed">Thất bại</option></select>
+          <div class="custom-select-wrap">
+            <button type="button" class="input-field flex items-center justify-between" id="r-status-btn" data-value="" onclick="toggleStaffSelect('r-status-panel', this)">
+              <span id="r-status-label">Tất cả</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div class="custom-select-panel" id="r-status-panel">
+              <button type="button" class="custom-select-option selected" data-opt-value="" onclick="selectStaffOption('r-status-btn','r-status-label','r-status-panel','','Tất cả','loadReport')">Tất cả <span class="material-symbols-outlined text-[14px] text-rausch">check</span></button>
+              <button type="button" class="custom-select-option" data-opt-value="Paid" onclick="selectStaffOption('r-status-btn','r-status-label','r-status-panel','Paid','Đã thanh toán','loadReport')">Đã thanh toán</button>
+              <button type="button" class="custom-select-option" data-opt-value="Failed" onclick="selectStaffOption('r-status-btn','r-status-label','r-status-panel','Failed','Thất bại','loadReport')">Thất bại</button>
+            </div>
+          </div>
         </div>
         <div><label class="text-xs text-zinc-500 mb-1 block">Kênh bán</label>
-          <select id="r-channel" class="input-field"><option value="">Tất cả</option><option value="Website">Website</option><option value="Staff">Nhân viên</option></select>
+          <div class="custom-select-wrap">
+            <button type="button" class="input-field flex items-center justify-between" id="r-channel-btn" data-value="" onclick="toggleStaffSelect('r-channel-panel', this)">
+              <span id="r-channel-label">Tất cả</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div class="custom-select-panel" id="r-channel-panel">
+              <button type="button" class="custom-select-option selected" data-opt-value="" onclick="selectStaffOption('r-channel-btn','r-channel-label','r-channel-panel','','Tất cả','loadReport')">Tất cả <span class="material-symbols-outlined text-[14px] text-rausch">check</span></button>
+              <button type="button" class="custom-select-option" data-opt-value="Website" onclick="selectStaffOption('r-channel-btn','r-channel-label','r-channel-panel','Website','Website','loadReport')">Website</button>
+              <button type="button" class="custom-select-option" data-opt-value="Staff" onclick="selectStaffOption('r-channel-btn','r-channel-label','r-channel-panel','Staff','Nhân viên','loadReport')">Nhân viên</button>
+            </div>
+          </div>
         </div>
         <div><label class="text-xs text-zinc-500 mb-1 block">Phương thức TT</label>
-          <select id="r-method" class="input-field"><option value="">Tất cả</option><option value="Cash">Tiền mặt</option><option value="BankTransfer">Chuyển khoản</option><option value="VietQR">VietQR</option><option value="Card">Thẻ</option></select>
+          <div class="custom-select-wrap">
+            <button type="button" class="input-field flex items-center justify-between" id="r-method-btn" data-value="" onclick="toggleStaffSelect('r-method-panel', this)">
+              <span id="r-method-label">Tất cả</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div class="custom-select-panel" id="r-method-panel">
+              <button type="button" class="custom-select-option selected" data-opt-value="" onclick="selectStaffOption('r-method-btn','r-method-label','r-method-panel','','Tất cả','loadReport')">Tất cả <span class="material-symbols-outlined text-[14px] text-rausch">check</span></button>
+              <button type="button" class="custom-select-option" data-opt-value="Cash" onclick="selectStaffOption('r-method-btn','r-method-label','r-method-panel','Cash','Tiền mặt','loadReport')">Tiền mặt</button>
+              <button type="button" class="custom-select-option" data-opt-value="BankTransfer" onclick="selectStaffOption('r-method-btn','r-method-label','r-method-panel','BankTransfer','Chuyển khoản','loadReport')">Chuyển khoản</button>
+              <button type="button" class="custom-select-option" data-opt-value="VietQR" onclick="selectStaffOption('r-method-btn','r-method-label','r-method-panel','VietQR','VietQR','loadReport')">VietQR</button>
+              <button type="button" class="custom-select-option" data-opt-value="Card" onclick="selectStaffOption('r-method-btn','r-method-label','r-method-panel','Card','Thẻ','loadReport')">Thẻ</button>
+            </div>
+          </div>
         </div>
-        <div><label class="text-xs text-zinc-500 mb-1 block">Điểm đi</label><input id="r-dep" class="input-field" placeholder="VD: Da Nang, Ha Noi"/></div>
-        <div><label class="text-xs text-zinc-500 mb-1 block">Điểm đến</label><input id="r-arr" class="input-field" placeholder="VD: Ho Chi Minh"/></div>
+        <div><label class="text-xs text-zinc-500 mb-1 block">Điểm đi</label>
+          <div class="custom-select-wrap">
+            <button type="button" class="input-field flex items-center justify-between" id="r-dep-btn" data-value="" onclick="toggleStaffSelect('r-dep-panel', this)">
+              <span id="r-dep-label">Tất cả</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div class="custom-select-panel" id="r-dep-panel">
+              <button type="button" class="custom-select-option selected" data-opt-value="" onclick="selectStaffOption('r-dep-btn','r-dep-label','r-dep-panel','','Tất cả','loadReport')">Tất cả <span class="material-symbols-outlined text-[14px] text-rausch">check</span></button>
+            </div>
+          </div>
+        </div>
+        <div><label class="text-xs text-zinc-500 mb-1 block">Điểm đến</label>
+          <div class="custom-select-wrap">
+            <button type="button" class="input-field flex items-center justify-between" id="r-arr-btn" data-value="" onclick="toggleStaffSelect('r-arr-panel', this)">
+              <span id="r-arr-label">Tất cả</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div class="custom-select-panel" id="r-arr-panel">
+              <button type="button" class="custom-select-option selected" data-opt-value="" onclick="selectStaffOption('r-arr-btn','r-arr-label','r-arr-panel','','Tất cả','loadReport')">Tất cả <span class="material-symbols-outlined text-[14px] text-rausch">check</span></button>
+            </div>
+          </div>
+        </div>
       </div>
       <div id="r-filter-summary" class="text-xs text-zinc-500 mt-3"></div>
     </div>
@@ -136,7 +228,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif}
   </div>
 </div>
 
-<script src="/shared.js?v=20260430-oversell"></script>
+<script src="/shared.js"></script>
 <script>
 const VALID_TABS = ['checkin', 'cancel', 'flights', 'report'];
 
@@ -146,23 +238,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('btn-ci-search').onclick = searchForCheckIn;
 
-  // Filters tab Flight Status: realtime debounce (bắt cả 'input' và 'change' để chạy khi user gõ hay chọn).
-  const flLoad = debounce(loadFlightList, 250);
-  ['fl-date','fl-dep','fl-arr','fl-status'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('input', flLoad);
-    el.addEventListener('change', flLoad);
-  });
+  // Flatpickr init
+  flatpickr('#fl-date', { locale: 'vi', dateFormat: 'd/m/Y', allowInput: true, onChange: () => loadFlightList() });
+  flatpickr('#r-from', { locale: 'vi', dateFormat: 'd/m/Y', allowInput: true, onChange: () => loadReport() });
+  flatpickr('#r-to', { locale: 'vi', dateFormat: 'd/m/Y', allowInput: true, onChange: () => loadReport() });
 
-  // Filters tab Report: realtime debounce.
-  const rLoad = debounce(loadReport, 250);
-  ['r-from','r-to','r-status','r-channel','r-method','r-dep','r-arr'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('input', rLoad);
-    el.addEventListener('change', rLoad);
-  });
+  // Populate airport filters dynamically into custom panels
+  try {
+    const airports = await loadAirports();
+    const panelMap = {
+      'fl-dep-panel': { btnId: 'fl-dep-btn', labelId: 'fl-dep-label', reload: 'loadFlightList' },
+      'fl-arr-panel': { btnId: 'fl-arr-btn', labelId: 'fl-arr-label', reload: 'loadFlightList' },
+      'r-dep-panel':  { btnId: 'r-dep-btn',  labelId: 'r-dep-label',  reload: 'loadReport' },
+      'r-arr-panel':  { btnId: 'r-arr-btn',  labelId: 'r-arr-label',  reload: 'loadReport' }
+    };
+    Object.keys(panelMap).forEach(panelId => {
+      const panel = document.getElementById(panelId);
+      if (!panel) return;
+      const { btnId, labelId, reload } = panelMap[panelId];
+      airports.forEach(a => {
+        const code = a.code;
+        const label = getAirportLabel(code);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'custom-select-option';
+        btn.dataset.optValue = code;
+        btn.textContent = label;
+        btn.onclick = () => selectStaffOption(btnId, labelId, panelId, code, label, reload);
+        panel.appendChild(btn);
+      });
+    });
+  } catch (e) {
+    // keep static "Tất cả" option if API fails
+  }
 
   const requested = (getUrlParam('tab') || '').toLowerCase();
   const initialTab = VALID_TABS.includes(requested) ? requested : 'checkin';
@@ -172,6 +280,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 function debounce(fn, wait) {
   let t = null;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+}
+
+function toggleStaffSelect(panelId, btn) {
+  document.querySelectorAll('.custom-select-panel.open').forEach(p => { if (p.id !== panelId) p.classList.remove('open'); });
+  document.getElementById(panelId).classList.toggle('open');
+}
+function selectStaffOption(btnId, labelId, panelId, value, label, reloadFnName) {
+  const btn = document.getElementById(btnId);
+  btn.dataset.value = value;
+  document.getElementById(labelId).textContent = label;
+  document.getElementById(panelId).classList.remove('open');
+  // Update selected state
+  document.querySelectorAll('#' + panelId + ' .custom-select-option').forEach(o => {
+    const hasCheck = o.querySelector('.material-symbols-outlined');
+    if (hasCheck) hasCheck.remove();
+    o.classList.remove('selected');
+  });
+  const activeBtn = document.querySelector('#' + panelId + ' .custom-select-option[data-opt-value="' + value + '"]');
+  if (activeBtn) {
+    activeBtn.classList.add('selected');
+    const check = document.createElement('span');
+    check.className = 'material-symbols-outlined text-[14px] text-rausch';
+    check.textContent = 'check';
+    activeBtn.appendChild(check);
+  }
+  if (reloadFnName && typeof window[reloadFnName] === 'function') window[reloadFnName]();
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.custom-select-wrap')) document.querySelectorAll('.custom-select-panel.open').forEach(p => p.classList.remove('open'));
+});
+
+function parseVnDate(inputId) {
+  const val = document.getElementById(inputId)?.value;
+  if (!val) return '';
+  const parts = val.split('/');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+  }
+  return val;
 }
 
 function switchTab(name, opts = { replaceUrl: true }) {
@@ -198,8 +345,8 @@ function switchTab(name, opts = { replaceUrl: true }) {
     if (rf && !rf.value) {
       const today = new Date();
       const from = new Date(today); from.setDate(today.getDate() - 30);
-      rf.value = from.toISOString().split('T')[0];
-      rt.value = today.toISOString().split('T')[0];
+      rf._flatpickr?.setDate(from);
+      rt._flatpickr?.setDate(today);
     }
     loadReport();
   }
@@ -212,10 +359,10 @@ async function loadFlightList() {
   const result = document.getElementById('fl-result');
   if (!result) return;
 
-  const date = document.getElementById('fl-date').value;
-  const dep = document.getElementById('fl-dep').value;
-  const arr = document.getElementById('fl-arr').value;
-  const status = document.getElementById('fl-status').value;
+  const date = parseVnDate('fl-date');
+  const dep = document.getElementById('fl-dep-btn')?.dataset.value || '';
+  const arr = document.getElementById('fl-arr-btn')?.dataset.value || '';
+  const status = document.getElementById('fl-status-btn')?.dataset.value || '';
 
   const params = new URLSearchParams();
   if (date) params.set('date', date);
@@ -258,8 +405,8 @@ function renderFlightRow(f) {
   const oversoldBadge = f.oversoldTickets > 0
     ? `<button onclick="openOversellModal(${f.flightId})" class="ml-2 inline-flex items-center text-[10px] bg-red-100 hover:bg-red-200 text-red-700 px-2 py-0.5 rounded-full font-semibold" title="Click để xử lý vé tồn">+${f.oversoldTickets} vé tồn</button>` : '';
   return `<tr class="hover:bg-zinc-50">
-    <td class="px-4 py-3 font-semibold">${f.flightNumber}<div class="text-[10px] text-zinc-400">ID #${f.flightId}</div></td>
-    <td class="px-4 py-3">${f.departureAirport} → ${f.arrivalAirport}</td>
+    <td class="px-4 py-3 font-semibold">${esc(f.flightNumber)}<div class="text-[10px] text-zinc-400">ID #${f.flightId}</div></td>
+    <td class="px-4 py-3">${esc(f.departureAirport)} → ${esc(f.arrivalAirport)}</td>
     <td class="px-4 py-3 text-zinc-600">${fmtDateTime(f.departureTime)}</td>
     <td class="px-4 py-3 text-zinc-600">${fmtDateTime(f.arrivalTime)}</td>
     <td class="px-4 py-3">${renderOccupancy(f.economyBookedTickets, f.economyTotalSeats, f.economyMaxAllowedTickets, f.economyCheckedIn)}</td>
@@ -277,7 +424,7 @@ function renderFlightStatusBadge(status) {
     Delayed: 'bg-orange-50 text-orange-700 border-orange-200',
     Cancelled: 'bg-red-50 text-red-700 border-red-200'
   };
-  return `<span class="inline-flex text-xs font-semibold px-2 py-1 rounded-full border ${map[status] || 'bg-zinc-50 text-zinc-600 border-zinc-200'}">${status || '—'}</span>`;
+  return `<span class="inline-flex text-xs font-semibold px-2 py-1 rounded-full border ${map[status] || 'bg-zinc-50 text-zinc-600 border-zinc-200'}">${esc(status || '—')}</span>`;
 }
 
 function renderOccupancy(booked, total, max, checkedIn) {
@@ -311,9 +458,9 @@ async function openOversellModal(flightId) {
     body.innerHTML = `<div class="space-y-3">${list.map(p => `
       <div class="border border-zinc-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <div class="font-bold">${p.passengerName || 'Không có tên'} <span class="text-xs text-zinc-400 font-normal">#${p.ticketId}</span></div>
-          <div class="text-xs text-zinc-500 mt-1">PNR ${p.pnrCode} · ${p.seatClass} · ${fmt(p.price)} · ${p.isCheckedIn ? 'Đã check-in' : 'Chưa check-in'}</div>
-          <div class="text-xs text-zinc-400 mt-1">${p.contactEmail || ''} ${p.contactPhoneNumber ? '· ' + p.contactPhoneNumber : ''}</div>
+          <div class="font-bold">${esc(p.passengerName || 'Không có tên')} <span class="text-xs text-zinc-400 font-normal">#${p.ticketId}</span></div>
+          <div class="text-xs text-zinc-500 mt-1">PNR ${esc(p.pnrCode)} · ${esc(p.seatClass)} · ${fmt(p.price)} · ${p.isCheckedIn ? 'Đã check-in' : 'Chưa check-in'}</div>
+          <div class="text-xs text-zinc-400 mt-1">${esc(p.contactEmail || '')} ${p.contactPhoneNumber ? '· ' + esc(p.contactPhoneNumber) : ''}</div>
         </div>
         <div class="flex gap-2 shrink-0">
           <button onclick="handleOversell(${p.ticketId}, 'VoluntaryBump')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-amber-100 text-amber-800 hover:bg-amber-200">Khách tự nguyện đổi chuyến</button>
@@ -357,7 +504,7 @@ async function searchForCheckIn() {
       return `
       <div class="bg-white border border-zinc-200 rounded-xl p-5">
         <div class="flex justify-between items-center mb-3">
-          <div><span class="font-mono font-bold text-[#ff385c]">${b.pnrCode}</span> · <span class="font-semibold">${b.flightNumber}</span> · ${b.departureAirport} → ${b.arrivalAirport}</div>
+          <div><span class="font-mono font-bold text-[#ff385c]">${esc(b.pnrCode)}</span> · <span class="font-semibold">${esc(b.flightNumber)}</span> · ${esc(b.departureAirport)} → ${esc(b.arrivalAirport)}</div>
           <div class="flex items-center gap-2">
             <span class="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">${statusLabel(b.bookingStatus)}</span>
           </div>
@@ -365,16 +512,15 @@ async function searchForCheckIn() {
         ${windowBadge}
         <div class="space-y-2 mt-3">
           ${b.tickets.map(t => {
-            const safeName = (t.passengerFullName || '').replace(/'/g, "\\'");
             const action = t.isCheckedIn
               ? '<span class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">✓ Đã check-in</span>'
               : t.ticketStatus === 'Paid'
-                ? renderStaffCheckInAction(b, t, safeName)
+                ? renderStaffCheckInAction(b, t)
                 : `<span class="text-xs text-zinc-400">${statusLabel(t.ticketStatus)}</span>`;
             return `<div class="flex justify-between items-center p-3 rounded-lg ${t.isCheckedIn?'bg-emerald-50 border border-emerald-200':'bg-zinc-50 border border-zinc-200'}">
               <div>
-                <span class="font-medium">${t.passengerFullName}</span>
-                <span class="text-xs text-zinc-500 ml-2">${t.passengerType} · Ghế ${t.seatNumber || 'Chưa chọn'} · ${t.seatClass}</span>
+                <span class="font-medium">${esc(t.passengerFullName)}</span>
+                <span class="text-xs text-zinc-500 ml-2">${esc(t.passengerType)} · Ghế ${esc(t.seatNumber || 'Chưa chọn')} · ${esc(t.seatClass)}</span>
               </div>
               <div>${action}</div>
             </div>`;
@@ -407,14 +553,14 @@ function renderCheckInWindowBadge(b) {
   return '';
 }
 
-function renderStaffCheckInAction(b, t, safeName) {
+function renderStaffCheckInAction(b, t) {
   if (b.checkInWindowStatus === 'NotYetOpen') {
     return `<button disabled class="text-xs bg-zinc-200 text-zinc-500 px-4 py-1.5 rounded-lg font-medium cursor-not-allowed" title="Mở check-in sau ${formatStaffDuration(b.minutesUntilOpen)}">Chưa mở check-in</button>`;
   }
   if (b.checkInWindowStatus === 'Closed') {
     return `<span class="text-xs text-red-500 font-medium">Đã quá hạn — ra quầy</span>`;
   }
-  return `<button onclick="doCheckIn(${t.ticketId}, ${t.flightId}, '${t.seatClass}', '${safeName}')" class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-4 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế &amp; Check-in</button>`;
+  return `<button onclick='doCheckIn(${t.ticketId}, ${t.flightId}, ${JSON.stringify(t.seatClass)}, ${JSON.stringify(t.passengerFullName || '')})' class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-4 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế &amp; Check-in</button>`;
 }
 
 function formatStaffDuration(minutes) {
@@ -438,17 +584,8 @@ function formatTimeUntilDeparture(dt) {
   return `Còn ${d} ngày ${h % 24} giờ`;
 }
 
-function escapeHtmlText(s) {
-  return String(s)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
 function doCheckIn(ticketId, flightId, cls, name) {
-    window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${cls}&paxName=${encodeURIComponent(name)}`;
+    window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${encodeURIComponent(cls)}&paxName=${encodeURIComponent(name)}`;
 }
 
 // ── CANCEL MANAGEMENT ──
@@ -460,17 +597,17 @@ async function loadPendingCancels() {
     if(!cancels.length) { list.innerHTML='<p class="text-zinc-400 text-center py-8">Không có yêu cầu hủy nào đang chờ</p>'; return; }
     list.innerHTML = cancels.map(c => {
       const flightInfo = c.flightNumber
-        ? `<p><strong>Chuyến:</strong> <span class="font-semibold">${c.flightNumber}</span> · ${c.departureAirport || ''} → ${c.arrivalAirport || ''}</p>`
+        ? `<p><strong>Chuyến:</strong> <span class="font-semibold">${esc(c.flightNumber)}</span> · ${esc(c.departureAirport || '')} → ${esc(c.arrivalAirport || '')}</p>`
         : '';
       const departureInfo = c.departureTime
         ? `<p><strong>Giờ bay:</strong> ${fmtDateTime(c.departureTime)} · <span class="text-zinc-500">${formatTimeUntilDeparture(c.departureTime)}</span></p>`
         : '';
-      const reasonLine = c.reason ? `<p class="text-zinc-500"><strong>Lý do:</strong> ${escapeHtmlText(c.reason)}</p>` : '';
-      const seatClassLine = c.seatClass ? `<p><strong>Hạng:</strong> ${c.seatClass}</p>` : '';
+      const reasonLine = c.reason ? `<p class="text-zinc-500"><strong>Lý do:</strong> ${esc(c.reason)}</p>` : '';
+      const seatClassLine = c.seatClass ? `<p><strong>Hạng:</strong> ${esc(c.seatClass)}</p>` : '';
       return `
       <div class="bg-white border border-zinc-200 rounded-xl p-5 flex flex-col md:flex-row justify-between gap-4">
         <div class="text-sm space-y-1">
-          <p><strong>ID:</strong> #${c.cancelRequestId} · <strong>PNR:</strong> <span class="font-mono text-[#ff385c]">${c.pnrCode}</span></p>
+          <p><strong>ID:</strong> #${c.cancelRequestId} · <strong>PNR:</strong> <span class="font-mono text-[#ff385c]">${esc(c.pnrCode)}</span></p>
           ${flightInfo}
           ${departureInfo}
           ${seatClassLine}
@@ -505,11 +642,12 @@ async function loadReport() {
   if (!fromEl || !toEl) return;
 
   const params = new URLSearchParams();
-  const from = fromEl.value, to = toEl.value, status = document.getElementById('r-status').value;
-  const channel = document.getElementById('r-channel').value;
-  const method = document.getElementById('r-method').value;
-  const dep = document.getElementById('r-dep').value.trim();
-  const arr = document.getElementById('r-arr').value.trim();
+  const from = parseVnDate('r-from'), to = parseVnDate('r-to');
+  const status = document.getElementById('r-status-btn')?.dataset.value || '';
+  const channel = document.getElementById('r-channel-btn')?.dataset.value || '';
+  const method = document.getElementById('r-method-btn')?.dataset.value || '';
+  const dep = (document.getElementById('r-dep-btn')?.dataset.value || '').trim();
+  const arr = (document.getElementById('r-arr-btn')?.dataset.value || '').trim();
   if (from) params.set('fromDate', from);
   if (to) params.set('toDate', to);
   if (status) params.set('paymentStatus', status);
@@ -534,8 +672,8 @@ async function loadReport() {
     const kpi = document.getElementById('report-kpi');
     kpi.innerHTML = `
       <div class="kpi-card"><div class="kpi-value">${fmt(data.totalRevenue)}</div><div class="kpi-label">Tổng doanh thu</div></div>
-      <div class="kpi-card"><div class="kpi-value">${data.totalTransactions}</div><div class="kpi-label">Giao dịch</div></div>
-      <div class="kpi-card"><div class="kpi-value">${data.totalTickets}</div><div class="kpi-label">Số vé</div></div>
+      <div class="kpi-card"><div class="kpi-value">${Number(data.totalTransactions ?? 0).toLocaleString('vi-VN')}</div><div class="kpi-label">Giao dịch</div></div>
+      <div class="kpi-card"><div class="kpi-value">${Number(data.totalTickets ?? 0).toLocaleString('vi-VN')}</div><div class="kpi-label">Số vé</div></div>
       <div class="kpi-card"><div class="kpi-value">${fmt(data.averageRevenuePerTransaction)}</div><div class="kpi-label">TB/giao dịch</div></div>`;
 
     renderCharts(data.items || []);
@@ -547,8 +685,8 @@ async function loadReport() {
         <th class="px-4 py-3">ID</th><th class="px-4 py-3">PNR</th><th class="px-4 py-3">Chuyến</th><th class="px-4 py-3">Tuyến</th><th class="px-4 py-3">PTTT</th><th class="px-4 py-3">TT</th><th class="px-4 py-3">Số tiền</th><th class="px-4 py-3">Ngày</th><th class="px-4 py-3">Hóa đơn</th>
       </tr></thead>
       <tbody class="divide-y divide-zinc-100">${data.items.map(i => `<tr class="hover:bg-zinc-50">
-        <td class="px-4 py-3">${i.paymentId}</td><td class="px-4 py-3 font-mono text-[#ff385c]">${i.pnrCode}</td><td class="px-4 py-3">${i.flightNumber}</td><td class="px-4 py-3">${i.route}</td>
-        <td class="px-4 py-3">${i.paymentMethod}</td><td class="px-4 py-3"><span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">${i.paymentStatus}</span></td>
+        <td class="px-4 py-3">${i.paymentId}</td><td class="px-4 py-3 font-mono text-[#ff385c]">${esc(i.pnrCode)}</td><td class="px-4 py-3">${esc(i.flightNumber)}</td><td class="px-4 py-3">${esc(i.route)}</td>
+        <td class="px-4 py-3">${esc(i.paymentMethod)}</td><td class="px-4 py-3"><span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">${esc(i.paymentStatus)}</span></td>
         <td class="px-4 py-3 font-medium">${fmt(i.amount)}</td><td class="px-4 py-3 text-zinc-500">${fmtDate(i.paidAt)}</td>
         <td class="px-4 py-3"><a href="/invoice.html?bookingId=${i.bookingId}" class="inline-flex items-center gap-1 text-[#ff385c] hover:underline text-xs font-semibold"><span class="material-symbols-outlined text-[16px]">receipt_long</span>Hóa đơn</a></td>
       </tr>`).join('')}</tbody></table></div>`;

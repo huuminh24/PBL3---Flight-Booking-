@@ -1,892 +1,1915 @@
 <!DOCTYPE html>
 
+
+
 <html class="light" lang="vi">
 
+
+
 <head>
+
     <meta charset="utf-8" />
+
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+
     <title>SkyHmH - Đặt vé máy bay</title>
+
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
     <link href="https://fonts.googleapis.com" rel="preconnect" />
+
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+
         rel="stylesheet" />
+
     <link
+
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+
         rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+
     <script id="tailwind-config">
+
         tailwind.config = {
+
             darkMode: "class",
+
             theme: {
+
                 extend: {
+
                     "colors": {
+
                         "on-secondary-fixed-variant": "#474746",
+
                         "on-background": "#281718",
+
                         "surface-dim": "#f2d3d3",
+
                         "on-tertiary-fixed-variant": "#005234",
+
                         "surface-container-lowest": "#ffffff",
+
                         "luxe-purple": "#460479",
+
                         "surface-tint": "#be0038",
+
                         "muted": "#6a6a6a",
+
                         "on-secondary-fixed": "#1b1c1c",
+
                         "canvas": "#ffffff",
+
                         "ink": "#222222",
+
                         "on-surface": "#281718",
+
                         "surface-strong": "#f2f2f2",
+
                         "on-surface-variant": "#5c3f41",
+
                         "surface-container": "#ffe9e9",
+
                         "outline": "#906f70",
+
                         "inverse-surface": "#3f2b2c",
+
                         "secondary-fixed-dim": "#c8c6c5",
+
                         "on-primary-fixed": "#40000d",
+
                         "rausch-disabled": "#ffd1da",
+
                         "primary": "#ba0036",
+
                         "legal-blue": "#428bff",
+
                         "surface-container-low": "#fff0f0",
+
                         "hairline": "#dddddd",
+
                         "surface-soft": "#f7f7f7",
+
                         "tertiary-fixed-dim": "#62dca3",
+
                         "hairline-soft": "#ebebeb",
+
                         "inverse-primary": "#ffb2b6",
+
                         "secondary-container": "#e2dfde",
+
                         "background": "#fff8f7",
+
                         "surface": "#fff8f7",
+
                         "on-error": "#ffffff",
+
                         "tertiary-container": "#008558",
+
                         "on-secondary": "#ffffff",
+
                         "surface-container-high": "#ffe1e2",
+
                         "on-tertiary-container": "#f6fff6",
+
                         "border-strong": "#c1c1c1",
+
                         "secondary-fixed": "#e5e2e1",
+
                         "muted-soft": "#929292",
+
                         "surface-variant": "#fbdbdc",
+
                         "surface-container-highest": "#fbdbdc",
+
                         "primary-fixed": "#ffdada",
+
                         "on-primary-fixed-variant": "#920029",
+
                         "rausch": "#ff385c",
+
                         "tertiary-fixed": "#80f9bd",
+
                         "on-error-container": "#93000a",
+
                         "on-tertiary-fixed": "#002113",
+
                         "error": "#c13515",
+
                         "on-primary": "#ffffff",
+
                         "secondary": "#5f5e5e",
+
                         "primary-fixed-dim": "#ffb2b6",
+
                         "on-primary-container": "#fffbff",
+
                         "outline-variant": "#e5bdbe",
+
                         "surface-bright": "#fff8f7",
+
                         "tertiary": "#006a45",
+
                         "on-secondary-container": "#636262",
+
                         "rausch-active": "#e00b41",
+
                         "primary-container": "#e21e4a",
+
                         "on-tertiary": "#ffffff",
+
                         "body": "#3f3f3f",
+
                         "error-container": "#ffdad6",
+
                         "inverse-on-surface": "#ffedec",
+
                         "plus-magenta": "#92174d"
+
                     },
+
                     "borderRadius": {
+
                         "DEFAULT": "0.25rem",
+
                         "lg": "0.5rem",
+
                         "xl": "0.75rem",
+
                         "full": "9999px",
+
                         "card": "14px"
+
                     },
+
                     "spacing": {
+
                         "sm": "8px",
+
                         "xl": "32px",
+
                         "lg": "24px",
+
                         "xs": "4px",
+
                         "md": "12px",
+
                         "xxs": "2px",
+
                         "base": "16px",
+
                         "xxl": "48px",
+
                         "section": "64px"
+
                     },
+
                     "fontFamily": {
+
                         "uppercase-tag": ["Plus Jakarta Sans"],
+
                         "rating-display": ["Plus Jakarta Sans"],
+
                         "display-md": ["Plus Jakarta Sans"],
+
                         "badge": ["Plus Jakarta Sans"],
+
                         "title-md": ["Plus Jakarta Sans"],
+
                         "body-md": ["Plus Jakarta Sans"],
+
                         "body-sm": ["Plus Jakarta Sans"],
+
                         "nav-link": ["Plus Jakarta Sans"],
+
                         "caption": ["Plus Jakarta Sans"],
+
                         "display-lg": ["Plus Jakarta Sans"],
+
                         "display-xl": ["Plus Jakarta Sans"]
+
                     },
+
                     "fontSize": {
+
                         "uppercase-tag": ["8px", { "lineHeight": "1.25", "letterSpacing": "0.32px", "fontWeight": "700" }],
+
                         "rating-display": ["64px", { "lineHeight": "1.1", "letterSpacing": "-1px", "fontWeight": "700" }],
+
                         "display-md": ["21px", { "lineHeight": "1.43", "letterSpacing": "0", "fontWeight": "700" }],
+
                         "badge": ["11px", { "lineHeight": "1.18", "letterSpacing": "0", "fontWeight": "600" }],
+
                         "title-md": ["16px", { "lineHeight": "1.25", "letterSpacing": "0", "fontWeight": "600" }],
+
                         "body-md": ["16px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+
                         "body-sm": ["14px", { "lineHeight": "1.43", "letterSpacing": "0", "fontWeight": "400" }],
+
                         "nav-link": ["16px", { "lineHeight": "1.25", "letterSpacing": "0", "fontWeight": "600" }],
+
                         "caption": ["14px", { "lineHeight": "1.29", "letterSpacing": "0", "fontWeight": "500" }],
+
                         "display-lg": ["22px", { "lineHeight": "1.18", "letterSpacing": "-0.44px", "fontWeight": "500" }],
+
                         "display-xl": ["28px", { "lineHeight": "1.43", "letterSpacing": "0", "fontWeight": "700" }]
+
                     },
+
                     "boxShadow": {
+
                         "float": "0 2px 10px rgba(0,0,0,0.02), 0 0 0 1px rgba(0,0,0,0.02)",
-                        "search": "0 10px 40px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02)"
+
+                        "search": "rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px 0, rgba(0,0,0,0.1) 0 4px 8px 0"
+
                     }
+
                 }
+
             }
+
         }
+
     </script>
+
     <style>
+
         .material-symbols-outlined {
+
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+
         }
+
+
 
         .material-symbols-outlined.fill {
+
             font-variation-settings: 'FILL' 1;
+
         }
+
+
 
         .no-scrollbar::-webkit-scrollbar {
+
             display: none;
+
         }
+
+
 
         .no-scrollbar {
+
             -ms-overflow-style: none;
+
             scrollbar-width: none;
+
         }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .flatpickr-calendar{border-radius:14px;box-shadow:rgba(0,0,0,0.02) 0 0 0 1px,rgba(0,0,0,0.04) 0 2px 6px 0,rgba(0,0,0,0.1) 0 4px 8px 0;border:none;font-family:'Plus Jakarta Sans',sans-serif}
+        .flatpickr-day{border-radius:9999px;height:40px;width:40px;line-height:40px;font-size:14px;color:#222222}
+        .flatpickr-day.selected,.flatpickr-day.selected:hover{background:#222222;border-color:#222222;color:#ffffff;border-radius:9999px}
+        .flatpickr-day:hover{background:#f7f7f7;border-color:transparent}
+        .flatpickr-day.inRange{background:#f7f7f7;border-color:transparent;box-shadow:-5px 0 0 #f7f7f7,5px 0 0 #f7f7f7}
+        .flatpickr-months .flatpickr-month{color:#222222;fill:#222222}
+        .flatpickr-current-month{font-size:14px;font-weight:600}
+        .flatpickr-weekday{color:#6a6a6a;font-size:12px;font-weight:600}
+
     </style>
+
 </head>
 
+
+
 <body class="bg-canvas text-ink antialiased">
+
     <!-- TopAppBar -->
+
     <header
+
         class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-zinc-100 font-['Plus_Jakarta_Sans'] antialiased">
+
     </header>
+
     <div id="staff-booking-banner"
+
         class="hidden fixed top-20 inset-x-0 z-40 bg-amber-50 border-b border-amber-200 text-amber-800">
+
         <div class="max-w-5xl mx-auto px-6 md:px-20 py-3 flex items-center gap-3 text-sm font-semibold">
+
             <span class="material-symbols-outlined text-[20px]">support_agent</span>
+
             <span>Bạn đang đặt vé hộ khách hàng. Tất cả bước sẽ ghi nhận kênh "Staff".</span>
+
             <a href="/staff.html" class="ml-auto underline hover:text-amber-900">Về bảng điều khiển</a>
+
         </div>
+
     </div>
+
     <main class="pt-20">
+
         <!-- Hero Search Section -->
+
         <section class="relative w-full min-h-screen flex flex-col items-center justify-center">
 
+
+
             <div class="absolute inset-0 z-0">
+
                 <img alt="Aerial view of a commercial airplane flying over white clouds at sunset with warm golden hour light"
+
                     class="w-full h-full object-cover"
+
                     src="/plane.jpg"
+
                     />
+
                 <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
+
             </div>
+
             <div class="relative z-10 w-full max-w-5xl px-6 md:px-20 mt-[-100px]">
+
                 <h1 class="text-canvas text-display-xl font-display-xl mb-xl text-center shadow-sm">Khám phá
+
                     điểm đến tiếp theo</h1>
+
                 <!-- Tab Buttons -->
+
                 <div class="flex justify-center mb-4">
+
                     <button id="tab-main-booking"
+
                         class="px-6 py-3 text-sm font-bold border-b-2 border-ink text-ink transition-colors">Đặt
+
                         vé</button>
+
                 </div>
+
                 <!-- Search Container -->
+
                 <div class="bg-surface-container-lowest rounded-[32px] shadow-search p-4 mx-auto max-w-5xl w-full">
+
                     <div id="booking-content" class="block">
+
                         <!-- Top Options Row -->
+
                         <div class="flex flex-col md:flex-row justify-between items-center mb-4 px-2 gap-4">
+
                             <!-- Flight Types -->
+
                             <div class="flex items-center space-x-1">
+
                                 <button onclick="setFlightType('oneway')" id="btn-type-oneway"
+
                                     class="px-4 py-2 rounded-full text-body-sm font-medium bg-surface-soft transition-all text-ink">Một
+
                                     chiều</button>
+
                                 <button onclick="setFlightType('roundtrip')" id="btn-type-roundtrip"
+
                                     class="px-4 py-2 rounded-full text-body-sm font-medium hover:bg-surface-soft transition-all text-ink">Khứ
+
                                     hồi</button>
+
                                 <button onclick="setFlightType('multicity')" id="btn-type-multicity"
+
                                     class="px-4 py-2 rounded-full text-body-sm font-medium hover:bg-surface-soft transition-all text-ink">Nhiều
+
                                     chặng</button>
+
                             </div>
+
                             <!-- Passenger & Class -->
+
                             <div class="flex items-center space-x-4">
+
                                 <div class="relative">
-                                    <button id="btn-pax-toggle"
+
+                                    <button id="btn-pax-toggle" aria-haspopup="true" aria-expanded="false"
+
                                         class="flex items-center space-x-2 text-body-sm font-medium text-ink hover:text-rausch transition-colors group">
+
                                         <span
+
                                             class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">group</span>
+
                                         <span id="pax-display-text">1 Hành khách</span>
+
                                         <span
+
                                             class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">expand_more</span>
+
                                     </button>
-                                    <div id="pax-popup"
-                                        class="hidden absolute top-full left-0 mt-2 bg-white rounded-xl shadow-search border border-hairline p-4 w-[320px] z-50 cursor-default">
+
+                                    <div id="pax-popup" role="listbox"
+
+                                        class="hidden absolute top-full left-0 mt-2 bg-white rounded-xl shadow-search border border-hairline p-4 min-w-[280px] w-[320px] z-50 cursor-default">
+
                                         <div class="flex justify-between items-center mb-4">
+
                                             <div>
+
                                                 <div class="font-bold text-ink">Người lớn</div>
+
                                                 <div class="text-xs text-muted">Từ 12 tuổi</div>
+
                                             </div>
+
                                             <div class="flex items-center gap-3">
+
                                                 <button onclick="updatePax('adult', -1)" id="btn-pax-adult-dec"
+
                                                     class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors disabled:opacity-30 disabled:hover:border-hairline">-</button>
+
                                                 <span id="pax-adult" class="font-bold w-4 text-center">1</span>
+
                                                 <button onclick="updatePax('adult', 1)"
+
                                                     class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors">+</button>
+
                                             </div>
+
                                         </div>
+
+                                        <hr class="border-hairline-soft my-3">
+
                                         <div class="flex justify-between items-center mb-4">
+
                                             <div>
+
                                                 <div class="font-bold text-ink">Trẻ em</div>
+
                                                 <div class="text-xs text-muted">Từ 2 - 11 tuổi</div>
+
                                             </div>
+
                                             <div class="flex items-center gap-3">
+
                                                 <button onclick="updatePax('child', -1)" id="btn-pax-child-dec"
+
                                                     class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors disabled:opacity-30 disabled:hover:border-hairline">-</button>
+
                                                 <span id="pax-child" class="font-bold w-4 text-center">0</span>
+
                                                 <button onclick="updatePax('child', 1)"
+
                                                     class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors">+</button>
+
                                             </div>
+
                                         </div>
+
+                                        <hr class="border-hairline-soft my-3">
+
                                         <div class="flex justify-between items-center">
+
                                             <div>
+
                                                 <div class="font-bold text-ink">Em bé</div>
+
                                                 <div class="text-xs text-muted">Dưới 2 tuổi (Ngồi chung)</div>
+
                                             </div>
+
                                             <div class="flex items-center gap-3">
+
                                                 <button onclick="updatePax('infant', -1)" id="btn-pax-infant-dec"
+
                                                     class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors disabled:opacity-30 disabled:hover:border-hairline">-</button>
+
                                                 <span id="pax-infant" class="font-bold w-4 text-center">0</span>
+
                                                 <button onclick="updatePax('infant', 1)"
+
                                                     class="w-8 h-8 rounded-full border border-hairline flex items-center justify-center hover:border-ink transition-colors">+</button>
+
+                                            </div>
+
+                                        </div>
+
+                                        <hr class="border-hairline my-3">
+
+                                        <button onclick="document.getElementById('pax-popup').classList.add('hidden')" class="w-full text-center text-sm font-bold text-ink underline py-1 hover:text-rausch transition-colors">Xong</button>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="relative">
+
+                                    <button id="btn-class-toggle" aria-haspopup="true" aria-expanded="false"
+
+                                        class="flex items-center space-x-2 text-body-sm font-medium text-ink hover:text-rausch transition-colors group">
+
+                                        <span
+
+                                            class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">airline_seat_recline_normal</span>
+
+                                        <span id="class-display-text">Phổ thông</span>
+
+                                        <span
+
+                                            class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">expand_more</span>
+
+                                    </button>
+
+                                    <div id="class-popup" role="listbox"
+
+                                        class="hidden absolute top-full left-0 mt-2 bg-white rounded-xl shadow-search border border-hairline py-2 w-[200px] z-50">
+
+                                        <button id="opt-economy" onclick="setSeatClass('Economy', 'Phổ thông')"
+
+                                            class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink flex items-center" role="option" tabindex="0">
+
+                                            <span class="material-symbols-outlined text-[18px] text-muted mr-2">airline_seat_recline_normal</span>
+
+                                            <span class="flex-1">Phổ thông</span>
+
+                                            <span class="checkmark hidden material-symbols-outlined text-[16px] text-rausch">check</span>
+
+                                        </button>
+
+                                        <button id="opt-business" onclick="setSeatClass('Business', 'Thương gia')"
+
+                                            class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink flex items-center" role="option" tabindex="0">
+
+                                            <span class="material-symbols-outlined text-[18px] text-muted mr-2">airline_seat_flat</span>
+
+                                            <span class="flex-1">Thương gia</span>
+
+                                            <span class="checkmark hidden material-symbols-outlined text-[16px] text-rausch">check</span>
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Normal Search Pill -->
+
+                        <div id="normal-search-pill"
+
+                            class="bg-surface-container-lowest rounded-full flex items-stretch divide-x divide-hairline border border-hairline mx-auto w-full h-16">
+
+                            <!-- Departure + Arrival wrapper with centered swap button -->
+
+                            <div class="flex-[2] flex items-stretch relative">
+
+                                <div class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft rounded-l-full cursor-pointer transition-colors group">
+
+                                    <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5">Khởi hành từ</label>
+
+                                    <div class="relative">
+
+                                        <input id="input-dep" type="text"
+
+                                            class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none"
+
+                                            placeholder="Chọn điểm đi">
+
+                                        <div id="dropdown-dep" data-dropdown="airport" class="hidden absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto scrollbar-hide"></div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft cursor-pointer transition-colors group border-l border-hairline">
+
+                                    <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5">Điểm đến</label>
+
+                                    <div class="relative">
+
+                                        <input id="input-arr" type="text"
+
+                                            class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none"
+
+                                            placeholder="Chọn điểm đến">
+
+                                        <div id="dropdown-arr" data-dropdown="airport" class="hidden absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto scrollbar-hide"></div>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Swap button - absolute centered between departure and arrival -->
+
+                                <button onclick="swapDepartureAndArrival()" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-[#ff385c] text-white rounded-full shadow-md hover:bg-[#e00b41] transition-colors z-50 border-2 border-white text-base flex items-center justify-center">
+
+                                    ⇄
+
+                                </button>
+
+                            </div>
+
+                            <div
+
+                                class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft cursor-pointer transition-colors group border-l border-hairline">
+
+                                <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
+
+                                    >Ngày đi</label>
+
+                                <input id="input-date"
+
+                                    class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full placeholder-muted-soft cursor-pointer truncate leading-tight outline-none"
+
+                                    type="text" placeholder="Ngày đi" />
+
+                            </div>
+
+                            <div id="return-date-container"
+
+                                class="flex-1 flex items-center justify-between pl-lg pr-2 hover:bg-surface-soft rounded-r-full cursor-pointer transition-colors group relative border-l border-hairline opacity-50 pointer-events-none">
+
+                                <div class="flex flex-col justify-center h-full w-full pr-2">
+
+                                    <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
+
+                                        >Ngày về</label>
+
+                                    <input id="input-return-date"
+
+                                        class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full placeholder-muted-soft cursor-pointer truncate leading-tight outline-none"
+
+                                        type="text" placeholder="Ngày về" disabled />
+
+                                </div>
+
+                            </div>
+
+                            <button id="btn-submit-search"
+
+                                class="bg-rausch hover:bg-rausch-active text-canvas rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-float flex-shrink-0 relative z-10 ml-2 mr-2 self-center"
+
+                                >
+
+                                <span class="material-symbols-outlined text-[20px]">search</span>
+
+                            </button>
+
+                        </div>
+
+                        <!-- Multi-city Container -->
+
+                        <div id="multicity-container" class="hidden flex flex-col gap-3 w-full">
+
+                            <div id="multicity-legs" class="flex flex-col gap-3 w-full">
+
+                                <!-- Leg 1 -->
+
+                                <div
+
+                                    class="multicity-leg flex flex-col md:flex-row gap-2 bg-surface-container-lowest border border-hairline rounded-xl p-2 items-center">
+
+                                    <span class="font-bold text-sm text-ink px-2">Chặng 1</span>
+
+                                    <div class="flex-1 flex gap-2 w-full">
+
+                                        <div class="relative flex-1">
+                                            <input type="text"
+                                                class="leg-dep-input w-full bg-surface-soft border-none rounded-lg p-2 pr-8 text-body-md font-body-md text-ink cursor-pointer outline-none focus:ring-1 focus:ring-ink truncate"
+                                                placeholder="Chọn điểm đi" data-value="">
+                                            <button type="button" class="leg-clear-btn absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-muted hover:text-rausch rounded-full text-sm font-bold hidden">×</button>
+                                            <div class="leg-dep-dropdown hidden absolute top-full left-0 mt-1 min-w-[200px] bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto scrollbar-hide" data-dropdown="airport">
+                                                <div class="px-4 py-3 flex items-center gap-3"><div class="w-5 h-5 rounded-full bg-surface-strong animate-pulse"></div><div class="flex-1"><div class="h-3 bg-surface-strong rounded animate-pulse mb-1"></div><div class="h-2 bg-surface-strong rounded animate-pulse w-1/2"></div></div></div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="relative">
-                                    <button id="btn-class-toggle"
-                                        class="flex items-center space-x-2 text-body-sm font-medium text-ink hover:text-rausch transition-colors group">
-                                        <span
-                                            class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">airline_seat_recline_normal</span>
-                                        <span id="class-display-text">Phổ thông</span>
-                                        <span
-                                            class="material-symbols-outlined text-[20px] text-muted group-hover:text-rausch transition-colors">expand_more</span>
-                                    </button>
-                                    <div id="class-popup"
-                                        class="hidden absolute top-full left-0 mt-2 bg-white rounded-xl shadow-search border border-hairline py-2 w-[200px] z-50">
-                                        <button onclick="setSeatClass('Economy', 'Phổ thông')"
-                                            class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink">Phổ
-                                            thông</button>
-                                        <button onclick="setSeatClass('Business', 'Thương gia')"
-                                            class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink">Thương
-                                            gia</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Normal Search Pill -->
-                        <div id="normal-search-pill"
-                            class="bg-surface-container-lowest rounded-full flex items-stretch divide-x divide-hairline border border-hairline mx-auto w-full h-16">
-                            <!-- Departure + Arrival wrapper with centered swap button -->
-                            <div class="flex-[2] flex items-stretch relative">
-                                <div class="flex-1 flex flex-col justify-center px-lg pr-6 hover:bg-surface-soft rounded-l-full cursor-pointer transition-colors group">
-                                    <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5">Khởi hành từ</label>
-                                    <div class="relative">
-                                        <input id="input-dep" type="text" readonly
-                                            class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none"
-                                            placeholder="Chọn điểm đi" value="Đà Nẵng (DAD)" data-value="Da Nang">
-                                        <div id="dropdown-dep" class="hidden absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto"></div>
-                                    </div>
-                                </div>
-                                <div class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft cursor-pointer transition-colors group border-l border-hairline">
-                                    <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5">Điểm đến</label>
-                                    <div class="relative">
-                                        <input id="input-arr" type="text" readonly
-                                            class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full cursor-pointer truncate leading-tight outline-none"
-                                            placeholder="Chọn điểm đến" value="TP. Hồ Chí Minh (SGN)" data-value="Ho Chi Minh">
-                                        <div id="dropdown-arr" class="hidden absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto"></div>
-                                    </div>
-                                </div>
-                                <!-- Swap button - absolute centered between departure and arrival -->
-                                <button onclick="swapDepartureAndArrival()" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-[#ff385c] text-white rounded-full shadow-md hover:bg-[#e00b41] transition-colors z-50 border-2 border-white text-base flex items-center justify-center">
-                                    ⇄
-                                </button>
-                            </div>
-                            <div
-                                class="flex-1 flex flex-col justify-center px-lg hover:bg-surface-soft cursor-pointer transition-colors group border-l border-hairline">
-                                <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
-                                    >Ngày đi</label>
-                                <input id="input-date"
-                                    class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full placeholder-muted-soft cursor-pointer truncate leading-tight outline-none"
-                                    type="date" />
-                            </div>
-                            <div id="return-date-container"
-                                class="flex-1 flex items-center justify-between pl-lg pr-2 hover:bg-surface-soft rounded-r-full cursor-pointer transition-colors group relative border-l border-hairline opacity-50 pointer-events-none">
-                                <div class="flex flex-col justify-center h-full w-full pr-2">
-                                    <label class="cursor-pointer text-sm font-bold text-ink tracking-wide mb-0.5"
-                                        >Ngày về</label>
-                                    <input id="input-return-date"
-                                        class="bg-transparent border-none p-0 focus:ring-0 text-body-md font-body-md text-ink w-full placeholder-muted-soft cursor-pointer truncate leading-tight outline-none"
-                                        type="date" disabled />
-                                </div>
-                            </div>
-                            <button id="btn-submit-search"
-                                class="bg-rausch hover:bg-rausch-active text-canvas rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-float flex-shrink-0 relative z-10 ml-2 mr-2 self-center"
-                                >
-                                <span class="material-symbols-outlined text-[20px]">search</span>
-                            </button>
-                        </div>
-                        <!-- Multi-city Container -->
-                        <div id="multicity-container" class="hidden flex flex-col gap-3 w-full">
-                            <div id="multicity-legs" class="flex flex-col gap-3 w-full">
-                                <!-- Leg 1 -->
-                                <div
-                                    class="multicity-leg flex flex-col md:flex-row gap-2 bg-surface-container-lowest border border-hairline rounded-xl p-2 items-center">
-                                    <span class="font-bold text-sm text-ink px-2">Chặng 1</span>
-                                    <div class="flex-1 flex gap-2 w-full">
-                                        <select
-                                            class="leg-dep flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
-                                            <option value="Da Nang">Đà Nẵng (DAD)</option>
-                                            <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
-                                            <option value="Ha Noi">Hà Nội (HAN)</option>
-                                        </select>
-                                        <select
-                                            class="leg-arr flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
-                                            <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
-                                            <option value="Da Nang">Đà Nẵng (DAD)</option>
-                                            <option value="Ha Noi">Hà Nội (HAN)</option>
-                                        </select>
+
+                                        <div class="relative flex-1">
+                                            <input type="text"
+                                                class="leg-arr-input w-full bg-surface-soft border-none rounded-lg p-2 pr-8 text-body-md font-body-md text-ink cursor-pointer outline-none focus:ring-1 focus:ring-ink truncate"
+                                                placeholder="Chọn điểm đến" data-value="">
+                                            <button type="button" class="leg-clear-btn absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-muted hover:text-rausch rounded-full text-sm font-bold hidden">×</button>
+                                            <div class="leg-arr-dropdown hidden absolute top-full left-0 mt-1 min-w-[200px] bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto scrollbar-hide" data-dropdown="airport">
+                                                <div class="px-4 py-3 flex items-center gap-3"><div class="w-5 h-5 rounded-full bg-surface-strong animate-pulse"></div><div class="flex-1"><div class="h-3 bg-surface-strong rounded animate-pulse mb-1"></div><div class="h-2 bg-surface-strong rounded animate-pulse w-1/2"></div></div></div>
+                                            </div>
+                                        </div>
+
                                         <input
                                             class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink"
                                             type="date" />
                                     </div>
+
                                     <button onclick="removeLeg(this)"
                                         class="p-2 text-muted hover:text-rausch disabled:opacity-50" disabled><span
                                             class="material-symbols-outlined">delete</span></button>
+
                                 </div>
+
                                 <!-- Leg 2 -->
+
                                 <div
                                     class="multicity-leg flex flex-col md:flex-row gap-2 bg-surface-container-lowest border border-hairline rounded-xl p-2 items-center">
+
                                     <span class="font-bold text-sm text-ink px-2">Chặng 2</span>
+
                                     <div class="flex-1 flex gap-2 w-full">
-                                        <select
-                                            class="leg-dep flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
-                                            <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
-                                            <option value="Da Nang">Đà Nẵng (DAD)</option>
-                                            <option value="Ha Noi">Hà Nội (HAN)</option>
-                                        </select>
-                                        <select
-                                            class="leg-arr flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
-                                            <option value="Ha Noi">Hà Nội (HAN)</option>
-                                            <option value="Da Nang">Đà Nẵng (DAD)</option>
-                                            <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
-                                        </select>
+
+                                        <div class="relative flex-1">
+                                            <input type="text"
+                                                class="leg-dep-input w-full bg-surface-soft border-none rounded-lg p-2 pr-8 text-body-md font-body-md text-ink cursor-pointer outline-none focus:ring-1 focus:ring-ink truncate"
+                                                placeholder="Chọn điểm đi" data-value="">
+                                            <button type="button" class="leg-clear-btn absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-muted hover:text-rausch rounded-full text-sm font-bold hidden">×</button>
+                                            <div class="leg-dep-dropdown hidden absolute top-full left-0 mt-1 min-w-[200px] bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto scrollbar-hide" data-dropdown="airport">
+                                                <div class="px-4 py-3 flex items-center gap-3"><div class="w-5 h-5 rounded-full bg-surface-strong animate-pulse"></div><div class="flex-1"><div class="h-3 bg-surface-strong rounded animate-pulse mb-1"></div><div class="h-2 bg-surface-strong rounded animate-pulse w-1/2"></div></div></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="relative flex-1">
+                                            <input type="text"
+                                                class="leg-arr-input w-full bg-surface-soft border-none rounded-lg p-2 pr-8 text-body-md font-body-md text-ink cursor-pointer outline-none focus:ring-1 focus:ring-ink truncate"
+                                                placeholder="Chọn điểm đến" data-value="">
+                                            <button type="button" class="leg-clear-btn absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-muted hover:text-rausch rounded-full text-sm font-bold hidden">×</button>
+                                            <div class="leg-arr-dropdown hidden absolute top-full left-0 mt-1 min-w-[200px] bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto scrollbar-hide" data-dropdown="airport">
+                                                <div class="px-4 py-3 flex items-center gap-3"><div class="w-5 h-5 rounded-full bg-surface-strong animate-pulse"></div><div class="flex-1"><div class="h-3 bg-surface-strong rounded animate-pulse mb-1"></div><div class="h-2 bg-surface-strong rounded animate-pulse w-1/2"></div></div></div>
+                                            </div>
+                                        </div>
+
                                         <input
                                             class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink"
                                             type="date" />
                                     </div>
-                                    <button onclick="removeLeg(this)" class="p-2 text-muted hover:text-rausch"><span
+
+                                    <button onclick="removeLeg(this)" class="p-2 text-muted hover:text-rausch disabled:opacity-50" disabled><span
+
                                             class="material-symbols-outlined">delete</span></button>
+
                                 </div>
+
                             </div>
+
                             <div class="flex justify-between items-center px-2">
+
                                 <button onclick="addLeg()"
+
                                     class="flex items-center gap-1 text-sm font-bold text-legal-blue hover:underline"><span
+
                                         class="material-symbols-outlined text-[18px]">add</span> Thêm chặng bay</button>
+
                                 <button id="btn-submit-multicity"
+
                                     class="bg-rausch hover:bg-rausch-active text-canvas rounded-full px-6 py-3 flex items-center justify-center transition-colors shadow-sm font-bold text-sm">
+
                                     Tìm chuyến bay
+
                                 </button>
+
                             </div>
+
                         </div>
+
                     </div> <!-- End BOOKING TAB CONTENT -->
+
                 </div>
+
             </div>
+
         </section>
+
     </main>
+
     <!-- BottomNavBar (Mobile) -->
-    <nav
+    <nav id="bottom-nav"
         class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 md:hidden pb-safe bg-white dark:bg-zinc-900 border-t border-zinc-100 dark:border-zinc-800 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] font-['Plus_Jakarta_Sans'] text-[10px] font-semibold">
-        <a class="flex flex-col items-center justify-center text-rose-500 dark:text-rose-400 opacity-80 active:scale-90 transition-transform w-full h-full"
-            href="#">
+        <a id="bnav-explore" class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 opacity-80 active:scale-90 transition-transform w-full h-full"
+            href="/">
             <span class="material-symbols-outlined mb-1">search</span>
             <span>Khám phá</span>
         </a>
-        <a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 opacity-80 active:scale-90 transition-transform w-full h-full"
-            href="#">
+        <a id="bnav-trips" class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 opacity-80 active:scale-90 transition-transform w-full h-full"
+            href="/historytransaction.html">
             <span class="material-symbols-outlined mb-1">flight_takeoff</span>
             <span>Chuyến đi</span>
         </a>
-        <a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 opacity-80 active:scale-90 transition-transform w-full h-full"
-            href="#">
+        <a id="bnav-account" class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 opacity-80 active:scale-90 transition-transform w-full h-full"
+            href="/profile.html">
             <span class="material-symbols-outlined mb-1">person</span>
             <span>Tài khoản</span>
         </a>
     </nav>
 
+
+
     <script src="/shared.js"></script>
+
     <script>
+
+        function closeAllPopups() {
+            const paxPopup = document.getElementById('pax-popup');
+            const classPopup = document.getElementById('class-popup');
+            const paxBtn = document.getElementById('btn-pax-toggle');
+            const classBtn = document.getElementById('btn-class-toggle');
+            if (paxPopup) paxPopup.classList.add('hidden');
+            if (classPopup) classPopup.classList.add('hidden');
+            if (paxBtn) paxBtn.setAttribute('aria-expanded', 'false');
+            if (classBtn) classBtn.setAttribute('aria-expanded', 'false');
+        }
+
         // State
+
         let paxState = { adult: 1, child: 0, infant: 0 };
         let seatClassVal = 'Economy';
         let flightType = 'oneway';
+        let todayStr = '';
+
+
 
         const isStaffBookingMode = (getUrlParam('staff') === 'true');
 
+
+
         document.addEventListener('DOMContentLoaded', () => {
+
             // Render shared navbar
+
             renderNavbar(isStaffBookingMode ? 'staff-booking' : 'home');
 
+
+
             if (isStaffBookingMode && typeof isStaff === 'function' && isStaff()) {
+
                 document.getElementById('staff-booking-banner').classList.remove('hidden');
+
                 // push content down so the banner doesn't overlap
+
                 document.querySelector('main').classList.replace('pt-20', 'pt-32');
+
+            }
+
+
+
+            // Highlight active bottom-nav tab
+            const path = window.location.pathname;
+            const bnavExplore = document.getElementById('bnav-explore');
+            const bnavTrips = document.getElementById('bnav-trips');
+            const bnavAccount = document.getElementById('bnav-account');
+            if (bnavExplore && bnavTrips && bnavAccount) {
+                [bnavExplore, bnavTrips, bnavAccount].forEach(el => {
+                    el.classList.remove('text-rose-500', 'dark:text-rose-400');
+                    el.classList.add('text-zinc-400', 'dark:text-zinc-500');
+                });
+                if (path === '/' || path === '/index.html') {
+                    bnavExplore.classList.remove('text-zinc-400', 'dark:text-zinc-500');
+                    bnavExplore.classList.add('text-rose-500', 'dark:text-rose-400');
+                } else if (path === '/historytransaction.html') {
+                    bnavTrips.classList.remove('text-zinc-400', 'dark:text-zinc-500');
+                    bnavTrips.classList.add('text-rose-500', 'dark:text-rose-400');
+                } else if (path === '/profile.html') {
+                    bnavAccount.classList.remove('text-zinc-400', 'dark:text-zinc-500');
+                    bnavAccount.classList.add('text-rose-500', 'dark:text-rose-400');
+                }
             }
 
             // Load airports dynamically from API
             loadAirports();
 
+            // Init multi-city custom dropdowns (even before API returns — uses fallback list on click)
+            initMulticityDropdowns();
+
+
+
             // Init Default Date — today in Vietnam timezone (UTC+7)
+
             const now = new Date();
+
             const vietnamOffset = 7 * 60; // UTC+7 in minutes
+
             const localOffset = now.getTimezoneOffset(); // local offset in minutes (negative for east of UTC)
+
             const vietnamTime = new Date(now.getTime() + (vietnamOffset + localOffset) * 60000);
-            const todayStr = vietnamTime.toISOString().split('T')[0];
+
+            todayStr = vietnamTime.toISOString().split('T')[0];
 
             document.getElementById('input-date').value = todayStr;
             document.getElementById('input-date').min = todayStr;
+            document.querySelectorAll('.leg-date').forEach(el => el.min = todayStr);
+
+            const fpDep = flatpickr('#input-date', {
+                locale: 'vi',
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                allowInput: true,
+                minDate: todayStr,
+                onChange: (selectedDates, dateStr) => {
+                    if (fpRet) fpRet.set('minDate', dateStr);
+                }
+            });
+            const fpRet = flatpickr('#input-return-date', {
+                locale: 'vi',
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                allowInput: true,
+                minDate: todayStr
+            });
 
             // Toggle Pax Popup
+
             const paxBtn = document.getElementById('btn-pax-toggle');
+
             const paxPopup = document.getElementById('pax-popup');
+
             paxBtn.onclick = (e) => {
+
                 e.stopPropagation();
+
                 paxPopup.classList.toggle('hidden');
-                document.getElementById('class-popup').classList.add('hidden');
+
+                paxBtn.setAttribute('aria-expanded', !paxPopup.classList.contains('hidden'));
+
+                classPopup.classList.add('hidden');
+
+                classBtn.setAttribute('aria-expanded', 'false');
+
             };
+
+            paxBtn.onkeydown = (e) => {
+
+                if (e.key === 'Escape') { closeAllPopups(); paxBtn.focus(); }
+
+            };
+
+
 
             // Toggle Class Popup
+
             const classBtn = document.getElementById('btn-class-toggle');
+
             const classPopup = document.getElementById('class-popup');
+
             classBtn.onclick = (e) => {
+
                 e.stopPropagation();
+
                 classPopup.classList.toggle('hidden');
+
+                classBtn.setAttribute('aria-expanded', !classPopup.classList.contains('hidden'));
+
                 paxPopup.classList.add('hidden');
+
+                paxBtn.setAttribute('aria-expanded', 'false');
+
             };
+
+            classBtn.onkeydown = (e) => {
+
+                if (e.key === 'Escape') { closeAllPopups(); classBtn.focus(); }
+
+                else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+
+                    e.preventDefault();
+
+                    const options = Array.from(classPopup.querySelectorAll('button[role="option"]'));
+
+                    const currentIdx = options.indexOf(document.activeElement);
+
+                    let nextIdx;
+
+                    if (e.key === 'ArrowDown') nextIdx = currentIdx + 1 < options.length ? currentIdx + 1 : 0;
+
+                    else nextIdx = currentIdx - 1 >= 0 ? currentIdx - 1 : options.length - 1;
+
+                    options[nextIdx].focus();
+
+                } else if (e.key === 'Enter' || e.key === ' ') {
+
+                    e.preventDefault();
+
+                    const focused = document.activeElement;
+
+                    if (focused && focused.getAttribute('role') === 'option') focused.click();
+
+                }
+
+            };
+
+
+
+            // Initialize seat class visual state
+
+            setSeatClass('Economy', 'Phổ thông');
+
+
 
             // Close popups on outside click
-            document.onclick = (e) => {
-                if (!paxPopup.contains(e.target) && !paxBtn.contains(e.target)) paxPopup.classList.add('hidden');
-                if (!classPopup.contains(e.target) && !classBtn.contains(e.target)) classPopup.classList.add('hidden');
-            };
+
+            document.addEventListener('click', (e) => {
+
+                if (!paxPopup.contains(e.target) && !paxBtn.contains(e.target)) { paxPopup.classList.add('hidden'); paxBtn.setAttribute('aria-expanded', 'false'); }
+
+                if (!classPopup.contains(e.target) && !classBtn.contains(e.target)) { classPopup.classList.add('hidden'); classBtn.setAttribute('aria-expanded', 'false'); }
+
+            });
+
+
+
+            // Global Escape to close all popups
+
+            document.addEventListener('keydown', (e) => {
+
+                if (e.key === 'Escape') closeAllPopups();
+
+            });
+
+
 
             // Search action normal
-            document.getElementById('btn-submit-search').onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
 
+            document.getElementById('btn-submit-search').onclick = (e) => {
+
+                e.preventDefault();
+
+                e.stopPropagation();
                 if (typeof requireAuth === 'function' && !requireAuth('Vui lòng đăng nhập để tìm kiếm chuyến bay')) return;
 
                 const dep = document.getElementById('input-dep').dataset.value;
                 const arr = document.getElementById('input-arr').dataset.value;
                 const date = document.getElementById('input-date').value;
 
-                if (!dep || dep === 'undefined') { alert('Vui lòng chọn điểm đi!'); return; }
-                if (!arr || arr === 'undefined') { alert('Vui lòng chọn điểm đến!'); return; }
+                if (!dep) { alert('Vui lòng chọn điểm đi!'); return; }
+                if (!arr) { alert('Vui lòng chọn điểm đến!'); return; }
                 if (dep === arr) { alert('Điểm đi và điểm đến phải khác nhau!'); return; }
                 if (!date) { alert('Vui lòng chọn ngày đi!'); return; }
 
                 const totalPax = paxState.adult + paxState.child + paxState.infant;
+
                 const params = new URLSearchParams({
+
                     type: flightType,
+
                     pax: totalPax,
+
                     adult: paxState.adult,
+
                     child: paxState.child,
+
                     infant: paxState.infant,
+
                     cls: seatClassVal,
+
                     dep, arr, date
+
                 });
 
+
+
                 if (flightType === 'roundtrip') {
+
                     const returnDate = document.getElementById('input-return-date').value;
+
                     if (!returnDate) { alert('Vui lòng chọn ngày về!'); return; }
+
                     if (new Date(returnDate) < new Date(date)) { alert('Ngày về phải sau ngày đi!'); return; }
+
                     params.set('returnDate', returnDate);
+
                 }
+
+
 
                 if (isStaffBookingMode && typeof isStaff === 'function' && isStaff()) {
+
                     params.set('staff', 'true');
+
                 }
 
+
+
                 window.location.href = '/flightsearch.html?' + params.toString();
+
             };
 
+
+
             // Search action multicity
+
             document.getElementById('btn-submit-multicity').onclick = (e) => {
+
                 e.preventDefault();
+
                 e.stopPropagation();
+
+
 
                 if (typeof requireAuth === 'function' && !requireAuth('Vui lòng đăng nhập để tìm kiếm chuyến bay')) return;
 
+
+
                 const legs = document.querySelectorAll('.multicity-leg');
+
                 let valid = true;
+
                 const mcData = [];
+
                 let prevDate = null;
 
+
+
                 legs.forEach((leg, i) => {
-                    const dep = leg.querySelector('.leg-dep').value;
-                    const arr = leg.querySelector('.leg-arr').value;
+
+                    const dep = (leg.querySelector('.leg-dep-input') || leg.querySelector('.leg-dep')).dataset.value || (leg.querySelector('.leg-dep-input') || leg.querySelector('.leg-dep')).value;
+
+                    const arr = (leg.querySelector('.leg-arr-input') || leg.querySelector('.leg-arr')).dataset.value || (leg.querySelector('.leg-arr-input') || leg.querySelector('.leg-arr')).value;
+
                     const date = leg.querySelector('.leg-date').value;
 
+
+
+                    if (!dep) { alert(`Chặng ${i + 1}: Vui lòng chọn điểm đi!`); valid = false; return; }
+
+                    if (!arr) { alert(`Chặng ${i + 1}: Vui lòng chọn điểm đến!`); valid = false; return; }
+
                     if (dep === arr) { alert(`Chặng ${i + 1}: Điểm đi và điểm đến phải khác nhau!`); valid = false; return; }
+
                     if (!date) { alert(`Chặng ${i + 1}: Vui lòng chọn ngày đi!`); valid = false; return; }
 
+
+
                     if (prevDate && new Date(date) < new Date(prevDate)) {
+
                         alert(`Chặng ${i + 1}: Ngày bay không được trước ngày của chặng trước đó!`); valid = false; return;
+
                     }
+
                     prevDate = date;
 
+
+
                     mcData.push({ dep, arr, date });
+
                 });
+
+
 
                 if (!valid) return;
 
+
+
                 const totalPax = paxState.adult + paxState.child + paxState.infant;
+
                 const params = new URLSearchParams({
+
                     type: 'multicity',
+
                     pax: totalPax,
+
                     adult: paxState.adult,
+
                     child: paxState.child,
+
                     infant: paxState.infant,
+
                     cls: seatClassVal,
+
                     mc: JSON.stringify(mcData)
+
                 });
 
+
+
                 if (isStaffBookingMode && typeof isStaff === 'function' && isStaff()) {
+
                     params.set('staff', 'true');
+
                 }
 
+
+
                 window.location.href = '/flightsearch.html?' + params.toString();
+
             };
+
         });
 
-        // Add Multi-city Leg
-        function addLeg() {
-            const container = document.getElementById('multicity-legs');
-            const legs = container.querySelectorAll('.multicity-leg');
-            if (legs.length >= 6) {
-                alert('Tối đa 6 chặng bay.');
+
+        // ── Multi-city custom dropdown helpers ──
+
+        function populateMulticityDropdown(dropdownEl, filterText, excludeCode) {
+            const term = (filterText || '').toLowerCase();
+            const list = airportList.length > 0 ? airportList : ['Da Nang', 'Ho Chi Minh', 'Ha Noi', 'Can Tho', 'Hue', 'Phu Quoc', 'Nha Trang', 'Hai Phong', 'Bangkok', 'Singapore', 'Tokyo', 'Seoul', 'Kuala Lumpur'];
+            if (list.length === 0 || airportList.length === 0 && !term) {
+                dropdownEl.innerHTML = `<div class="px-4 py-3 flex items-center gap-3"><div class="w-5 h-5 rounded-full bg-surface-strong animate-pulse"></div><div class="flex-1"><div class="h-3 bg-surface-strong rounded animate-pulse mb-1"></div><div class="h-2 bg-surface-strong rounded animate-pulse w-1/2"></div></div></div>`;
                 return;
             }
+            dropdownEl.innerHTML = list
+                .filter(a => a !== excludeCode)
+                .filter(a => {
+                    if (!term) return true;
+                    const label = getAirportLabel(a).toLowerCase();
+                    return a.toLowerCase().includes(term) || label.includes(term);
+                })
+                .map(a => {
+                    const label = getAirportLabel(a);
+                    return `<div class="airport-item px-4 py-3 hover:bg-surface-soft cursor-pointer transition-colors border-b border-hairline last:border-0" data-code="${esc(a)}">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-muted text-[18px]">flight_takeoff</span>
+                            <div>
+                                <div class="font-bold text-ink">${esc(label.split(' (')[0])}</div>
+                                <div class="text-xs text-muted">${esc(a)}</div>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('') || '<div class="px-4 py-3 text-muted text-sm">Không tìm thấy sân bay</div>';
+        }
+
+        function updateMcClearBtn(input) {
+            const btn = input.parentElement.querySelector('.leg-clear-btn');
+            if (btn) btn.classList.toggle('hidden', !input.dataset.value);
+        }
+
+        function initMulticityDropdowns() {
+            document.querySelectorAll('.multicity-leg .leg-dep-input').forEach(input => {
+                if (input.dataset.mcInit) return;
+                input.dataset.mcInit = 'true';
+                updateMcClearBtn(input);
+
+                const dropdown = input.parentElement.querySelector('.leg-dep-dropdown');
+                if (!dropdown) return;
+
+                const clearBtn = input.parentElement.querySelector('.leg-clear-btn');
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        input.value = '';
+                        input.dataset.value = '';
+                        updateMcClearBtn(input);
+                        const otherInput = input.closest('.multicity-leg').querySelector('.leg-arr-input');
+                        const excludeCode = otherInput ? otherInput.dataset.value : '';
+                        populateMulticityDropdown(dropdown, '', excludeCode);
+                        dropdown.classList.remove('hidden');
+                        input.focus();
+                    });
+                }
+
+                input.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    input.value = '';
+                    const otherInput = input.closest('.multicity-leg').querySelector('.leg-arr-input');
+                    const excludeCode = otherInput ? otherInput.dataset.value : '';
+                    populateMulticityDropdown(dropdown, '', excludeCode);
+                    document.querySelectorAll('.multicity-leg [data-dropdown="airport"]').forEach(d => {
+                        if (d !== dropdown) d.classList.add('hidden');
+                    });
+                    dropdown.classList.remove('hidden');
+                });
+
+                input.addEventListener('input', (e) => {
+                    e.stopPropagation();
+                    const otherInput = input.closest('.multicity-leg').querySelector('.leg-arr-input');
+                    const excludeCode = otherInput ? otherInput.dataset.value : '';
+                    populateMulticityDropdown(dropdown, input.value, excludeCode);
+                    dropdown.classList.remove('hidden');
+                });
+
+                dropdown.addEventListener('click', (e) => {
+                    const item = e.target.closest('.airport-item');
+                    if (!item) return;
+                    const code = item.dataset.code;
+                    input.value = getAirportLabel(code);
+                    input.dataset.value = code;
+                    updateMcClearBtn(input);
+                    dropdown.classList.add('hidden');
+                });
+            });
+
+            document.querySelectorAll('.multicity-leg .leg-arr-input').forEach(input => {
+                if (input.dataset.mcInit) return;
+                input.dataset.mcInit = 'true';
+                updateMcClearBtn(input);
+
+                const dropdown = input.parentElement.querySelector('.leg-arr-dropdown');
+                if (!dropdown) return;
+
+                const clearBtn = input.parentElement.querySelector('.leg-clear-btn');
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        input.value = '';
+                        input.dataset.value = '';
+                        updateMcClearBtn(input);
+                        const otherInput = input.closest('.multicity-leg').querySelector('.leg-dep-input');
+                        const excludeCode = otherInput ? otherInput.dataset.value : '';
+                        populateMulticityDropdown(dropdown, '', excludeCode);
+                        dropdown.classList.remove('hidden');
+                        input.focus();
+                    });
+                }
+
+                input.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    input.value = '';
+                    const otherInput = input.closest('.multicity-leg').querySelector('.leg-dep-input');
+                    const excludeCode = otherInput ? otherInput.dataset.value : '';
+                    populateMulticityDropdown(dropdown, '', excludeCode);
+                    document.querySelectorAll('.multicity-leg [data-dropdown="airport"]').forEach(d => {
+                        if (d !== dropdown) d.classList.add('hidden');
+                    });
+                    dropdown.classList.remove('hidden');
+                });
+
+                input.addEventListener('input', (e) => {
+                    e.stopPropagation();
+                    const otherInput = input.closest('.multicity-leg').querySelector('.leg-dep-input');
+                    const excludeCode = otherInput ? otherInput.dataset.value : '';
+                    populateMulticityDropdown(dropdown, input.value, excludeCode);
+                    dropdown.classList.remove('hidden');
+                });
+
+                dropdown.addEventListener('click', (e) => {
+                    const item = e.target.closest('.airport-item');
+                    if (!item) return;
+                    const code = item.dataset.code;
+                    input.value = getAirportLabel(code);
+                    input.dataset.value = code;
+                    updateMcClearBtn(input);
+                    dropdown.classList.add('hidden');
+                });
+            });
+        }
+
+
+        // Add Multi-city Leg
+
+        function addLeg() {
+
+            const container = document.getElementById('multicity-legs');
+
+            const legs = container.querySelectorAll('.multicity-leg');
+
+            if (legs.length >= 6) {
+
+                alert('Tối đa 6 chặng bay.');
+
+                return;
+
+            }
+
+
 
             const lastLeg = legs[legs.length - 1];
-            const lastArr = lastLeg.querySelector('.leg-arr').value;
+
+            const lastArrEl = lastLeg.querySelector('.leg-arr-input') || lastLeg.querySelector('.leg-arr');
+            const lastArr = lastArrEl ? (lastArrEl.dataset.value || lastArrEl.value) : '';
 
             const idx = legs.length + 1;
+
             const div = document.createElement('div');
+
             div.className = "multicity-leg flex flex-col md:flex-row gap-2 bg-surface-container-lowest border border-hairline rounded-xl p-2 items-center";
-            const depOptions = airportList.length > 0 ? buildAirportOptions(lastArr) : `
-                        <option value="Da Nang" ${lastArr === 'Da Nang' ? 'selected' : ''}>Đà Nẵng (DAD)</option>
-                        <option value="Ho Chi Minh" ${lastArr === 'Ho Chi Minh' ? 'selected' : ''}>TP. Hồ Chí Minh (SGN)</option>
-                        <option value="Ha Noi" ${lastArr === 'Ha Noi' ? 'selected' : ''}>Hà Nội (HAN)</option>`;
-            const arrOptions = airportList.length > 0 ? buildAirportOptions('') : `
-                        <option value="Ho Chi Minh">TP. Hồ Chí Minh (SGN)</option>
-                        <option value="Da Nang">Đà Nẵng (DAD)</option>
-                        <option value="Ha Noi">Hà Nội (HAN)</option>`;
+
             div.innerHTML = `
+
                 <span class="font-bold text-sm text-ink px-2">Chặng ${idx}</span>
+
                 <div class="flex-1 flex gap-2 w-full">
-                    <select class="leg-dep flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
-                        ${depOptions}
-                    </select>
-                    <select class="leg-arr flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink">
-                        ${arrOptions}
-                    </select>
-                    <input class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink" type="date" />
+
+                    <div class="relative flex-1">
+                        <input type="text"
+                            class="leg-dep-input w-full bg-surface-soft border-none rounded-lg p-2 pr-8 text-body-md font-body-md text-ink cursor-pointer outline-none focus:ring-1 focus:ring-ink truncate"
+                            placeholder="Chọn điểm đi" data-value="${lastArr ? esc(lastArr) : ''}"
+                            value="${lastArr ? getAirportLabel(lastArr) : ''}">
+                        <button type="button" class="leg-clear-btn absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-muted hover:text-rausch rounded-full text-sm font-bold hidden">×</button>
+                        <div class="leg-dep-dropdown hidden absolute top-full left-0 mt-1 min-w-[200px] bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto scrollbar-hide" data-dropdown="airport">
+                            <div class="px-4 py-3 flex items-center gap-3"><div class="w-5 h-5 rounded-full bg-surface-strong animate-pulse"></div><div class="flex-1"><div class="h-3 bg-surface-strong rounded animate-pulse mb-1"></div><div class="h-2 bg-surface-strong rounded animate-pulse w-1/2"></div></div></div>
+                        </div>
+                    </div>
+
+                    <div class="relative flex-1">
+                        <input type="text"
+                            class="leg-arr-input w-full bg-surface-soft border-none rounded-lg p-2 pr-8 text-body-md font-body-md text-ink cursor-pointer outline-none focus:ring-1 focus:ring-ink truncate"
+                            placeholder="Chọn điểm đến" data-value="">
+                        <button type="button" class="leg-clear-btn absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-muted hover:text-rausch rounded-full text-sm font-bold hidden">×</button>
+                        <div class="leg-arr-dropdown hidden absolute top-full left-0 mt-1 min-w-[200px] bg-white rounded-xl shadow-search border border-hairline py-2 z-50 max-h-64 overflow-y-auto scrollbar-hide" data-dropdown="airport">
+                            <div class="px-4 py-3 flex items-center gap-3"><div class="w-5 h-5 rounded-full bg-surface-strong animate-pulse"></div><div class="flex-1"><div class="h-3 bg-surface-strong rounded animate-pulse mb-1"></div><div class="h-2 bg-surface-strong rounded animate-pulse w-1/2"></div></div></div>
+                        </div>
+                    </div>
+
+                    <input class="leg-date flex-1 bg-surface-soft border-none rounded-lg p-2 text-body-md font-body-md text-ink w-full cursor-pointer outline-none focus:ring-1 focus:ring-ink" type="date" min="${todayStr}" />
+
                 </div>
+
                 <button onclick="removeLeg(this)" class="p-2 text-muted hover:text-rausch"><span class="material-symbols-outlined">delete</span></button>
+
             `;
+
             container.appendChild(div);
+
+            initMulticityDropdowns();
+
             updateLegNumbers();
+
         }
 
+
+
         function removeLeg(btn) {
+
             const container = document.getElementById('multicity-legs');
+
             if (container.querySelectorAll('.multicity-leg').length <= 2) {
+
                 alert('Nhiều chặng phải có ít nhất 2 chuyến bay.');
+
                 return;
+
             }
+
             btn.closest('.multicity-leg').remove();
+
             updateLegNumbers();
+
         }
+
+
 
         function updateLegNumbers() {
             const legs = document.querySelectorAll('.multicity-leg');
             legs.forEach((leg, i) => {
                 leg.querySelector('span.font-bold').textContent = `Chặng ${i + 1}`;
                 const delBtn = leg.querySelector('button');
-                if (i === 0) delBtn.disabled = true; // First leg cannot be deleted
+                delBtn.disabled = (i === 0 || legs.length <= 2);
             });
         }
 
+
+
         // Global airport list for dynamic population
+
         let airportList = [];
 
+
+
         function buildAirportOptions(selectedValue) {
-            const labelMap = {
-                'Đà Nẵng': 'Đà Nẵng (DAD)',
-                'TP. Hồ Chí Minh': 'TP. Hồ Chí Minh (SGN)',
-                'Hà Nội': 'Hà Nội (HAN)',
-                'Cần Thơ': 'Cần Thơ (VCA)',
-                'Huế': 'Huế (HUI)',
-                'Phú Quốc': 'Phú Quốc (PQC)',
-                'Nha Trang': 'Nha Trang (NTR)',
-                'Hải Phòng': 'Hải Phòng (HPH)',
-                'Bangkok': 'Bangkok (BKK)',
-                'Singapore': 'Singapore (SIN)',
-                'Tokyo': 'Tokyo (TYO)',
-                'Seoul': 'Seoul (SEL)',
-                'Kuala Lumpur': 'Kuala Lumpur (KUL)'
-            };
-            const list = airportList.length > 0 ? airportList : Object.keys(labelMap);
+            const list = airportList.length > 0 ? airportList : ['Da Nang', 'Ho Chi Minh', 'Ha Noi', 'Can Tho', 'Hue', 'Phu Quoc', 'Nha Trang', 'Hai Phong', 'Bangkok', 'Singapore', 'Tokyo', 'Seoul', 'Kuala Lumpur'];
             return list.map(a => {
-                const label = labelMap[a] || a;
+                const label = getAirportLabel(a);
                 const sel = a === selectedValue ? ' selected' : '';
-                return `<option value="${a.replace(/"/g, '&quot;')}"${sel}>${label}</option>`;
+                return `<option value="${esc(a)}"${sel}>${label}</option>`;
             }).join('');
         }
 
+
+
         async function loadAirports() {
+
             try {
+
                 const airports = await api('GET', '/Flights/airports');
+
                 if (!Array.isArray(airports) || airports.length === 0) return;
+
                 airportList = airports;
+
                 populateAirportSelects();
+
             } catch (e) {
+
                 // keep current static options as fallback
+
             }
+
         }
 
-        // Custom searchable dropdown for airports (Airbnb style)
-        function getAirportLabel(code) {
-            const labelMap = {
-                'Đà Nẵng': 'Đà Nẵng (DAD)',
-                'TP. Hồ Chí Minh': 'TP. Hồ Chí Minh (SGN)',
-                'Hà Nội': 'Hà Nội (HAN)',
-                'Cần Thơ': 'Cần Thơ (VCA)',
-                'Huế': 'Huế (HUI)',
-                'Phú Quốc': 'Phú Quốc (PQC)',
-                'Nha Trang': 'Nha Trang (NTR)',
-                'Hải Phòng': 'Hải Phòng (HPH)',
-                'Bangkok': 'Bangkok (BKK)',
-                'Singapore': 'Singapore (SIN)',
-                'Tokyo': 'Tokyo (TYO)',
-                'Seoul': 'Seoul (SEL)',
-                'Kuala Lumpur': 'Kuala Lumpur (KUL)'
-            };
-            return labelMap[code] || code;
-        }
+
+
+        // getAirportLabel() is inherited from shared.js (AIRPORT_LABEL_MAP covers both accented and non-accented keys)
+
+
 
         function buildAirportDropdownItems(filterText, excludeCode) {
-            const labelMap = {
-                'Đà Nẵng': 'Đà Nẵng (DAD)',
-                'TP. Hồ Chí Minh': 'TP. Hồ Chí Minh (SGN)',
-                'Hà Nội': 'Hà Nội (HAN)',
-                'Cần Thơ': 'Cần Thơ (VCA)',
-                'Huế': 'Huế (HUI)',
-                'Phú Quốc': 'Phú Quốc (PQC)',
-                'Nha Trang': 'Nha Trang (NTR)',
-                'Hải Phòng': 'Hải Phòng (HPH)',
-                'Bangkok': 'Bangkok (BKK)',
-                'Singapore': 'Singapore (SIN)',
-                'Tokyo': 'Tokyo (TYO)',
-                'Seoul': 'Seoul (SEL)',
-                'Kuala Lumpur': 'Kuala Lumpur (KUL)'
-            };
             const term = (filterText || '').toLowerCase();
-            const list = airportList.length > 0 ? airportList : Object.keys(labelMap);
+            const list = airportList.length > 0 ? airportList : ['Da Nang', 'Ho Chi Minh', 'Ha Noi', 'Can Tho', 'Hue', 'Phu Quoc', 'Nha Trang', 'Hai Phong', 'Bangkok', 'Singapore', 'Tokyo', 'Seoul', 'Kuala Lumpur'];
+            if (list.length === 0 || airportList.length === 0 && !term) {
+                return `<div class="px-4 py-3 flex items-center gap-3"><div class="w-5 h-5 rounded-full bg-surface-strong animate-pulse"></div><div class="flex-1"><div class="h-3 bg-surface-strong rounded animate-pulse mb-1"></div><div class="h-2 bg-surface-strong rounded animate-pulse w-1/2"></div></div></div>`;
+            }
             return list
                 .filter(a => a !== excludeCode)
                 .filter(a => {
                     if (!term) return true;
-                    const label = (labelMap[a] || a).toLowerCase();
+                    const label = getAirportLabel(a).toLowerCase();
                     return a.toLowerCase().includes(term) || label.includes(term);
                 })
                 .map(a => {
-                    const label = labelMap[a] || a;
-                    return `<div class="airport-item px-4 py-3 hover:bg-surface-soft cursor-pointer transition-colors border-b border-hairline last:border-0" data-code="${a.replace(/"/g, '&quot;')}">
-                        <div class="font-bold text-ink">${label.split(' (')[0]}</div>
-                        <div class="text-xs text-muted">${a}</div>
+                    const label = getAirportLabel(a);
+                    return `<div class="airport-item px-4 py-3 hover:bg-surface-soft cursor-pointer transition-colors border-b border-hairline last:border-0" data-code="${esc(a)}">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-muted text-[18px]">flight_takeoff</span>
+                            <div>
+                                <div class="font-bold text-ink">${esc(label.split(' (')[0])}</div>
+                                <div class="text-xs text-muted">${esc(a)}</div>
+                            </div>
+                        </div>
                     </div>`;
                 }).join('') || '<div class="px-4 py-3 text-muted text-sm">Không tìm thấy sân bay</div>';
         }
 
+
+
         function setupAirportDropdown(inputId, dropdownId, otherInputId) {
+
             const input = document.getElementById(inputId);
+
             const dropdown = document.getElementById(dropdownId);
+
             if (!input || !dropdown) return;
 
-            input.addEventListener('click', (e) => {
+            if (input.dataset.dropdownInit) return;
+
+            input.dataset.dropdownInit = 'true';
+
+
+
+            input.addEventListener('input', (e) => {
                 e.stopPropagation();
                 const otherCode = document.getElementById(otherInputId)?.dataset.value;
-                dropdown.innerHTML = buildAirportDropdownItems('', otherCode);
+                dropdown.innerHTML = buildAirportDropdownItems(input.value, otherCode);
                 dropdown.classList.remove('hidden');
-                // Close other dropdowns
-                document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
-                    if (d.id !== dropdownId) d.classList.add('hidden');
-                });
             });
+
+            input.addEventListener('click', (e) => {
+
+                e.stopPropagation();
+
+                input._savedValue = input.value;
+                input.value = '';
+
+                const otherCode = document.getElementById(otherInputId)?.dataset.value;
+
+                dropdown.innerHTML = buildAirportDropdownItems('', otherCode);
+
+                dropdown.classList.remove('hidden');
+
+                // Close other dropdowns
+
+                document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
+
+                    if (d.id !== dropdownId) d.classList.add('hidden');
+
+                });
+
+            });
+
+
 
             dropdown.addEventListener('click', (e) => {
+
                 const item = e.target.closest('.airport-item');
+
                 if (!item) return;
+
                 const code = item.dataset.code;
+
                 const label = getAirportLabel(code);
+
                 input.value = label;
+
                 input.dataset.value = code;
+
                 dropdown.classList.add('hidden');
+
             });
+
         }
+
+
 
         function populateAirportSelects() {
+
             if (airportList.length === 0) return;
+
             setupAirportDropdown('input-dep', 'dropdown-dep', 'input-arr');
+
             setupAirportDropdown('input-arr', 'dropdown-arr', 'input-dep');
 
-            // Set default values if not already set
-            const depInput = document.getElementById('input-dep');
-            const arrInput = document.getElementById('input-arr');
 
-            if (!depInput.dataset.value && airportList.length > 0) {
-                depInput.dataset.value = airportList[0];
-                depInput.value = getAirportLabel(airportList[0]);
+            // Close all custom dropdowns on outside click and restore unselected inputs
+            if (!document._mcClickListenerAdded) {
+                document._mcClickListenerAdded = true;
+                document.addEventListener('click', (e) => {
+                    const depInput = document.getElementById('input-dep');
+                    const arrInput = document.getElementById('input-arr');
+                    [depInput, arrInput].forEach(inp => {
+                        if (!inp) return;
+                        if (inp.contains(e.target)) return;
+                        if (inp.dataset.value) inp.value = getAirportLabel(inp.dataset.value);
+                        else if (inp) inp.value = inp._savedValue || '';
+                    });
+                    document.querySelectorAll('.multicity-leg .leg-dep-input, .multicity-leg .leg-arr-input').forEach(input => {
+                        const dropdown = input.parentElement.querySelector('[data-dropdown="airport"]');
+                        if (!dropdown) return;
+                        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                            if (input.dataset.value) {
+                                input.value = getAirportLabel(input.dataset.value);
+                            } else {
+                                input.value = '';
+                            }
+                        }
+                    });
+                    document.querySelectorAll('[id^="dropdown-"], [data-dropdown="airport"]').forEach(d => d.classList.add('hidden'));
+                });
             }
-            if (!arrInput.dataset.value && airportList.length > 1) {
-                arrInput.dataset.value = airportList[1];
-                arrInput.value = getAirportLabel(airportList[1]);
-            }
 
-            // Close dropdowns on outside click
-            document.addEventListener('click', () => {
-                document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.classList.add('hidden'));
-            });
-
-            // Multi-city selects remain as <select> for simplicity
-            document.querySelectorAll('.leg-dep, .leg-arr').forEach(sel => {
-                const cur = sel.value;
-                sel.innerHTML = airportList.map(a => {
-                    const label = getAirportLabel(a);
-                    const selected = a === cur ? ' selected' : '';
-                    return `<option value="${a.replace(/"/g, '&quot;')}"${selected}>${label}</option>`;
-                }).join('');
-            });
         }
+
+
 
         // Flight Type Logic
+
         function setFlightType(type) {
+
             flightType = type;
+
             const btnOneway = document.getElementById('btn-type-oneway');
+
             const btnRoundtrip = document.getElementById('btn-type-roundtrip');
+
             const btnMulticity = document.getElementById('btn-type-multicity');
+
             const returnContainer = document.getElementById('return-date-container');
+
             const returnInput = document.getElementById('input-return-date');
 
+
+
             // Reset styling
+
             [btnOneway, btnRoundtrip, btnMulticity].forEach(b => {
+
                 b.classList.remove('bg-surface-soft');
+
                 b.classList.add('hover:bg-surface-soft');
+
             });
 
+
+
             const normalPill = document.getElementById('normal-search-pill');
+
             const mcContainer = document.getElementById('multicity-container');
 
+
+
             // Set active styling
+
             if (type === 'oneway' || type === 'roundtrip') {
+
                 normalPill.classList.remove('hidden');
+
                 mcContainer.classList.add('hidden');
 
+
+
                 if (type === 'oneway') {
+
                     btnOneway.classList.add('bg-surface-soft');
+
                     btnOneway.classList.remove('hover:bg-surface-soft');
+
                     returnContainer.classList.add('opacity-50', 'pointer-events-none');
-                    returnInput.disabled = true;
-                    returnInput.value = '';
+
+                    if (fpRet) fpRet._input.disabled = true;
+
+                    if (fpRet) fpRet.clear();
+
                 } else if (type === 'roundtrip') {
+
                     btnRoundtrip.classList.add('bg-surface-soft');
+
                     btnRoundtrip.classList.remove('hover:bg-surface-soft');
+
                     returnContainer.classList.remove('opacity-50', 'pointer-events-none');
-                    returnInput.disabled = false;
+
+                    if (fpRet) fpRet._input.disabled = false;
+
                 }
+
             } else if (type === 'multicity') {
+
                 btnMulticity.classList.add('bg-surface-soft');
+
                 btnMulticity.classList.remove('hover:bg-surface-soft');
+
                 normalPill.classList.add('hidden');
+
                 mcContainer.classList.remove('hidden');
+
                 mcContainer.classList.add('flex');
+
             }
+
         }
+
+
 
         // Passenger Logic
+
         function updatePax(type, change) {
+
             let newVal = paxState[type] + change;
+
             if (type === 'adult' && newVal < 1) newVal = 1; // Min 1 adult
+
             if ((type === 'child' || type === 'infant') && newVal < 0) newVal = 0; // Min 0 child/infant
 
+
+
             // Rule: 1 infant per adult maximum
+
             if (type === 'infant' && newVal > paxState.adult) {
+
                 alert('Số lượng em bé không được vượt quá số lượng người lớn.');
+
                 return;
+
             }
+
+
 
             // Rule: Maximum 9 passengers total (as per API limits)
+
             const totalPax = paxState.adult + paxState.child + paxState.infant;
+
             if (change > 0 && totalPax >= 9) {
+
                 alert('Tối đa 9 hành khách mỗi lần đặt.');
+
                 return;
+
             }
+
+
 
             paxState[type] = newVal;
+
             document.getElementById(`pax-${type}`).textContent = newVal;
 
+
+
             // Validate infant count if adult count decreases
+
             if (type === 'adult' && paxState.infant > paxState.adult) {
+
                 paxState.infant = paxState.adult;
+
                 document.getElementById('pax-infant').textContent = paxState.infant;
+
             }
 
+
+
             updatePaxDisplay();
+
         }
+
+
 
         function updatePaxDisplay() {
+
             const total = paxState.adult + paxState.child + paxState.infant;
+
             document.getElementById('pax-display-text').textContent = total + ' Hành khách';
 
+
+
             // Update buttons state
+
             document.getElementById('btn-pax-adult-dec').disabled = paxState.adult <= 1;
+
             document.getElementById('btn-pax-child-dec').disabled = paxState.child <= 0;
+
             document.getElementById('btn-pax-infant-dec').disabled = paxState.infant <= 0;
+
         }
 
+
+
 // Seat Class Logic
+
  function setSeatClass(val, label) {
+
  seatClassVal = val;
+
  document.getElementById('class-display-text').textContent = label;
+
  document.getElementById('class-popup').classList.add('hidden');
+
+ // Update visual active state
+
+ document.querySelectorAll('#class-popup button').forEach(btn => {
+
+     btn.classList.remove('bg-surface-soft', 'font-bold', 'text-rausch');
+
+     const check = btn.querySelector('.checkmark');
+
+     if (check) check.classList.add('hidden');
+
+ });
+
+ const activeBtn = document.getElementById(val === 'Economy' ? 'opt-economy' : 'opt-business');
+
+ if (activeBtn) {
+
+     activeBtn.classList.add('bg-surface-soft', 'font-bold', 'text-rausch');
+
+     const check = activeBtn.querySelector('.checkmark');
+
+     if (check) check.classList.remove('hidden');
+
  }
+
+ }
+
+
 
  // Swap departure and arrival
+
  function swapDepartureAndArrival() {
+
  const depInput = document.getElementById('input-dep');
+
  const arrInput = document.getElementById('input-arr');
 
+
+
  // Swap values
+
  const tempValue = depInput.value;
+
  const tempDataValue = depInput.dataset.value;
 
+
+
  depInput.value = arrInput.value;
+
  depInput.dataset.value = arrInput.dataset.value;
 
+
+
  arrInput.value = tempValue;
+
  arrInput.dataset.value = tempDataValue;
+
  }
+
     </script>
+
 </body>
+
+
 
 </html>

@@ -474,6 +474,69 @@ async function loadAirports() {
   ];
 }
 
+// ── Airport label map (shared across pages) ──
+const AIRPORT_LABEL_MAP = {
+  // Old keys (không dấu) — giữ để backward compat
+  'Da Nang': 'Đà Nẵng (DAD)',
+  'Ho Chi Minh': 'TP. Hồ Chí Minh (SGN)',
+  'Ha Noi': 'Hà Nội (HAN)',
+  'Can Tho': 'Cần Thơ (VCA)',
+  'Hue': 'Huế (HUI)',
+  'Phu Quoc': 'Phú Quốc (PQC)',
+  'Nha Trang': 'Nha Trang (CXR)',
+  'Hai Phong': 'Hải Phòng (HPH)',
+  'Bangkok': 'Bangkok (BKK)',
+  'Singapore': 'Singapore (SIN)',
+  'Tokyo': 'Tokyo (NRT)',
+  'Seoul': 'Seoul (ICN)',
+  'Kuala Lumpur': 'Kuala Lumpur (KUL)',
+  // New keys (có dấu) — khớp với giá trị DB hiện tại
+  'Đà Nẵng': 'Đà Nẵng (DAD)',
+  'TP. Hồ Chí Minh': 'TP. Hồ Chí Minh (SGN)',
+  'Hà Nội': 'Hà Nội (HAN)',
+  'Cần Thơ': 'Cần Thơ (VCA)',
+  'Huế': 'Huế (HUI)',
+  'Phú Quốc': 'Phú Quốc (PQC)',
+  'Nha Trang': 'Nha Trang (CXR)',
+  'Hải Phòng': 'Hải Phòng (HPH)',
+  // Legacy full-label keys
+  'Da Nang (DAD)': 'Đà Nẵng (DAD)',
+  'TP. Hồ Chí Minh (SGN)': 'TP. Hồ Chí Minh (SGN)',
+  'Hà Nội (HAN)': 'Hà Nội (HAN)'
+};
+
+function getAirportLabel(code) {
+  return AIRPORT_LABEL_MAP[code] || code;
+}
+
+function normalizeAirportName(s) {
+  if (!s) return '';
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+// ── XSS escape ──
+function esc(s) {
+  return String(s)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+const escapeHtmlText = esc;
+
+// ── Vietnam time helpers ──
+function getVietnamHour(dateStr) {
+  if (!dateStr) return 0;
+  return parseInt(new Date(dateStr).toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh', hour: 'numeric', hour12: false }));
+}
+
+function getVietnamDate(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+}
+
 // ── Airline logo helper ──
 function airlineLogoHtml(code, name, color) {
   const safeCode = code || 'HMH';

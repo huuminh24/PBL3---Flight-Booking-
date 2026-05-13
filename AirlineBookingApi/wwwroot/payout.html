@@ -7,8 +7,19 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{rausch:"#ff385c","rausch-active":"#e00b41",ink:"#222222",muted:"#6a6a6a",canvas:"#ffffff",hairline:"#dddddd"},fontFamily:{sans:["Plus Jakarta Sans","sans-serif"]}}}}</script>
-<style>body{font-family:'Plus Jakarta Sans',sans-serif} .input-field{width:100%;height:56px;padding:0 16px;border:1px solid #ddd;border-radius:8px;font-size:14px;transition:border-color .2s} .input-field:focus{border-color:#ff385c;outline:none;box-shadow:0 0 0 1px #ff385c}</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{rausch:"#ff385c","rausch-active":"#e00b41",ink:"#222222",muted:"#6a6a6a",canvas:"#ffffff",hairline:"#dddddd"},fontFamily:{sans:["Plus Jakarta Sans","sans-serif"]},boxShadow:{search:"rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px 0, rgba(0,0,0,0.1) 0 4px 8px 0"}}}}</script>
+<style>body{font-family:'Plus Jakarta Sans',sans-serif} .input-field{width:100%;height:56px;padding:0 16px;border:1px solid #ddd;border-radius:8px;font-size:14px;transition:border-color .2s} .input-field:focus{border-color:#ff385c;outline:none;box-shadow:0 0 0 1px #ff385c}
+.flatpickr-calendar{border-radius:14px;box-shadow:rgba(0,0,0,0.02) 0 0 0 1px,rgba(0,0,0,0.04) 0 2px 6px 0,rgba(0,0,0,0.1) 0 4px 8px 0;border:none;font-family:'Plus Jakarta Sans',sans-serif}
+.flatpickr-day{border-radius:9999px;height:40px;width:40px;line-height:40px;font-size:14px;color:#222222}
+.flatpickr-day.selected,.flatpickr-day.selected:hover{background:#222222;border-color:#222222;color:#ffffff;border-radius:9999px}
+.flatpickr-day:hover{background:#f7f7f7;border-color:transparent}
+.flatpickr-day.inRange{background:#f7f7f7;border-color:transparent;box-shadow:-5px 0 0 #f7f7f7,5px 0 0 #f7f7f7}
+.flatpickr-months .flatpickr-month{color:#222222;fill:#222222}
+.flatpickr-current-month{font-size:14px;font-weight:600}
+.flatpickr-weekday{color:#6a6a6a;font-size:12px;font-weight:600}</style>
 </head>
 <body class="bg-zinc-50 text-zinc-900 antialiased">
 <header class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-zinc-100 shadow-sm"></header>
@@ -18,7 +29,21 @@
     <span class="material-symbols-outlined text-[18px]">arrow_back</span>Quay lại
   </a>
 
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+  <div id="no-booking-msg" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6">
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-outlined text-amber-600 text-[24px]">warning</span>
+      <div>
+        <h3 class="font-bold text-amber-800 mb-1">Thiếu thông tin chuyến bay</h3>
+        <p class="text-sm text-amber-700 mb-3">Không tìm thấy thông tin chuyến bay bạn đã chọn. Vui lòng quay lại trang tìm kiếm để chọn chuyến bay.</p>
+        <a href="/" class="inline-flex items-center gap-1 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700 transition-colors">
+          <span class="material-symbols-outlined text-[18px]">search</span>
+          Tìm chuyến bay
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div id="booking-forms" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
     <!-- Left: Forms -->
     <div class="lg:col-span-7 space-y-8">
       <!-- Flight info loading -->
@@ -55,7 +80,7 @@
 
           <div id="cust-search-wrap" class="hidden relative">
             <input id="cust-query" type="text" placeholder="Ví dụ: Nguyen Van A, a@gmail.com, 090..." class="input-field" autocomplete="off"/>
-            <div id="cust-results" class="hidden absolute mt-2 w-full bg-white border border-zinc-200 rounded-xl shadow-lg overflow-hidden z-50"></div>
+            <div id="cust-results" class="hidden absolute mt-2 w-full bg-white border border-zinc-200 rounded-xl shadow-lg overflow-hidden z-50 max-h-64 overflow-y-auto"></div>
             <div id="cust-selected" class="hidden mt-3 text-sm"></div>
           </div>
         </div>
@@ -96,6 +121,9 @@ let selectedCustomerAccountId = null;
 
 let bookingData = null;
 
+// Shared price rates (matches backend AppConstants). Can be overridden if backend exposes them.
+const PRICE_RATES = { child: 0.75, infant: 0.10 };
+
 document.addEventListener('DOMContentLoaded', async () => {
   renderNavbar('home');
   if (!requireAuth()) return;
@@ -115,7 +143,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (!bookingData || !bookingData.flights || bookingData.flights.length === 0) {
-    toast('Thiếu thông tin chuyến bay','error'); return;
+    document.getElementById('no-booking-msg').classList.remove('hidden');
+    document.getElementById('booking-forms').classList.add('hidden');
+    return;
   }
 
   // Prefill contact info for the logged-in customer (not for staff booking on behalf of someone else).
@@ -151,9 +181,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const passengers = [];
     for(let i=0;i<pax;i++) {
       const name = document.getElementById(`pax-name-${i}`).value.trim();
-      const gender = document.getElementById(`pax-gender-${i}`).value;
-      const type = document.getElementById(`pax-type-${i}`).value;
-      const dobVal = document.getElementById(`pax-dob-${i}`).value;
+      const genderBtn = document.getElementById(`pax-gender-btn-${i}`);
+      const typeBtn = document.getElementById(`pax-type-btn-${i}`);
+      const gender = genderBtn ? genderBtn.dataset.value : 'Male';
+      const type = typeBtn ? typeBtn.dataset.value : 'Adult';
+      const dobRaw = document.getElementById(`pax-dob-${i}`).value;
+      let dobVal = '';
+      if (dobRaw) {
+        const parts = dobRaw.split('/');
+        if (parts.length === 3) {
+          dobVal = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+        } else {
+          dobVal = dobRaw;
+        }
+      }
       if(!name) { toast(`Vui lòng nhập họ tên hành khách ${i+1}`,'error'); return; }
       const p = { fullName: name, gender, passengerType: type };
       if (dobVal) p.dateOfBirth = dobVal;
@@ -257,7 +298,7 @@ function initStaffCustomerSection() {
     try {
       const list = await api('GET', `/staff/customers?query=${encodeURIComponent(q)}`);
       if (!Array.isArray(list) || list.length === 0) {
-        resultsEl.innerHTML = '<div class="p-3 text-sm text-zinc-500">Không tìm thấy khách hàng phù hợp.</div>';
+        resultsEl.innerHTML = '<div class="p-4 text-center"><span class="material-symbols-outlined text-3xl text-muted block mb-2">search_off</span><p class="text-sm text-muted">Không tìm thấy khách hàng phù hợp.</p></div>';
         resultsEl.classList.remove('hidden');
         return;
       }
@@ -265,9 +306,14 @@ function initStaffCustomerSection() {
         const name = (x.fullName || '').trim() || '(Chưa có tên)';
         const email = (x.email || '').trim();
         const phone = (x.phoneNumber || '').trim();
-        return `<button type="button" class="w-full text-left p-3 hover:bg-zinc-50 transition-colors" data-id="${x.accountId}" data-name="${escapeHtml(name)}" data-email="${escapeHtml(email)}" data-phone="${escapeHtml(phone)}">
-          <div class="font-semibold text-zinc-800">${escapeHtml(name)}</div>
-          <div class="text-xs text-zinc-500">${escapeHtml(email)}${phone ? ' · ' + escapeHtml(phone) : ''}</div>
+        return `<button type="button" class="w-full text-left p-3 hover:bg-surface-soft transition-colors border-b border-hairline last:border-0" data-id="${x.accountId}" data-name="${esc(name)}" data-email="${esc(email)}" data-phone="${esc(phone)}">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-surface-strong flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-[16px] text-muted">person</span></div>
+            <div>
+              <div class="font-semibold text-zinc-800">${esc(name)}</div>
+              <div class="text-xs text-zinc-500">${esc(email)}${phone ? ' · ' + esc(phone) : ''}</div>
+            </div>
+          </div>
         </button>`;
       }).join('');
       resultsEl.classList.remove('hidden');
@@ -281,8 +327,8 @@ function initStaffCustomerSection() {
           selectedEl.innerHTML = `<div class="p-3 rounded-lg border border-zinc-200 bg-zinc-50">
             <div class="flex items-center justify-between gap-3">
               <div>
-                <div class="font-semibold text-zinc-800">Đã chọn: ${escapeHtml(name)}</div>
-                <div class="text-xs text-zinc-500">${escapeHtml(email)}${phone ? ' · ' + escapeHtml(phone) : ''} · ID #${selectedCustomerAccountId}</div>
+                <div class="font-semibold text-zinc-800">Đã chọn: ${esc(name)}</div>
+                <div class="text-xs text-zinc-500">${esc(email)}${phone ? ' · ' + esc(phone) : ''} · ID #${selectedCustomerAccountId}</div>
               </div>
               <button type="button" class="text-xs font-semibold text-red-600 hover:underline" id="btn-clear-cust">Bỏ chọn</button>
             </div>
@@ -315,15 +361,6 @@ function initStaffCustomerSection() {
       toast(e.message, 'error');
     }
   }
-}
-
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
 }
 
 function renderFlightBanner(flight, label) {
@@ -375,20 +412,95 @@ function renderPassengerForms() {
 
   for(let i=0;i<pax;i++) {
     const defaultType = types[i] || 'Adult';
+    const defaultGender = 'Male';
+    const defaultGenderLabel = 'Nam';
+    const defaultTypeLabel = defaultType==='Adult'?'Người lớn':defaultType==='Child'?'Trẻ em':'Em bé';
     c.innerHTML += `
     <div class="border border-zinc-100 rounded-lg p-4">
       <h3 class="font-semibold mb-3 flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[#ff385c]/10 text-[#ff385c] flex items-center justify-center text-sm font-bold">${i+1}</span>Hành khách ${i+1}</h3>
       <div class="space-y-3">
         <input id="pax-name-${i}" type="text" placeholder="Họ tên" class="input-field"/>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <select id="pax-gender-${i}" class="input-field"><option value="Male">Nam</option><option value="Female">Nữ</option></select>
-          <select id="pax-type-${i}" class="input-field"><option value="Adult" ${defaultType==='Adult'?'selected':''}>Người lớn</option><option value="Child" ${defaultType==='Child'?'selected':''}>Trẻ em</option><option value="Infant" ${defaultType==='Infant'?'selected':''}>Em bé</option></select>
-          <input id="pax-dob-${i}" type="date" class="input-field" placeholder="Ngày sinh"/>
+          <div class="relative custom-dropdown-wrap">
+            <button type="button" id="pax-gender-btn-${i}" data-value="${defaultGender}" onclick="togglePaxDropdown('pax-gender-dropdown-${i}')"
+              class="input-field rounded-xl border-hairline flex items-center justify-between w-full bg-white">
+              <span class="text-sm text-ink">${defaultGenderLabel}</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div id="pax-gender-dropdown-${i}" class="custom-dropdown-panel hidden absolute top-full left-0 mt-1 w-full bg-white rounded-xl shadow-search border border-hairline py-2 z-50">
+              <button type="button" data-opt-value="Male" class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink text-sm flex items-center justify-between" onclick="selectPaxOption('pax-gender-btn-${i}', 'Male', 'Nam')"><span>Nam</span><span class="pax-check material-symbols-outlined text-[14px] text-rausch hidden">check</span></button>
+              <button type="button" data-opt-value="Female" class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink text-sm flex items-center justify-between" onclick="selectPaxOption('pax-gender-btn-${i}', 'Female', 'Nữ')"><span>Nữ</span><span class="pax-check material-symbols-outlined text-[14px] text-rausch hidden">check</span></button>
+            </div>
+          </div>
+          <div class="relative custom-dropdown-wrap">
+            <button type="button" id="pax-type-btn-${i}" data-value="${defaultType}" onclick="togglePaxDropdown('pax-type-dropdown-${i}')"
+              class="input-field rounded-xl border-hairline flex items-center justify-between w-full bg-white">
+              <span class="text-sm text-ink">${defaultTypeLabel}</span>
+              <span class="material-symbols-outlined text-[18px] text-muted">expand_more</span>
+            </button>
+            <div id="pax-type-dropdown-${i}" class="custom-dropdown-panel hidden absolute top-full left-0 mt-1 w-full bg-white rounded-xl shadow-search border border-hairline py-2 z-50">
+              <button type="button" data-opt-value="Adult" class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink text-sm flex items-center justify-between" onclick="selectPaxOption('pax-type-btn-${i}', 'Adult', 'Người lớn')"><span>Người lớn</span><span class="pax-check material-symbols-outlined text-[14px] text-rausch hidden">check</span></button>
+              <button type="button" data-opt-value="Child" class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink text-sm flex items-center justify-between" onclick="selectPaxOption('pax-type-btn-${i}', 'Child', 'Trẻ em')"><span>Trẻ em</span><span class="pax-check material-symbols-outlined text-[14px] text-rausch hidden">check</span></button>
+              <button type="button" data-opt-value="Infant" class="w-full text-left px-4 py-2 hover:bg-surface-soft font-medium text-ink text-sm flex items-center justify-between" onclick="selectPaxOption('pax-type-btn-${i}', 'Infant', 'Em bé')"><span>Em bé</span><span class="pax-check material-symbols-outlined text-[14px] text-rausch hidden">check</span></button>
+            </div>
+          </div>
+          <input id="pax-dob-${i}" type="text" class="input-field" placeholder="Ngày sinh (dd/mm/yyyy)"/>
         </div>
       </div>
     </div>`;
   }
+  // Set initial checkmarks
+  for(let i=0;i<pax;i++) {
+    selectPaxOption('pax-gender-btn-' + i, 'Male', 'Nam');
+    const types = [];
+    for (let j = 0; j < adultCount; j++) types.push('Adult');
+    for (let j = 0; j < childCount; j++) types.push('Child');
+    for (let j = 0; j < infantCount; j++) types.push('Infant');
+    const defaultType = types[i] || 'Adult';
+    const defaultTypeLabel = defaultType==='Adult'?'Người lớn':defaultType==='Child'?'Trẻ em':'Em bé';
+    selectPaxOption('pax-type-btn-' + i, defaultType, defaultTypeLabel);
+  }
+  // Init flatpickr for DOB inputs
+  for(let i=0;i<pax;i++) {
+    flatpickr('#pax-dob-' + i, { locale: 'vi', dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: true });
+  }
 }
+
+function togglePaxDropdown(dropdownId) {
+  const dropdown = document.getElementById(dropdownId);
+  if (!dropdown) return;
+  dropdown.classList.toggle('hidden');
+  document.querySelectorAll('.custom-dropdown-panel').forEach(d => {
+    if (d.id !== dropdownId) d.classList.add('hidden');
+  });
+}
+
+function selectPaxOption(btnId, value, label) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.dataset.value = value;
+  const span = btn.querySelector('span:first-child');
+  if (span) span.textContent = label;
+  const dropdown = btn.parentElement.querySelector('.custom-dropdown-panel');
+  if (dropdown) {
+    // Reset all checks
+    dropdown.querySelectorAll('.pax-check').forEach(c => c.classList.add('hidden'));
+    // Find and show check for selected option
+    dropdown.querySelectorAll('button').forEach(optBtn => {
+      if (optBtn.dataset.optValue === value) {
+        const check = optBtn.querySelector('.pax-check');
+        if (check) check.classList.remove('hidden');
+      }
+    });
+    dropdown.classList.add('hidden');
+  }
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.custom-dropdown-wrap')) {
+    document.querySelectorAll('.custom-dropdown-panel').forEach(d => d.classList.add('hidden'));
+  }
+});
 
 function getFlightPrice(flight, seatClass) {
   if (!flight || !flight.prices) return 0;
@@ -398,15 +510,15 @@ function getFlightPrice(flight, seatClass) {
 
 function renderSummary() {
   if(!bookingData || !bookingData.flights) return;
-  
+
   let summaryHtml = `<div class="space-y-3 text-sm">`;
   let totalPrice = 0;
 
   bookingData.flights.forEach((flight, i) => {
     let legPrice = typeof flight.price === 'number' ? flight.price : getFlightPrice(flight, cls);
 
-    // Calculate price per passenger type
-    let legTotal = legPrice * adultCount + legPrice * 0.75 * childCount + legPrice * 0.10 * infantCount;
+    // Calculate price per passenger type using shared rates
+    let legTotal = legPrice * adultCount + legPrice * PRICE_RATES.child * childCount + legPrice * PRICE_RATES.infant * infantCount;
     totalPrice += legTotal;
 
     let label = `Chặng ${i + 1}`;
@@ -417,7 +529,7 @@ function renderSummary() {
     }
 
     if (i > 0) summaryHtml += `<hr class="border-zinc-100"/>`;
-    
+
     summaryHtml += `
       <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider">${label}</div>
       <div class="flex justify-between"><span class="text-zinc-500">Chuyến bay</span><span class="font-medium">${flight.flightNumber}</span></div>
@@ -429,13 +541,14 @@ function renderSummary() {
 
   const paxBreakdown = [];
   if (adultCount > 0) paxBreakdown.push(`${adultCount} người lớn`);
-  if (childCount > 0) paxBreakdown.push(`${childCount} trẻ em (75%)`);
-  if (infantCount > 0) paxBreakdown.push(`${infantCount} em bé (10%)`);
+  if (childCount > 0) paxBreakdown.push(`${childCount} trẻ em (${Math.round(PRICE_RATES.child * 100)}%)`);
+  if (infantCount > 0) paxBreakdown.push(`${infantCount} em bé (${Math.round(PRICE_RATES.infant * 100)}%)`);
 
   summaryHtml += `
     <hr class="border-zinc-100"/>
     <div class="flex justify-between"><span class="text-zinc-500">Hành khách</span><span class="font-medium">${paxBreakdown.join(', ')}</span></div>
-    <div class="flex justify-between text-base pt-2 border-t border-zinc-100"><span class="font-bold">Tổng cộng</span><span class="font-bold text-[#ff385c]">${fmt(totalPrice)}</span></div>
+    <div class="flex justify-between text-base pt-2 border-t border-zinc-100"><span class="font-bold">Tổng ước tính</span><span class="font-bold text-[#ff385c]">${fmt(totalPrice)}</span></div>
+    <p class="text-xs text-amber-600 mt-1 font-medium">Giá hiển thị là ước tính. Giá chính xác sẽ được tính khi hoàn tất đặt vé.</p>
   </div>`;
 
   document.getElementById('summary-content').innerHTML = summaryHtml;

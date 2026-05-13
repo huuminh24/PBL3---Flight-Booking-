@@ -76,3 +76,9 @@ AirlineBookingApi/appsettings.*.Local.json
 # Others
 .DS_Store
 Thumbs.db
+
+# AI Agent directories (hidden from teacher)
+.agents/
+.kilo/
+.kilocode/
+skills-lock.json

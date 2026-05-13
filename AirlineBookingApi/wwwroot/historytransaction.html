@@ -62,8 +62,8 @@
           return;
         }
         list.innerHTML = bookings.map(b => {
-          const statusColors = { PendingPayment: 'bg-amber-100 text-amber-700', Confirmed: 'bg-blue-100 text-blue-700', Paid: 'bg-emerald-100 text-emerald-700', Cancelled: 'bg-zinc-200 text-zinc-500', CheckedIn: 'bg-sky-100 text-sky-700' };
-          const statusLabels = { PendingPayment: 'Chờ thanh toán', Paid: 'Đã thanh toán', Cancelled: 'Đã hủy', CheckedIn: 'Đã check-in', Confirmed: 'Đã xác nhận' };
+          const statusColors = { PendingPayment: 'bg-amber-100 text-amber-700', Confirmed: 'bg-blue-100 text-blue-700', Paid: 'bg-emerald-100 text-emerald-700', Cancelled: 'bg-zinc-200 text-zinc-500', CheckedIn: 'bg-sky-100 text-sky-700', CancelRequested: 'bg-orange-100 text-orange-700' };
+          const statusLabels = { PendingPayment: 'Chờ thanh toán', Paid: 'Đã thanh toán', Cancelled: 'Đã hủy', CheckedIn: 'Đã check-in', Confirmed: 'Đã xác nhận', CancelRequested: 'Đang chờ hủy' };
           const sc = statusColors[b.bookingStatus] || 'bg-zinc-100 text-zinc-600';
           const sl = statusLabels[b.bookingStatus] || b.bookingStatus;
 
@@ -93,8 +93,6 @@
         }).join('');
       } catch (e) { list.innerHTML = `<div class="text-center py-10 text-red-400">${e.message}</div>`; }
     }
-
-    function esc(s) { return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
 
     async function showDetail(id) {
       try {
@@ -137,8 +135,7 @@
           if (checkedIn) {
             checkinBtn = '<span class="text-xs bg-sky-100 text-sky-700 px-3 py-1 rounded-full font-medium">✓ Đã check-in</span>';
           } else if (t.ticketStatus === 'Paid') {
-            const safeName = encodeURIComponent(t.passengerFullName || '');
-            checkinBtn = `<button onclick="doCheckIn(${t.ticketId}, ${t.flightId}, '${esc(t.seatClass)}', decodeURIComponent('${safeName}'))" class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế & Check-in</button>`;
+            checkinBtn = `<button onclick='doCheckIn(${t.ticketId}, ${t.flightId}, ${JSON.stringify(t.seatClass)}, ${JSON.stringify(t.passengerFullName || '')})' class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế & Check-in</button>`;
           }
 
           // Cancel button logic
@@ -167,7 +164,7 @@
     }
 
     function doCheckIn(ticketId, flightId, cls, name) {
-      window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${cls}&paxName=${encodeURIComponent(name)}`;
+      window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${encodeURIComponent(cls)}&paxName=${encodeURIComponent(name)}`;
     }
 
     async function requestCancel(ticketId) {

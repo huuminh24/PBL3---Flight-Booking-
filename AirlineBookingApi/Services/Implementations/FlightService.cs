@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using AirlineBookingApi.Configurations;
 using AirlineBookingApi.Constants;
 using AirlineBookingApi.Data;
@@ -49,8 +51,8 @@ public class FlightService : IFlightService
     {
         ValidateSearchRequest(request);
 
-        var normalizedDepartureAirport = request.DepartureAirport.Trim().ToLower();
-        var normalizedArrivalAirport = request.ArrivalAirport.Trim().ToLower();
+        var normalizedDepartureAirport = NormalizeAirportName(request.DepartureAirport);
+        var normalizedArrivalAirport = NormalizeAirportName(request.ArrivalAirport);
         var normalizedSeatClass = request.SeatClass.Trim();
 
         var depTimeFrom = request.DepartureTimeFrom;
@@ -82,8 +84,8 @@ if (request.ReturnDate.HasValue)
   normalizedSeatClass,
   request.PassengerCount,
   request.InfantCount,
-  depTimeFrom,
-  depTimeTo,
+  null,
+  null,
   airlines);
 
   result.ReturnFlights = returnFlights;
@@ -103,6 +105,19 @@ private static readonly TimeZoneInfo VietnamTimeZone = TimeZoneInfo.CreateCustom
     return (utcStart, utcEnd);
   }
 
+  private static string NormalizeAirportName(string s)
+  {
+    if (string.IsNullOrWhiteSpace(s)) return string.Empty;
+    var normalized = s.Normalize(NormalizationForm.FormD);
+    var sb = new StringBuilder();
+    foreach (var c in normalized)
+    {
+      if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+        sb.Append(c);
+    }
+    return sb.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
+  }
+
   private async Task<List<FlightSearchResponseDto>> SearchSingleDirectionAsync(string depAirport, string arrAirport, DateTime date, string seatClass, int paxCount, int infantCount = 0, int? depTimeFrom = null, int? depTimeTo = null, List<string>? airlines = null)
   {
     // Convert local Vietnam date to UTC range
@@ -110,13 +125,14 @@ private static readonly TimeZoneInfo VietnamTimeZone = TimeZoneInfo.CreateCustom
 
   var nowUtc = DateTime.UtcNow;
 
+  var normalizedDep = NormalizeAirportName(depAirport);
+  var normalizedArr = NormalizeAirportName(arrAirport);
+
   var query = _dbContext.Flights
   .Include(x => x.FlightPrices)
   .Include(x => x.Seats)
   .Include(x => x.Airline)
-  .Where(x => x.DepartureAirport.ToLower() == depAirport
-  && x.ArrivalAirport.ToLower() == arrAirport
-  && x.DepartureTime >= utcDayStart && x.DepartureTime < utcDayEnd
+  .Where(x => x.DepartureTime >= utcDayStart && x.DepartureTime < utcDayEnd
   && x.DepartureTime >= nowUtc);
 
   if (depTimeFrom.HasValue)
@@ -135,7 +151,12 @@ private static readonly TimeZoneInfo VietnamTimeZone = TimeZoneInfo.CreateCustom
     query = query.Where(x => x.Airline != null && airlines.Contains(x.Airline.Code.ToLower()));
   }
 
-  var flights = await query.ToListAsync();
+  var allFlights = await query.ToListAsync();
+
+  var flights = allFlights
+    .Where(x => string.IsNullOrWhiteSpace(normalizedDep) || NormalizeAirportName(x.DepartureAirport) == normalizedDep)
+    .Where(x => string.IsNullOrWhiteSpace(normalizedArr) || NormalizeAirportName(x.ArrivalAirport) == normalizedArr)
+    .ToList();
 
   var flightIds = flights.Select(f => f.Id).ToList();
 
@@ -281,8 +302,8 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
     for (int i = 0; i < legs.Count; i++)
     {
       var leg = legs[i];
-      var normalizedDep = leg.DepartureAirport.Trim().ToLower();
-      var normalizedArr = leg.ArrivalAirport.Trim().ToLower();
+      var normalizedDep = NormalizeAirportName(leg.DepartureAirport);
+      var normalizedArr = NormalizeAirportName(leg.ArrivalAirport);
 
       var normalizedAirlines = request.Airlines?.Select(a => a.Trim().ToLower()).Where(a => !string.IsNullOrEmpty(a)).ToList();
 
@@ -404,37 +425,23 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
     public async Task<List<FlightStatusListItemDto>> GetStaffFlightListAsync(DateTime? date, string? departureAirport, string? arrivalAirport, string? status)
     {
         IQueryable<Models.Entities.Flight> q = _dbContext.Flights
-            .Include(f => f.Seats)
             .AsNoTracking();
 
         if (date.HasValue)
         {
-            // So sánh theo .Date của DepartureTime (đã được normalize UTC bởi value converter).
-            var dayUtc = DateTime.SpecifyKind(date.Value.Date, DateTimeKind.Utc);
-            var nextDayUtc = dayUtc.AddDays(1);
-            q = q.Where(f => f.DepartureTime >= dayUtc && f.DepartureTime < nextDayUtc);
+            var (utcStart, utcEnd) = GetUtcDayRange(date.Value.Date);
+            q = q.Where(f => f.DepartureTime >= utcStart && f.DepartureTime < utcEnd);
         }
         else
         {
-            // Mặc định: lấy chuyến trong khoảng ±60 ngày so với hiện tại để Staff thấy
-            // các chuyến vừa khai thác và sắp khởi hành. Tránh load toàn bộ DB.
-            var nowDate = DateTime.UtcNow.Date;
-            var windowStart = DateTime.SpecifyKind(nowDate.AddDays(-60), DateTimeKind.Utc);
-            var windowEnd = DateTime.SpecifyKind(nowDate.AddDays(60), DateTimeKind.Utc);
+            var vietnamToday = DateTime.UtcNow.AddHours(7).Date;
+            var (windowStart, _) = GetUtcDayRange(vietnamToday.AddDays(-60));
+            var (_, windowEnd) = GetUtcDayRange(vietnamToday.AddDays(60));
             q = q.Where(f => f.DepartureTime >= windowStart && f.DepartureTime < windowEnd);
         }
 
-        if (!string.IsNullOrWhiteSpace(departureAirport))
-        {
-            var dep = departureAirport.Trim();
-            q = q.Where(f => f.DepartureAirport.Contains(dep));
-        }
-
-        if (!string.IsNullOrWhiteSpace(arrivalAirport))
-        {
-            var arr = arrivalAirport.Trim();
-            q = q.Where(f => f.ArrivalAirport.Contains(arr));
-        }
+        var depNorm = string.IsNullOrWhiteSpace(departureAirport) ? "" : NormalizeAirportName(departureAirport);
+        var arrNorm = string.IsNullOrWhiteSpace(arrivalAirport) ? "" : NormalizeAirportName(arrivalAirport);
 
         if (!string.IsNullOrWhiteSpace(status))
         {
@@ -442,7 +449,12 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
             q = q.Where(f => f.Status.Contains(s));
         }
 
-        var flights = await q.OrderBy(f => f.DepartureTime).ToListAsync();
+        var allFlights = await q.OrderBy(f => f.DepartureTime).ToListAsync();
+
+        var flights = allFlights
+            .Where(f => string.IsNullOrWhiteSpace(depNorm) || NormalizeAirportName(f.DepartureAirport) == depNorm)
+            .Where(f => string.IsNullOrWhiteSpace(arrNorm) || NormalizeAirportName(f.ArrivalAirport) == arrNorm)
+            .ToList();
         if (flights.Count == 0) return new List<FlightStatusListItemDto>();
 
         var flightIds = flights.Select(f => f.Id).ToList();
@@ -465,10 +477,16 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
             })
             .ToListAsync();
 
+        var seatCounts = await _dbContext.Seats
+            .Where(s => flightIds.Contains(s.FlightId))
+            .GroupBy(s => new { s.FlightId, s.SeatClass })
+            .Select(g => new { g.Key.FlightId, g.Key.SeatClass, Count = g.Count() })
+            .ToListAsync();
+
         return flights.Select(f =>
         {
-            var econTotal = f.Seats.Count(s => s.SeatClass == AppConstants.EconomySeatClass);
-            var bizTotal = f.Seats.Count(s => s.SeatClass == AppConstants.BusinessSeatClass);
+            var econTotal = seatCounts.FirstOrDefault(s => s.FlightId == f.Id && s.SeatClass == AppConstants.EconomySeatClass)?.Count ?? 0;
+            var bizTotal = seatCounts.FirstOrDefault(s => s.FlightId == f.Id && s.SeatClass == AppConstants.BusinessSeatClass)?.Count ?? 0;
             var econMax = AppConstants.CalcMaxAllowedTickets(econTotal, _overbookingRatio);
             var bizMax = AppConstants.CalcMaxAllowedTickets(bizTotal, _overbookingRatio);
 

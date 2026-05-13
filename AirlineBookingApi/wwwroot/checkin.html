@@ -60,12 +60,9 @@ async function searchCheckIn() {
   }
 }
 
-function esc(s) { return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
-
 function renderBookingCard(b) {
   const windowBadge = renderWindowBadge(b);
   const ticketsHtml = b.tickets.map(t => {
-    const safeName = encodeURIComponent(t.passengerFullName || '');
     if (t.isCheckedIn) {
       return `<div class="flex justify-between items-center p-3 rounded-lg bg-emerald-50 border border-emerald-200">
         <div><span class="font-medium">${esc(t.passengerFullName)}</span><span class="text-xs text-zinc-500 ml-2">${esc(t.passengerType)} · Ghế ${esc(t.seatNumber || 'N/A')} · ${esc(t.seatClass)}</span></div>
@@ -73,7 +70,7 @@ function renderBookingCard(b) {
       </div>`;
     }
     if (t.ticketStatus === 'Paid') {
-      const action = renderCheckinAction(b, t, safeName);
+      const action = renderCheckinAction(b, t);
       return `<div class="flex justify-between items-center p-3 rounded-lg bg-zinc-50 border border-zinc-200">
         <div><span class="font-medium">${esc(t.passengerFullName)}</span><span class="text-xs text-zinc-500 ml-2">${esc(t.passengerType)} · Ghế ${esc(t.seatNumber || 'Chưa chọn')} · ${esc(t.seatClass)}</span></div>
         ${action}
@@ -125,14 +122,14 @@ function renderWindowBadge(b) {
   return '';
 }
 
-function renderCheckinAction(b, t, safeName) {
+function renderCheckinAction(b, t) {
   if (b.checkInWindowStatus === 'NotYetOpen') {
     return `<button disabled class="text-xs bg-zinc-200 text-zinc-500 px-4 py-1.5 rounded-lg font-medium cursor-not-allowed" title="Mở check-in sau ${formatDuration(b.minutesUntilOpen)}">Chưa mở check-in</button>`;
   }
   if (b.checkInWindowStatus === 'Closed') {
     return `<span class="text-xs text-red-500 font-medium">Đã quá hạn — ra quầy</span>`;
   }
-  return `<button onclick="goCheckIn(${t.ticketId}, ${b.flightId}, '${esc(t.seatClass)}', decodeURIComponent('${safeName}'))" class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-4 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế &amp; Check-in</button>`;
+  return `<button onclick='goCheckIn(${t.ticketId}, ${b.flightId}, ${JSON.stringify(t.seatClass)}, ${JSON.stringify(t.passengerFullName || '')})' class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-4 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế &amp; Check-in</button>`;
 }
 
 function formatDuration(minutes) {
