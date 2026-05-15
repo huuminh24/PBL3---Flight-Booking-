@@ -64,12 +64,14 @@ public class ReportService : IReportService
 
         if (!string.IsNullOrWhiteSpace(filter.DepartureAirport))
         {
-            query = query.Where(p => p.Booking!.BookingFlights.Any(bf => bf.Flight!.DepartureAirport.Contains(filter.DepartureAirport.Trim())));
+            var dep = filter.DepartureAirport.Trim();
+            query = query.Where(p => p.Booking!.BookingFlights.Any(bf => bf.Flight!.DepartureAirport == dep));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.ArrivalAirport))
         {
-            query = query.Where(p => p.Booking!.BookingFlights.Any(bf => bf.Flight!.ArrivalAirport.Contains(filter.ArrivalAirport.Trim())));
+            var arr = filter.ArrivalAirport.Trim();
+            query = query.Where(p => p.Booking!.BookingFlights.Any(bf => bf.Flight!.ArrivalAirport == arr));
         }
 
         var payments = await query

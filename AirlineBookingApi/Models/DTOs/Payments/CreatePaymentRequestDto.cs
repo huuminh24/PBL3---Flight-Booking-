@@ -13,8 +13,11 @@ public class CreatePaymentRequestDto
     [MaxLength(30)]
     public string PaymentMethod { get; set; } = string.Empty;
 
-    public bool IsSuccess { get; set; }
-
+    /// <summary>
+    /// Client KHÔNG quyết định kết quả thanh toán. Server tự xác định dựa trên phương thức.
+    /// Card/BankTransfer/VietQR: coi là thành công nếu có thông tin chứng từ hợp lệ.
+    /// Cash: luôn thành công (Staff xác nhận trực tiếp).
+    /// </summary>
     [MaxLength(50)]
     public string? CouponCode { get; set; }
 

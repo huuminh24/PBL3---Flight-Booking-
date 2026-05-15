@@ -20,7 +20,7 @@ public class CouponsController : ControllerBase
     /// Validate mã giảm giá. Trả về % giảm nếu hợp lệ.
     /// </summary>
     [HttpPost("validate")]
-    [Authorize(Roles = "Customer,Staff")]
+    [AllowAnonymous]
     public async Task<IActionResult> ValidateCoupon([FromBody] ValidateCouponRequestDto request)
     {
         var result = await _couponService.ValidateCouponAsync(request.Code);

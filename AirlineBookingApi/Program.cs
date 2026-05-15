@@ -120,6 +120,32 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+
+// Fallback favicon: trả về SVG khi browser request /favicon.ico
+app.Map("/favicon.ico", async context =>
+{
+    var svgPath = Path.Combine(builder.Environment.WebRootPath, "favicon.svg");
+    if (File.Exists(svgPath))
+    {
+        context.Response.ContentType = "image/svg+xml";
+        await context.Response.SendFileAsync(svgPath);
+    }
+    else
+    {
+        context.Response.StatusCode = StatusCodes.Status204NoContent;
+    }
+});
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+app.MapFallbackToFile("index.html");
+
+// Exception handling middleware - đặt sau routing và auth
 app.Use(async (context, next) =>
 {
     try
@@ -145,14 +171,5 @@ app.Use(async (context, next) =>
         }
     }
 });
-
-app.UseDefaultFiles();
-app.UseStaticFiles();
-app.UseCors();
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-app.MapFallbackToFile("index.html");
 
 app.Run();

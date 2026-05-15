@@ -16,35 +16,45 @@ public class FlightsController : ControllerBase
         _flightService = flightService;
     }
 
-[HttpGet("search")]
-  [AllowAnonymous]
-  public async Task<IActionResult> SearchFlights([FromQuery] FlightSearchRequestDto request)
-  {
-    try
-    {
-      var result = await _flightService.SearchFlightsAsync(request);
-      return Ok(result);
-    }
-    catch (InvalidOperationException ex)
-    {
-      return BadRequest(new { message = ex.Message });
-    }
-  }
+    // ─── Public GET endpoints ───
 
-  [HttpPost("search-multi-city")]
-  [AllowAnonymous]
-  public async Task<IActionResult> SearchMultiCity([FromBody] MultiCitySearchRequestDto request)
-  {
-    try
+    [HttpGet("airports")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAirports()
     {
-      var result = await _flightService.SearchMultiCityAsync(request);
-      return Ok(result);
+        var airports = await _flightService.GetAirportsAsync();
+        return Ok(airports);
     }
-    catch (InvalidOperationException ex)
+
+    [HttpGet("search")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SearchFlights([FromQuery] FlightSearchRequestDto request)
     {
-      return BadRequest(new { message = ex.Message });
+        try
+        {
+            var result = await _flightService.SearchFlightsAsync(request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
-  }
+
+    [HttpPost("search-multi-city")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SearchMultiCity([FromBody] MultiCitySearchRequestDto request)
+    {
+        try
+        {
+            var result = await _flightService.SearchMultiCityAsync(request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 
     [HttpGet("{flightId:int}")]
     [AllowAnonymous]
@@ -88,13 +98,7 @@ public class FlightsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("airports")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetAirports()
-    {
-        var airports = await _flightService.GetAirportsAsync();
-        return Ok(airports);
-    }
+    // ─── Staff endpoints ───
 
     /// <summary>Staff: liệt kê chuyến bay kèm thông tin sức chứa, lọc theo ngày/route/status.</summary>
     [HttpGet("staff/list")]

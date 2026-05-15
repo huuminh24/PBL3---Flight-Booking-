@@ -253,8 +253,9 @@ async function showDetail(id) {
           } else if (t.ticketStatus === 'Paid') {
 
             const safeName = (t.passengerFullName || '').replace(/'/g, "\\'");
+            const safeSeatClass = (t.seatClass || '').replace(/'/g, "\\'");
 
-            checkinBtn = `<button onclick="doCheckIn(${t.ticketId}, ${t.flightId}, '${t.seatClass}', '${safeName}')" class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế & Check-in</button>`;
+            checkinBtn = `<button onclick="doCheckIn(${t.ticketId}, ${t.flightId}, '${safeSeatClass}', '${safeName}')" class="text-xs bg-[#ff385c] hover:bg-[#e00b41] text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Chọn ghế & Check-in</button>`;
 
           }
 
@@ -312,7 +313,7 @@ async function showDetail(id) {
 
 function doCheckIn(ticketId, flightId, cls, name) {
 
-    window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${cls}&paxName=${encodeURIComponent(name)}`;
+    window.location.href = `/checkin-seat.html?checkin=true&ticketId=${ticketId}&flightId=${flightId}&cls=${encodeURIComponent(cls)}&paxName=${encodeURIComponent(name)}`;
 
 }
 

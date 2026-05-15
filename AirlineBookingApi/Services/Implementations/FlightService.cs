@@ -295,7 +295,6 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
     ValidateMultiCityRequest(request);
 
     var legs = request.Legs;
-    var seatClass = legs[0].SeatClass.Trim();
 
     var legResults = new List<List<FlightSearchResponseDto>>();
 
@@ -304,6 +303,7 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
       var leg = legs[i];
       var normalizedDep = NormalizeAirportName(leg.DepartureAirport);
       var normalizedArr = NormalizeAirportName(leg.ArrivalAirport);
+      var seatClass = leg.SeatClass.Trim();
 
       var normalizedAirlines = request.Airlines?.Select(a => a.Trim().ToLower()).Where(a => !string.IsNullOrEmpty(a)).ToList();
 
@@ -449,6 +449,7 @@ public async Task<FlightDetailResponseDto?> GetFlightDetailAsync(int flightId)
             q = q.Where(f => f.Status.Contains(s));
         }
 
+        // Load flights - airport filtering is done in-memory due to normalization
         var allFlights = await q.OrderBy(f => f.DepartureTime).ToListAsync();
 
         var flights = allFlights

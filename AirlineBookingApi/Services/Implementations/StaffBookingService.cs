@@ -30,7 +30,7 @@ public class StaffBookingService : IStaffBookingService
       throw new InvalidOperationException("Chỉ Staff mới được phép tạo booking hộ khách hàng.");
     }
 
-    await using var tx = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+    await using var tx = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead);
 
     ValidateRequest(request);
 
@@ -111,13 +111,17 @@ public class StaffBookingService : IStaffBookingService
       var totalSeatsInClass = flight.Seats.Count(s => s.SeatClass == normalizedSeatClass);
       var maxAllowedTickets = AppConstants.CalcMaxAllowedTickets(totalSeatsInClass, _overbookingRatio);
       var nowUtc = DateTime.UtcNow;
+
+      // Transaction RepeatableRead đã giữ lock trên các hàng đã đọc,
+      // tránh race condition khi nhiều request đồng thời kiểm tra ghế trống.
       var bookedTicketsInClass = await _dbContext.Tickets
-      .CountAsync(t => t.FlightId == flight.Id
-          && t.SeatClass == normalizedSeatClass
-          && t.TicketStatus != AppConstants.CancelledStatus
-          && !(t.Booking != null
-               && t.Booking.BookingStatus == AppConstants.PendingPaymentStatus
-               && t.Booking.ExpiresAt < nowUtc));
+          .CountAsync(t => t.FlightId == flight.Id
+              && t.SeatClass == normalizedSeatClass
+              && t.TicketStatus != AppConstants.CancelledStatus
+              && !(t.Booking != null
+                   && t.Booking.BookingStatus == AppConstants.PendingPaymentStatus
+                   && t.Booking.ExpiresAt < nowUtc));
+
       var availableSeatCount = maxAllowedTickets - bookedTicketsInClass;
 
       if (availableSeatCount < requiredSeats)

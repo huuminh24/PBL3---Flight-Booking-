@@ -239,9 +239,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-ci-search').onclick = searchForCheckIn;
 
   // Flatpickr init
-  flatpickr('#fl-date', { locale: 'vi', dateFormat: 'd/m/Y', allowInput: true, onChange: () => loadFlightList() });
-  flatpickr('#r-from', { locale: 'vi', dateFormat: 'd/m/Y', allowInput: true, onChange: () => loadReport() });
-  flatpickr('#r-to', { locale: 'vi', dateFormat: 'd/m/Y', allowInput: true, onChange: () => loadReport() });
+  flatpickr('#fl-date', { locale: 'vn', dateFormat: 'd/m/Y', allowInput: true, onChange: () => loadFlightList() });
+  flatpickr('#r-from', { locale: 'vn', dateFormat: 'd/m/Y', allowInput: true, onChange: () => loadReport() });
+  flatpickr('#r-to', { locale: 'vn', dateFormat: 'd/m/Y', allowInput: true, onChange: () => loadReport() });
 
   // Populate airport filters dynamically into custom panels
   try {
@@ -301,7 +301,8 @@ function selectStaffOption(btnId, labelId, panelId, value, label, reloadFnName) 
   if (activeBtn) {
     activeBtn.classList.add('selected');
     const check = document.createElement('span');
-    check.className = 'material-symbols-outlined text-[14px] text-rausch';
+    check.className = 'material-symbols-outlined text-[14px]';
+    check.style.color = '#ff385c';
     check.textContent = 'check';
     activeBtn.appendChild(check);
   }
@@ -573,7 +574,16 @@ function formatStaffDuration(minutes) {
 
 function formatTimeUntilDeparture(dt) {
   if (!dt) return '';
-  const departureMs = new Date(dt + (String(dt).endsWith('Z') ? '' : 'Z')).getTime();
+  let departureMs;
+  try {
+    const dateObj = new Date(dt);
+    if (isNaN(dateObj.getTime())) {
+      return '';
+    }
+    departureMs = dateObj.getTime();
+  } catch {
+    return '';
+  }
   const diffMin = Math.round((departureMs - Date.now()) / 60000);
   if (diffMin <= 0) return 'Đã bay / quá giờ';
   if (diffMin < 60) return `Còn ${diffMin} phút`;

@@ -12,6 +12,8 @@
 
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
 
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
     <title>SkyHmH - Đặt vé máy bay</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -647,7 +649,7 @@
 
                                 <!-- Swap button - absolute centered between departure and arrival -->
 
-                                <button onclick="swapDepartureAndArrival()" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-[#ff385c] text-white rounded-full shadow-md hover:bg-[#e00b41] transition-colors z-50 border-2 border-white text-base flex items-center justify-center">
+                                <button onclick="swapDepartureAndArrival()" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-[#ff385c] text-white rounded-full shadow-md hover:bg-[#e00b41] transition-colors z-50 border border-white text-xs flex items-center justify-center">
 
                                     ⇄
 
@@ -745,7 +747,7 @@
                                     </div>
 
                                     <button onclick="removeLeg(this)"
-                                        class="p-2 text-muted hover:text-rausch disabled:opacity-50" disabled><span
+                                        class="leg-delete-btn p-2 text-muted hover:text-rausch disabled:opacity-50" disabled><span
                                             class="material-symbols-outlined">delete</span></button>
 
                                 </div>
@@ -784,7 +786,7 @@
                                             type="text" placeholder="dd/mm/yyyy" />
                                     </div>
 
-                                    <button onclick="removeLeg(this)" class="p-2 text-muted hover:text-rausch disabled:opacity-50" disabled><span
+                                    <button onclick="removeLeg(this)" class="leg-delete-btn p-2 text-muted hover:text-rausch disabled:opacity-50" disabled><span
 
                                             class="material-symbols-outlined">delete</span></button>
 
@@ -865,6 +867,9 @@
         let seatClassVal = 'Economy';
         let flightType = 'oneway';
         let todayStr = '';
+        function getTodayStr() {
+            return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' });
+        }
         let fpDep = null;
         let fpRet = null;
 
@@ -892,11 +897,54 @@
             return new Date(Date.UTC(year, month - 1, day));
         }
 
+        function getFlatpickrDate(input) {
+            if (!input._flatpickr) return null;
+            const fp = input._flatpickr;
+            if (fp.selectedDates && fp.selectedDates.length > 0) {
+                return fp.formatDate(fp.selectedDates[0], 'Y-m-d');
+            }
+            if (fp.altInput && fp.altInput.value) {
+                const parts = fp.altInput.value.split('/');
+                if (parts.length === 3) {
+                    const d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                    if (!isNaN(d.getTime())) {
+                        const converted = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                        return converted;
+                    }
+                }
+            }
+            if (fp.input && fp.input.value) {
+                return fp.input.value;
+            }
+            return null;
+        }
+
         function getStrictSearchDateValue(input) {
             if (!input) return '';
 
-            const rawValue = input.dataset?.dateValue || input.value || '';
-            return isValidSearchDate(rawValue) ? rawValue : '';
+            const fpInstance = input._flatpickr;
+            if (fpInstance && fpInstance.selectedDates && fpInstance.selectedDates.length > 0) {
+                const d = fpInstance.selectedDates[0];
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                const formatted = `${y}-${m}-${dd}`;
+                if (isValidSearchDate(formatted)) {
+                    input.dataset.dateValue = formatted;
+                    return formatted;
+                }
+            }
+
+            const rawValue = input.value || input.dataset?.dateValue || '';
+            if (isValidSearchDate(rawValue)) return rawValue;
+
+            const fpDate = getFlatpickrDate(input);
+            if (fpDate && isValidSearchDate(fpDate)) {
+                input.dataset.dateValue = fpDate;
+                return fpDate;
+            }
+
+            return '';
         }
 
         function getSearchInputValue(input) {
@@ -998,22 +1046,39 @@
             }
 
             // Load airports dynamically from API
-            loadAirports();
+            loadAirportsForSearch();
+
+            // Close all custom dropdowns on outside click and restore unselected inputs
+            if (!_clickListenerAdded) {
+                _clickListenerAdded = true;
+                document.addEventListener('click', (e) => {
+                    const depInput = document.getElementById('input-dep');
+                    const arrInput = document.getElementById('input-arr');
+                    [depInput, arrInput].forEach(inp => {
+                        if (!inp) return;
+                        if (inp.contains(e.target)) return;
+                        if (inp.dataset.value) inp.value = getAirportLabel(inp.dataset.value);
+                        else if (inp) inp.value = inp._savedValue || '';
+                    });
+                    document.querySelectorAll('.multicity-leg .leg-dep-input, .multicity-leg .leg-arr-input').forEach(input => {
+                        const dropdown = input.parentElement.querySelector('[data-dropdown="airport"]');
+                        if (!dropdown) return;
+                        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                            if (input.dataset.value) {
+                                input.value = getAirportLabel(input.dataset.value);
+                            } else {
+                                input.value = '';
+                            }
+                        }
+                    });
+                    document.querySelectorAll('[id^="dropdown-"], [data-dropdown="airport"]').forEach(d => d.classList.add('hidden'));
+                });
+            }
 
 
 
             // Init Default Date — today in Vietnam timezone (UTC+7)
-
-            const now = new Date();
-
-            const vietnamOffset = 7 * 60; // UTC+7 in minutes
-
-            const localOffset = now.getTimezoneOffset(); // local offset in minutes (negative for east of UTC)
-
-            const vietnamTime = new Date(now.getTime() + (vietnamOffset + localOffset) * 60000);
-
-            todayStr = vietnamTime.toISOString().split('T')[0];
-
+            todayStr = getTodayStr();
             document.getElementById('input-date').value = todayStr;
             document.getElementById('input-date').min = todayStr;
             document.getElementById('input-date').dataset.dateValue = todayStr;
@@ -1022,13 +1087,14 @@
             document.querySelectorAll('.leg-date').forEach(el => {
                 el.min = todayStr;
                 el.readOnly = true;
+                el.dataset.dateValue = '';
             });
 
-            // Init multi-city custom dropdowns (even before API returns — uses fallback list on click)
+            // Init multi-city custom dropdowns (also initializes Flatpickr for .leg-date inputs)
             initMulticityDropdowns();
 
             fpDep = flatpickr('#input-date', {
-                locale: 'vi',
+                locale: 'vn',
                 dateFormat: 'Y-m-d',
                 altInput: true,
                 altFormat: 'd/m/Y',
@@ -1043,29 +1109,16 @@
                 }
             });
             fpRet = flatpickr('#input-return-date', {
-                locale: 'vi',
+                locale: 'vn',
                 dateFormat: 'Y-m-d',
                 altInput: true,
                 altFormat: 'd/m/Y',
                 allowInput: false,
-                minDate: todayStr
-            });
-
-            document.querySelectorAll('.leg-date:not([data-fp-init])').forEach(el => {
-                el.dataset.fpInit = 'true';
-                flatpickr(el, {
-                    locale: 'vi',
-                    dateFormat: 'Y-m-d',
-                    altInput: true,
-                    altFormat: 'd/m/Y',
-                    allowInput: false,
-                    minDate: todayStr,
-                    onChange: (selectedDates, dateStr, instance) => {
-                        if (instance && instance.element) {
-                            instance.element.dataset.dateValue = isValidSearchDate(dateStr) ? dateStr : '';
-                        }
-                    }
-                });
+                minDate: todayStr,
+                onChange: (selectedDates, dateStr) => {
+                    const normalizedDate = isValidSearchDate(dateStr) ? dateStr : '';
+                    document.getElementById('input-return-date').dataset.dateValue = normalizedDate;
+                }
             });
 
             // Toggle Pax Popup
@@ -1189,11 +1242,12 @@
 
                 const dep = getSearchInputValue(document.getElementById('input-dep'));
                 const arr = getSearchInputValue(document.getElementById('input-arr'));
-                const date = requireStrictSearchDate(document.getElementById('input-date'), 'Vui lòng chọn ngày đi!');
 
                 if (!dep) { alert('Vui lòng chọn điểm đi!'); return; }
                 if (!arr) { alert('Vui lòng chọn điểm đến!'); return; }
                 if (dep === arr) { alert('Điểm đi và điểm đến phải khác nhau!'); return; }
+
+                const date = requireStrictSearchDate(document.getElementById('input-date'), 'Vui lòng chọn ngày đi!');
                 if (!date) return;
 
                 const totalPax = paxState.adult + paxState.child + paxState.infant;
@@ -1262,42 +1316,28 @@
 
                 const legs = document.querySelectorAll('.multicity-leg');
 
-                let valid = true;
-
                 const mcData = [];
 
                 let prevDate = null;
 
-
-
-                legs.forEach((leg, i) => {
-
+                for (let i = 0; i < legs.length; i++) {
+                    const leg = legs[i];
                     const depInput = leg.querySelector('.leg-dep-input') || leg.querySelector('.leg-dep');
                     const arrInput = leg.querySelector('.leg-arr-input') || leg.querySelector('.leg-arr');
                     const dateInput = leg.querySelector('.leg-date');
 
                     const dep = getSearchInputValue(depInput);
-
                     const arr = getSearchInputValue(arrInput);
 
+                    if (!dep) { alert(`Chặng ${i + 1}: Vui lòng chọn điểm đi!`); return; }
+                    if (!arr) { alert(`Chặng ${i + 1}: Vui lòng chọn điểm đến!`); return; }
+                    if (dep === arr) { alert(`Chặng ${i + 1}: Điểm đi và điểm đến phải khác nhau!`); return; }
+
                     const date = requireStrictSearchDate(dateInput, `Chặng ${i + 1}: Vui lòng chọn ngày đi!`);
-
-
-
-                    if (!dep) { alert(`Chặng ${i + 1}: Vui lòng chọn điểm đi!`); valid = false; return; }
-
-                    if (!arr) { alert(`Chặng ${i + 1}: Vui lòng chọn điểm đến!`); valid = false; return; }
-
-                    if (dep === arr) { alert(`Chặng ${i + 1}: Điểm đi và điểm đến phải khác nhau!`); valid = false; return; }
-
-                    if (!date) { valid = false; return; }
-
-
+                    if (!date) return;
 
                     if (prevDate && parseSearchDate(date).getTime() < parseSearchDate(prevDate).getTime()) {
-
-                        alert(`Chặng ${i + 1}: Ngày bay không được trước ngày của chặng trước đó!`); valid = false; return;
-
+                        alert(`Chặng ${i + 1}: Ngày bay không được trước ngày của chặng trước đó!`); return;
                     }
 
                     prevDate = date;
@@ -1305,12 +1345,7 @@
 
 
                     mcData.push({ dep, arr, date });
-
-                });
-
-
-
-                if (!valid) return;
+                }
 
 
 
@@ -1498,16 +1533,27 @@
             // Init Flatpickr for all leg-date inputs not yet initialized
             document.querySelectorAll('.leg-date:not([data-fp-init])').forEach(el => {
                 el.dataset.fpInit = 'true';
+                el.dataset.dateValue = '';
+                el.readOnly = true;
                 flatpickr(el, {
-                    locale: 'vi',
+                    locale: 'vn',
                     dateFormat: 'Y-m-d',
                     altInput: true,
                     altFormat: 'd/m/Y',
                     allowInput: false,
                     minDate: todayStr,
                     onChange: (selectedDates, dateStr, instance) => {
-                        if (instance && instance.element) {
-                            instance.element.dataset.dateValue = isValidSearchDate(dateStr) ? dateStr : '';
+                        if (selectedDates && selectedDates.length > 0) {
+                            const d = selectedDates[0];
+                            const y = d.getFullYear();
+                            const m = String(d.getMonth() + 1).padStart(2, '0');
+                            const dd = String(d.getDate()).padStart(2, '0');
+                            const formatted = `${y}-${m}-${dd}`;
+                            if (instance && instance.element) {
+                                instance.element.dataset.dateValue = isValidSearchDate(formatted) ? formatted : '';
+                            }
+                        } else if (instance && instance.element) {
+                            instance.element.dataset.dateValue = '';
                         }
                     }
                 });
@@ -1575,12 +1621,13 @@
 
                 </div>
 
-                <button onclick="removeLeg(this)" class="p-2 text-muted hover:text-rausch"><span class="material-symbols-outlined">delete</span></button>
+                <button onclick="removeLeg(this)" class="leg-delete-btn p-2 text-muted hover:text-rausch"><span class="material-symbols-outlined">delete</span></button>
 
             `;
 
             container.appendChild(div);
 
+            todayStr = getTodayStr();
             initMulticityDropdowns();
 
             updateLegNumbers();
@@ -1613,7 +1660,7 @@
             const legs = document.querySelectorAll('.multicity-leg');
             legs.forEach((leg, i) => {
                 leg.querySelector('span.font-bold').textContent = `Chặng ${i + 1}`;
-                const delBtn = leg.querySelector('button');
+                const delBtn = leg.querySelector('.leg-delete-btn');
                 delBtn.disabled = (i === 0 || legs.length <= 2);
             });
         }
@@ -1623,6 +1670,7 @@
         // Global airport list for dynamic population
 
         let airportList = [];
+        let _clickListenerAdded = false;
 
 
 
@@ -1637,7 +1685,7 @@
 
 
 
-        async function loadAirports() {
+        async function loadAirportsForSearch() {
 
             try {
 
@@ -1767,34 +1815,6 @@
             setupAirportDropdown('input-dep', 'dropdown-dep', 'input-arr');
 
             setupAirportDropdown('input-arr', 'dropdown-arr', 'input-dep');
-
-
-            // Close all custom dropdowns on outside click and restore unselected inputs
-            if (!document._mcClickListenerAdded) {
-                document._mcClickListenerAdded = true;
-                document.addEventListener('click', (e) => {
-                    const depInput = document.getElementById('input-dep');
-                    const arrInput = document.getElementById('input-arr');
-                    [depInput, arrInput].forEach(inp => {
-                        if (!inp) return;
-                        if (inp.contains(e.target)) return;
-                        if (inp.dataset.value) inp.value = getAirportLabel(inp.dataset.value);
-                        else if (inp) inp.value = inp._savedValue || '';
-                    });
-                    document.querySelectorAll('.multicity-leg .leg-dep-input, .multicity-leg .leg-arr-input').forEach(input => {
-                        const dropdown = input.parentElement.querySelector('[data-dropdown="airport"]');
-                        if (!dropdown) return;
-                        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-                            if (input.dataset.value) {
-                                input.value = getAirportLabel(input.dataset.value);
-                            } else {
-                                input.value = '';
-                            }
-                        }
-                    });
-                    document.querySelectorAll('[id^="dropdown-"], [data-dropdown="airport"]').forEach(d => d.classList.add('hidden'));
-                });
-            }
 
         }
 

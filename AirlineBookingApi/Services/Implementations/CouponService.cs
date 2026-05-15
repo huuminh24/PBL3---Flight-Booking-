@@ -44,19 +44,20 @@ public class CouponService : ICouponService
     {
         var normalizedCode = code.ToUpper().Trim();
 
-        var rowsAffected = await _context.Database.ExecuteSqlInterpolatedAsync($@"
-            UPDATE Coupons
-            SET CurrentUses = CurrentUses + 1,
-                UpdatedAt   = {DateTime.UtcNow}
-            WHERE Code = {normalizedCode}
-              AND IsActive = 1
-              AND ExpiryDate >= {DateTime.UtcNow}
-              AND CurrentUses < MaxUses;
-        ");
+        var coupon = await _context.Coupons
+            .FirstOrDefaultAsync(c => c.Code == normalizedCode
+                && c.IsActive
+                && c.ExpiryDate >= DateTime.UtcNow
+                && c.CurrentUses < c.MaxUses);
 
-        if (rowsAffected == 0)
+        if (coupon is null)
         {
             throw new InvalidOperationException("Mã giảm giá đã hết lượt sử dụng hoặc đã hết hạn.");
         }
+
+        coupon.CurrentUses += 1;
+        coupon.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
     }
 }

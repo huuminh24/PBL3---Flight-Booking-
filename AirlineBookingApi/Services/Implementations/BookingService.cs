@@ -60,7 +60,7 @@ public class BookingService : IBookingService
 
 
 
-        await using var tx = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        await using var tx = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead);
 
 
 
@@ -253,25 +253,17 @@ public class BookingService : IBookingService
 
 
             var totalSeatsInClass = flight.Seats.Count(s => s.SeatClass == normalizedSeatClass);
-
             var maxAllowedTickets = AppConstants.CalcMaxAllowedTickets(totalSeatsInClass, _overbookingRatio);
 
-            // Chỉ tính các vé còn "chiếm chỗ": loại Cancelled và loại các booking PendingPayment đã quá ExpiresAt.
-
+            // Transaction RepeatableRead đã giữ lock trên các hàng đã đọc,
+            // tránh race condition khi nhiều request đồng thời kiểm tra ghế trống.
             var nowUtc = DateTime.UtcNow;
-
             var bookedTicketsInClass = await _dbContext.Tickets
-
                 .CountAsync(t => t.FlightId == flight.Id
-
                     && t.SeatClass == normalizedSeatClass
-
                     && t.TicketStatus != AppConstants.CancelledStatus
-
                     && !(t.Booking != null
-
                          && t.Booking.BookingStatus == AppConstants.PendingPaymentStatus
-
                          && t.Booking.ExpiresAt < nowUtc));
 
             var availableSeatCount = maxAllowedTickets - bookedTicketsInClass;

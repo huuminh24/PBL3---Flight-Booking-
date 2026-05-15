@@ -49,13 +49,11 @@ async function api(method, path, body) {
   const text = await res.text();
   let data; try { data = JSON.parse(text); } catch { data = text; }
   if (!res.ok) {
-    // Auto-logout on 401 Unauthorized (token expired or invalid)
-    // Never redirect for /Auth/me endpoint - let the caller handle the error
     if (res.status === 401 && getToken() && !path.startsWith('/Auth/') && path !== '/Auth/me') {
       clearAuth();
       toast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'warning');
       setTimeout(() => { window.location.href = '/'; }, 1500);
-      return;
+      throw new Error('SESSION_EXPIRED');
     }
     const msg = data?.errors ? Object.values(data.errors).flat().join('. ')
       : (data?.message || data?.title || `Lỗi ${res.status}`);
@@ -89,7 +87,6 @@ function setBtnLoading(btn, loading, loadingText = 'Đang xử lý...') {
 
 function askConfirm(message, title = 'Xác nhận') {
   return new Promise(resolve => {
-    // Remove old if exists
     const old = document.getElementById('sky-confirm');
     if (old) old.remove();
     
@@ -100,8 +97,8 @@ function askConfirm(message, title = 'Xác nhận') {
       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="sky-confirm-bg"></div>
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden transform transition-all duration-200 scale-95 opacity-0" id="sky-confirm-modal">
         <div class="p-6">
-          <h3 class="text-lg font-bold text-zinc-900 mb-2">${title}</h3>
-          <p class="text-sm text-zinc-600">${message}</p>
+          <h3 class="text-lg font-bold text-zinc-900 mb-2" id="sky-confirm-title"></h3>
+          <p class="text-sm text-zinc-600" id="sky-confirm-message"></p>
         </div>
         <div class="p-4 bg-zinc-50 border-t border-zinc-100 flex justify-end gap-2">
           <button id="sky-confirm-cancel" class="px-4 py-2 text-sm font-semibold text-zinc-600 hover:bg-zinc-200 rounded-lg transition-colors">Hủy</button>
@@ -111,7 +108,9 @@ function askConfirm(message, title = 'Xác nhận') {
     `;
     document.body.appendChild(div);
     
-    // Animate in
+    document.getElementById('sky-confirm-title').textContent = title;
+    document.getElementById('sky-confirm-message').textContent = message;
+    
     requestAnimationFrame(() => {
       const modal = document.getElementById('sky-confirm-modal');
       modal.classList.remove('scale-95', 'opacity-0');
@@ -143,8 +142,8 @@ function askPrompt(message, title = 'Nhập thông tin') {
       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="sky-prompt-bg"></div>
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden transform transition-all duration-200 scale-95 opacity-0" id="sky-prompt-modal">
         <div class="p-6">
-          <h3 class="text-lg font-bold text-zinc-900 mb-2">${title}</h3>
-          <p class="text-sm text-zinc-600 mb-4">${message}</p>
+          <h3 class="text-lg font-bold text-zinc-900 mb-2" id="sky-prompt-title"></h3>
+          <p class="text-sm text-zinc-600 mb-4" id="sky-prompt-message"></p>
           <input type="text" id="sky-prompt-input" class="w-full h-10 px-3 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none" />
         </div>
         <div class="p-4 bg-zinc-50 border-t border-zinc-100 flex justify-end gap-2">
@@ -154,6 +153,9 @@ function askPrompt(message, title = 'Nhập thông tin') {
       </div>
     `;
     document.body.appendChild(div);
+    
+    document.getElementById('sky-prompt-title').textContent = title;
+    document.getElementById('sky-prompt-message').textContent = message;
     
     const input = document.getElementById('sky-prompt-input');
     
@@ -180,7 +182,19 @@ function askPrompt(message, title = 'Nhập thông tin') {
 
 // ── Format helpers ──
 function fmt(n) { return new Intl.NumberFormat('vi-VN').format(n) + ' VND'; }
-function fmtDate(s) { if (!s) return ''; return new Date(s + (s.endsWith('Z') ? '' : 'Z')).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }); }
+function fmtDate(s) {
+  if (!s) return '';
+  let date;
+  if (s.includes('T')) {
+    date = new Date(s);
+  } else if (s.length === 10 && s.includes('-')) {
+    const parts = s.split('-');
+    date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  } else {
+    date = new Date(s + (s.endsWith('Z') ? '' : 'Z'));
+  }
+  return date.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+}
 function fmtTime(s) { if (!s) return ''; return new Date(s + (s.endsWith('Z') ? '' : 'Z')).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit' }); }
 function fmtDateTime(s) { return fmtDate(s) + ' ' + fmtTime(s); }
 function diffMin(a, b) {
@@ -233,19 +247,19 @@ function injectAuthModals() {
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      <div class="p-6 space-y-4">
+      <form id="login-form" class="p-6 space-y-4" onsubmit="return false;">
         <div>
           <label class="block text-sm font-medium text-zinc-700 mb-1">Email</label>
-          <input id="l-email" type="email" placeholder="you@example.com" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
+          <input id="l-email" type="email" autocomplete="email" placeholder="you@example.com" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
         </div>
         <div>
           <label class="block text-sm font-medium text-zinc-700 mb-1">Mật khẩu</label>
-          <input id="l-password" type="password" placeholder="••••••••" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
+          <input id="l-password" type="password" autocomplete="current-password" placeholder="••••••••" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
         </div>
         <div id="login-error" class="text-red-500 text-sm"></div>
-        <button id="btn-login" class="w-full h-12 bg-[#ff385c] hover:bg-[#e00b41] text-white font-semibold rounded-lg transition-colors">Đăng nhập</button>
+        <button id="btn-login" type="submit" class="w-full h-12 bg-[#ff385c] hover:bg-[#e00b41] text-white font-semibold rounded-lg transition-colors">Đăng nhập</button>
         <p class="text-center text-sm text-zinc-500">Chưa có tài khoản? <a href="#" id="link-to-register" class="text-[#ff385c] font-medium hover:underline">Đăng ký</a></p>
-      </div>
+      </form>
     </div>
   </div>
   <!-- Register Modal -->
@@ -258,22 +272,22 @@ function injectAuthModals() {
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      <div class="p-6 space-y-4">
+      <form id="register-form" class="p-6 space-y-4" onsubmit="return false;">
         <div>
           <label class="block text-sm font-medium text-zinc-700 mb-1">Họ tên</label>
           <input id="r-name" type="text" placeholder="Nguyễn Văn A" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
         </div>
         <div>
           <label class="block text-sm font-medium text-zinc-700 mb-1">Email</label>
-          <input id="r-email" type="email" placeholder="you@example.com" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
+          <input id="r-email" type="email" autocomplete="email" placeholder="you@example.com" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
         </div>
         <div>
           <label class="block text-sm font-medium text-zinc-700 mb-1">Số điện thoại</label>
-          <input id="r-phone" type="tel" placeholder="0901234567" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
+          <input id="r-phone" type="tel" autocomplete="tel" placeholder="0901234567" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
         </div>
         <div>
           <label class="block text-sm font-medium text-zinc-700 mb-1">Mật khẩu</label>
-          <input id="r-password" type="password" placeholder="Tối thiểu 8 ký tự, có chữ hoa, thường, số, ký hiệu" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
+          <input id="r-password" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự, có chữ hoa, thường, số, ký hiệu" class="w-full h-12 px-4 border border-zinc-300 rounded-lg focus:border-[#ff385c] focus:ring-1 focus:ring-[#ff385c] outline-none transition-colors"/>
         </div>
         <div>
           <label class="block text-sm font-medium text-zinc-700 mb-1">Địa chỉ (tùy chọn)</label>
@@ -281,9 +295,9 @@ function injectAuthModals() {
         </div>
         <div id="register-error" class="text-red-500 text-sm"></div>
         <div id="register-success" class="text-emerald-600 text-sm"></div>
-        <button id="btn-register" class="w-full h-12 bg-[#ff385c] hover:bg-[#e00b41] text-white font-semibold rounded-lg transition-colors">Đăng ký</button>
+        <button id="btn-register" type="submit" class="w-full h-12 bg-[#ff385c] hover:bg-[#e00b41] text-white font-semibold rounded-lg transition-colors">Đăng ký</button>
         <p class="text-center text-sm text-zinc-500">Đã có tài khoản? <a href="#" id="link-to-login" class="text-[#ff385c] font-medium hover:underline">Đăng nhập</a></p>
-      </div>
+      </form>
     </div>
   </div>`;
   document.body.appendChild(c);
@@ -318,6 +332,14 @@ function injectAuthModals() {
     const errEl = document.getElementById('register-error');
     const sucEl = document.getElementById('register-success');
     errEl.textContent = ''; sucEl.textContent = '';
+
+    const password = document.getElementById('r-password').value;
+    if (password.length < 8) { errEl.textContent = 'Mật khẩu phải có ít nhất 8 ký tự.'; return; }
+    if (!/[A-Z]/.test(password)) { errEl.textContent = 'Mật khẩu phải chứa ít nhất 1 chữ hoa.'; return; }
+    if (!/[a-z]/.test(password)) { errEl.textContent = 'Mật khẩu phải chứa ít nhất 1 chữ thường.'; return; }
+    if (!/[0-9]/.test(password)) { errEl.textContent = 'Mật khẩu phải chứa ít nhất 1 chữ số.'; return; }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) { errEl.textContent = 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt.'; return; }
+
     try {
       await api('POST', '/Auth/register', {
         fullName: document.getElementById('r-name').value,
@@ -391,8 +413,8 @@ function renderNavbar(activePage = '') {
       <div id="nav-user-info" class="flex items-center gap-3 ${isLoggedIn() ? '' : 'hidden'}">
         <a href="/profile.html" class="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-full px-4 py-2 hover:bg-zinc-100 transition-colors ${activePage === 'profile' ? 'ring-2 ring-[#ff385c]' : ''}" title="Hồ sơ cá nhân">
           <span class="material-symbols-outlined text-[20px] text-[#ff385c]">person</span>
-          <span id="nav-user-name" class="text-sm font-semibold text-zinc-800 hover:underline">${getUserName()}</span>
-          <span id="nav-user-role" class="text-xs text-zinc-500 bg-zinc-200 px-2 py-0.5 rounded-full">${getRole()}</span>
+          <span id="nav-user-name" class="text-sm font-semibold text-zinc-800 hover:underline">${esc(getUserName())}</span>
+          <span id="nav-user-role" class="text-xs text-zinc-500 bg-zinc-200 px-2 py-0.5 rounded-full">${esc(getRole())}</span>
         </a>
         <button onclick="logout()" class="text-zinc-500 hover:text-red-500 hover:bg-zinc-100 p-2 rounded-full transition-colors" title="Đăng xuất">
           <span class="material-symbols-outlined text-[20px]">logout</span>
@@ -540,11 +562,15 @@ function getVietnamDate(dateStr) {
 
 // ── Airline logo helper ──
 function airlineLogoHtml(code, name, color) {
-  const safeCode = code || 'HMH';
-  const safeColor = color || '#6a6a6a';
+  const safeCode = esc(code || 'HMH');
+  const safeColor = esc(color || '#6a6a6a');
+  const safeName = esc(name || safeCode);
   const imgSrc = `/images/airline/${safeCode}.png`;
-  
-  return `<img src="${imgSrc}" alt="${name || safeCode}" class="w-10 h-10 rounded-full object-cover border border-zinc-200 bg-white" onerror="this.onerror=null; this.outerHTML='<div class=\\'w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm\\' style=\\'background-color: ${safeColor}\\'>${safeCode}</div>'" />`;
+  const initial = safeCode.charAt(0);
+  const fallbackHtml = `<div class='w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm' style='background-color:${safeColor}'>${initial}</div>`;
+  const encodedFallback = encodeURIComponent(fallbackHtml);
+
+  return `<img src="${imgSrc}" alt="${safeName}" class="w-10 h-10 rounded-full object-cover border border-zinc-200 bg-white" onerror="this.onerror=null;this.outerHTML=decodeURIComponent('${encodedFallback}')" />`;
 }
 
 // ── Init on every page ──

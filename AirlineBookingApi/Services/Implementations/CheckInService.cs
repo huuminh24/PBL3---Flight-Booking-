@@ -18,7 +18,7 @@ public class CheckInService : ICheckInService
 
     public async Task<CheckInResponseDto> CheckInTicketAsync(CheckInRequestDto request, string currentRole, int currentAccountId)
     {
-        await using var tx = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        await using var tx = await _context.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead);
 
         try
         {

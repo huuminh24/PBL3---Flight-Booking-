@@ -279,8 +279,13 @@
 
         function fmtDateStr(dateStr) {
             if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' });
+            }
             const d = new Date(dateStr);
-            return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' });
+            return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short', timeZone: 'Asia/Ho_Chi_Minh' });
         }
 
         function getTimeRange(hour) {

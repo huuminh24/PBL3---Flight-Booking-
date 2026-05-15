@@ -106,7 +106,10 @@ public class PaymentService : IPaymentService
             }
         }
 
-        var paymentStatus = request.IsSuccess ? AppConstants.PaidStatus : AppConstants.FailedStatus;
+        // Xác định kết quả thanh toán PHÍA SERVER — client không được quyết định IsSuccess.
+        // Cash: luôn thành công (Staff xác nhận trực tiếp).
+        // Card/BankTransfer/VietQR: thành công nếu có chứng từ hợp lệ.
+        var paymentStatus = DeterminePaymentStatus(trimmedMethod, request);
 
         var paymentReference = ResolvePaymentReference(trimmedMethod, request);
 
@@ -122,7 +125,7 @@ public class PaymentService : IPaymentService
             PaymentReference = paymentReference
         };
 
-        if (request.IsSuccess)
+        if (string.Equals(paymentStatus, AppConstants.PaidStatus, StringComparison.OrdinalIgnoreCase))
         {
             booking.BookingStatus = AppConstants.PaidStatus;
 
@@ -158,6 +161,41 @@ public class PaymentService : IPaymentService
             PaidAt = payment.PaidAt,
             PaymentReference = payment.PaymentReference
         };
+    }
+
+    private static string DeterminePaymentStatus(string method, CreatePaymentRequestDto request)
+    {
+        // Cash: Staff xác nhận trực tiếp → luôn thành công.
+        if (string.Equals(method, AppConstants.CashPaymentMethod, StringComparison.OrdinalIgnoreCase))
+        {
+            return AppConstants.PaidStatus;
+        }
+
+        // Card: cần có 4 số cuối thẻ.
+        if (string.Equals(method, AppConstants.CardPaymentMethod, StringComparison.OrdinalIgnoreCase))
+        {
+            return !string.IsNullOrWhiteSpace(request.CardLast4)
+                ? AppConstants.PaidStatus
+                : AppConstants.FailedStatus;
+        }
+
+        // BankTransfer: cần có 4 số cuối tài khoản.
+        if (string.Equals(method, AppConstants.BankTransferPaymentMethod, StringComparison.OrdinalIgnoreCase))
+        {
+            return !string.IsNullOrWhiteSpace(request.BankAccountLast4)
+                ? AppConstants.PaidStatus
+                : AppConstants.FailedStatus;
+        }
+
+        // VietQR: cần có mã giao dịch.
+        if (string.Equals(method, AppConstants.VietQRPaymentMethod, StringComparison.OrdinalIgnoreCase))
+        {
+            return !string.IsNullOrWhiteSpace(request.QrTransactionId)
+                ? AppConstants.PaidStatus
+                : AppConstants.FailedStatus;
+        }
+
+        return AppConstants.FailedStatus;
     }
 
     private static string? ResolvePaymentReference(string method, CreatePaymentRequestDto request)
