@@ -8,11 +8,125 @@
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
   <script>tailwind.config = { darkMode: "class", theme: { extend: { colors: { rausch: "#ff385c", "rausch-active": "#e00b41", ink: "#222222", muted: "#6a6a6a", canvas: "#ffffff", hairline: "#dddddd" }, fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] } } } }</script>
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f6f6f6; color: #222; }
     .field-label { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700; color: #71717a; }
     .field-value { font-size: 15px; font-weight: 600; color: #18181b; }
+
+    .flatpickr-calendar {
+      border-radius: 14px !important;
+      box-shadow: rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px 0, rgba(0,0,0,0.1) 0 4px 8px 0 !important;
+      border: none !important;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow: hidden;
+    }
+
+    .flatpickr-day {
+      border-radius: 9999px;
+      height: 40px;
+      width: 40px;
+      line-height: 40px;
+      font-size: 14px;
+      color: #222222;
+      border: none;
+    }
+
+    .flatpickr-day.selected,
+    .flatpickr-day.startRange,
+    .flatpickr-day.endRange,
+    .flatpickr-day.selected.inRange,
+    .flatpickr-day.startRange.inRange,
+    .flatpickr-day.endRange.inRange,
+    .flatpickr-day.selected:focus,
+    .flatpickr-day.startRange:focus,
+    .flatpickr-day.endRange:focus,
+    .flatpickr-day.selected:hover,
+    .flatpickr-day.startRange:hover,
+    .flatpickr-day.endRange:hover,
+    .flatpickr-day.selected.prevMonthDay,
+    .flatpickr-day.startRange.prevMonthDay,
+    .flatpickr-day.endRange.prevMonthDay,
+    .flatpickr-day.selected.nextMonthDay,
+    .flatpickr-day.startRange.nextMonthDay,
+    .flatpickr-day.endRange.nextMonthDay {
+      background: #222222 !important;
+      border-color: #222222 !important;
+      color: #ffffff !important;
+      border-radius: 9999px !important;
+    }
+
+    .flatpickr-day:hover,
+    .flatpickr-day.selected:hover {
+      background: #f7f7f7 !important;
+      border-color: transparent !important;
+      color: #222222 !important;
+    }
+
+    .flatpickr-day.selected:hover,
+    .flatpickr-day.startRange:hover,
+    .flatpickr-day.endRange:hover {
+      background: #222222 !important;
+      color: #ffffff !important;
+    }
+
+    .flatpickr-day.inRange {
+      background: #f7f7f7 !important;
+      border-color: transparent !important;
+      box-shadow: -5px 0 0 #f7f7f7, 5px 0 0 #f7f7f7 !important;
+      color: #222222 !important;
+    }
+
+    .flatpickr-day.today {
+      border-color: #dddddd !important;
+      border-radius: 9999px !important;
+    }
+    .flatpickr-day.today:hover {
+      background: #f7f7f7 !important;
+      border-color: transparent !important;
+    }
+
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay {
+      color: #dddddd !important;
+    }
+
+    .flatpickr-months .flatpickr-month {
+      color: #222222 !important;
+      fill: #222222 !important;
+    }
+    .flatpickr-current-month {
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      color: #222222 !important;
+    }
+    .flatpickr-weekday {
+      color: #6a6a6a !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+    }
+    .flatpickr-prev-month,
+    .flatpickr-next-month {
+      fill: #222 !important;
+    }
+    .flatpickr-prev-month:hover,
+    .flatpickr-next-month:hover {
+      fill: #6a6a6a !important;
+    }
+
+    .flatpickr-clear,
+    .flatpickr-today-button {
+      color: #ff385c !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+    }
+    .flatpickr-clear:hover,
+    .flatpickr-today-button:hover {
+      color: #e00b41 !important;
+    }
   </style>
 </head>
 
@@ -73,7 +187,7 @@
           </div>
           <div>
             <div class="field-label mb-1">Ngày sinh</div>
-            <input id="p-dob" type="date" class="w-full rounded-xl border-zinc-200 focus:border-[#ff385c] focus:ring-[#ff385c]" />
+            <input id="p-dob" type="text" class="w-full rounded-xl border-zinc-200 focus:border-[#ff385c] focus:ring-[#ff385c]" placeholder="Ngày sinh (dd/mm/yyyy)" />
           </div>
           <div>
             <div class="field-label mb-1">Mã tài khoản</div>
@@ -96,6 +210,9 @@
     document.addEventListener('DOMContentLoaded', async () => {
       renderNavbar('profile');
       if (!requireAuth()) return;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      flatpickr('#p-dob', { locale: 'vn', dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: false, maxDate: todayStr });
 
       try {
         const me = await api('GET', '/Auth/me');

@@ -33,7 +33,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICheckInService, CheckInService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 
-// Background job: tự huỷ booking PendingPayment quá hạn và giải phóng ghế.
+// Background job: tự huỷ booking PendingPayment quá hạn
 builder.Services.AddHostedService<ExpireBookingsHostedService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

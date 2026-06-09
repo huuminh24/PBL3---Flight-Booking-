@@ -10,4 +10,7 @@ public class Account : BaseEntity
     public Role? Role { get; set; }
 
     public Profile? Profile { get; set; }
+
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpiresAt { get; set; }
 }

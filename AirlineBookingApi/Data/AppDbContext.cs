@@ -73,6 +73,9 @@ public class AppDbContext : DbContext
       entity.Property(x => x.IsActive).HasDefaultValue(true);
       entity.HasIndex(x => x.Email).IsUnique();
 
+      entity.Property(x => x.PasswordResetToken).HasMaxLength(500);
+      entity.Property(x => x.PasswordResetTokenExpiresAt);
+
       entity.HasOne(x => x.Role)
       .WithMany(x => x.Accounts)
       .HasForeignKey(x => x.RoleId)

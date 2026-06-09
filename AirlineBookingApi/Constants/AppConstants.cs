@@ -52,6 +52,16 @@ public static class AppConstants
     public const string ChildPassengerType = "Child";
     public const string InfantPassengerType = "Infant";
 
+    // ── Age Limits ──
+    /// <summary>Người lớn từ 12 tuổi trở lên.</summary>
+    public const int AdultMinAge = 12;
+    /// <summary>Trẻ em từ 2 tuổi.</summary>
+    public const int ChildMinAge = 2;
+    /// <summary>Trẻ em dưới 12 tuổi.</summary>
+    public const int ChildMaxAge = 11;
+    /// <summary>Em bé dưới 2 tuổi.</summary>
+    public const int InfantMaxAge = 1;
+
     // ── Validation ──
     /// <summary>Regex pattern for Vietnamese phone numbers (10-11 digits, starts with 0).</summary>
     public const string VietnamesePhoneRegex = @"^(0[3|5|7|8|9])[0-9]{8}$";

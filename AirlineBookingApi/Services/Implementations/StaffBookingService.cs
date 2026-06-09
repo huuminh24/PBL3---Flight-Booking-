@@ -68,9 +68,62 @@ public class StaffBookingService : IStaffBookingService
       ExpiresAt = DateTime.UtcNow.AddMinutes(AppConstants.BookingPaymentExpiryMinutes)
     };
 
+    var flightIds = request.Flights.Select(f => f.FlightId).ToList();
+    var flightsInfo = await _dbContext.Flights
+        .Where(f => flightIds.Contains(f.Id))
+        .Select(f => new { f.Id, f.DepartureTime })
+        .ToListAsync();
+
+    if (flightsInfo.Count != request.Flights.Count)
+    {
+        throw new InvalidOperationException("Một hoặc nhiều chuyến bay không tồn tại.");
+    }
+
+    var minDepartureTime = flightsInfo.Min(f => f.DepartureTime);
+
     var passengers = new List<Passenger>();
     foreach (var passengerRequest in request.Passengers)
     {
+      if (!passengerRequest.DateOfBirth.HasValue)
+      {
+        throw new InvalidOperationException($"Ngày sinh là bắt buộc đối với hành khách {passengerRequest.FullName}.");
+      }
+
+      var dob = passengerRequest.DateOfBirth.Value;
+      var age = minDepartureTime.Year - dob.Year;
+      if (minDepartureTime.Month < dob.Month || (minDepartureTime.Month == dob.Month && minDepartureTime.Day < dob.Day))
+      {
+        age--;
+      }
+
+      if (dob > minDepartureTime)
+      {
+        throw new InvalidOperationException($"Hành khách {passengerRequest.FullName} có ngày sinh sau ngày khởi hành chuyến bay.");
+      }
+
+      var type = passengerRequest.PassengerType.Trim();
+      if (string.Equals(type, AppConstants.AdultPassengerType, StringComparison.OrdinalIgnoreCase))
+      {
+        if (age < AppConstants.AdultMinAge)
+        {
+          throw new InvalidOperationException($"Hành khách {passengerRequest.FullName} được chọn là Người lớn nhưng dưới {AppConstants.AdultMinAge} tuổi (Tuổi tính đến ngày bay: {age}).");
+        }
+      }
+      else if (string.Equals(type, AppConstants.ChildPassengerType, StringComparison.OrdinalIgnoreCase))
+      {
+        if (age < AppConstants.ChildMinAge || age >= AppConstants.AdultMinAge)
+        {
+          throw new InvalidOperationException($"Hành khách {passengerRequest.FullName} được chọn là Trẻ em nhưng không nằm trong độ tuổi từ {AppConstants.ChildMinAge} - {AppConstants.ChildMaxAge} tuổi (Tuổi tính đến ngày bay: {age}).");
+        }
+      }
+      else if (string.Equals(type, AppConstants.InfantPassengerType, StringComparison.OrdinalIgnoreCase))
+      {
+        if (age >= AppConstants.ChildMinAge)
+        {
+          throw new InvalidOperationException($"Hành khách {passengerRequest.FullName} được chọn là Em bé nhưng từ {AppConstants.ChildMinAge} tuổi trở lên (Tuổi tính đến ngày bay: {age}).");
+        }
+      }
+
       passengers.Add(new Passenger
       {
         FullName = passengerRequest.FullName.Trim(),

@@ -42,7 +42,8 @@ public class FlightService : IFlightService
             .Concat(arr)
             .Select(x => x.Trim())
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .GroupBy(x => NormalizeAirportName(x))
+            .Select(g => g.OrderBy(name => name).First())
             .OrderBy(x => x)
             .ToList();
     }

@@ -173,4 +173,77 @@ if (!account.IsActive)
             DateOfBirth = account.Profile.DateOfBirth
         };
     }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (string Otp, DateTime ExpiresAt)> _otpCache = new(StringComparer.OrdinalIgnoreCase);
+
+    public async Task<string> ForgotPasswordAsync(ForgotPasswordRequestDto request)
+    {
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+
+        var account = await _dbContext.Accounts
+            .FirstOrDefaultAsync(x => x.Email == normalizedEmail);
+
+        if (account is null)
+        {
+            throw new InvalidOperationException("Email không tồn tại trong hệ thống.");
+        }
+
+        var otp = Random.Shared.Next(100000, 999999).ToString();
+        var expiresAt = DateTime.UtcNow.AddMinutes(10);
+
+        _otpCache[normalizedEmail] = (otp, expiresAt);
+
+        return otp;
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordRequestDto request)
+    {
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+
+        if (!_otpCache.TryGetValue(normalizedEmail, out var cachedValue))
+        {
+            throw new InvalidOperationException("Yêu cầu khôi phục mật khẩu không hợp lệ hoặc mã OTP đã hết hạn.");
+        }
+
+        if (cachedValue.ExpiresAt < DateTime.UtcNow)
+        {
+            _otpCache.TryRemove(normalizedEmail, out _);
+            throw new InvalidOperationException("Mã OTP đã hết hạn.");
+        }
+
+        if (cachedValue.Otp != request.OtpCode.Trim())
+        {
+            throw new InvalidOperationException("Mã OTP không chính xác.");
+        }
+
+        var account = await _dbContext.Accounts
+            .FirstOrDefaultAsync(x => x.Email == normalizedEmail);
+
+        if (account is null)
+        {
+            throw new InvalidOperationException("Tài khoản không tồn tại.");
+        }
+
+        ValidatePasswordStrength(request.NewPassword);
+
+        account.PasswordHash = PasswordHasherHelper.HashPassword(request.NewPassword);
+        await _dbContext.SaveChangesAsync();
+
+        _otpCache.TryRemove(normalizedEmail, out _);
+    }
+
+    private static void ValidatePasswordStrength(string password)
+    {
+        if (string.IsNullOrEmpty(password) || password.Length < 8)
+            throw new InvalidOperationException("Mật khẩu mới phải có ít nhất 8 ký tự.");
+        if (!password.Any(char.IsUpper))
+            throw new InvalidOperationException("Mật khẩu mới phải chứa ít nhất 1 chữ hoa.");
+        if (!password.Any(char.IsLower))
+            throw new InvalidOperationException("Mật khẩu mới phải chứa ít nhất 1 chữ thường.");
+        if (!password.Any(char.IsDigit))
+            throw new InvalidOperationException("Mật khẩu mới phải chứa ít nhất 1 chữ số.");
+        const string specialChars = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?";
+        if (!password.Any(c => specialChars.Contains(c)))
+            throw new InvalidOperationException("Mật khẩu mới phải chứa ít nhất 1 ký tự đặc biệt.");
+    }
 }

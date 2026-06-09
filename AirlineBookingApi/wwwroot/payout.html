@@ -11,15 +11,27 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 <script>tailwind.config={darkMode:"class",theme:{extend:{colors:{rausch:"#ff385c","rausch-active":"#e00b41",ink:"#222222",muted:"#6a6a6a",canvas:"#ffffff",hairline:"#dddddd"},fontFamily:{sans:["Plus Jakarta Sans","sans-serif"]},boxShadow:{search:"rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px 0, rgba(0,0,0,0.1) 0 4px 8px 0"}}}}</script>
-<style>body{font-family:'Plus Jakarta Sans',sans-serif} .input-field{width:100%;height:56px;padding:0 16px;border:1px solid #ddd;border-radius:8px;font-size:14px;transition:border-color .2s} .input-field:focus{border-color:#ff385c;outline:none;box-shadow:0 0 0 1px #ff385c}
-.flatpickr-calendar{border-radius:14px;box-shadow:rgba(0,0,0,0.02) 0 0 0 1px,rgba(0,0,0,0.04) 0 2px 6px 0,rgba(0,0,0,0.1) 0 4px 8px 0;border:none;font-family:'Plus Jakarta Sans',sans-serif}
-.flatpickr-day{border-radius:9999px;height:40px;width:40px;line-height:40px;font-size:14px;color:#222222}
-.flatpickr-day.selected,.flatpickr-day.selected:hover{background:#222222;border-color:#222222;color:#ffffff;border-radius:9999px}
-.flatpickr-day:hover{background:#f7f7f7;border-color:transparent}
-.flatpickr-day.inRange{background:#f7f7f7;border-color:transparent;box-shadow:-5px 0 0 #f7f7f7,5px 0 0 #f7f7f7}
-.flatpickr-months .flatpickr-month{color:#222222;fill:#222222}
-.flatpickr-current-month{font-size:14px;font-weight:600}
-.flatpickr-weekday{color:#6a6a6a;font-size:12px;font-weight:600}</style>
+<style>
+body{font-family:'Plus Jakarta Sans',sans-serif}
+.input-field{width:100%;height:56px;padding:0 16px;border:1px solid #ddd;border-radius:8px;font-size:14px;transition:border-color .2s}
+.input-field:focus{border-color:#ff385c;outline:none;box-shadow:0 0 0 1px #ff385c}
+.flatpickr-calendar{border-radius:14px!important;box-shadow:rgba(0,0,0,0.02) 0 0 0 1px,rgba(0,0,0,0.04) 0 2px 6px 0,rgba(0,0,0,0.1) 0 4px 8px 0!important;border:none!important;font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden}
+.flatpickr-day{border-radius:9999px;height:40px;width:40px;line-height:40px;font-size:14px;color:#222222;border:none}
+.flatpickr-day.selected,.flatpickr-day.startRange,.flatpickr-day.endRange,.flatpickr-day.selected.inRange,.flatpickr-day.startRange.inRange,.flatpickr-day.endRange.inRange,.flatpickr-day.selected:focus,.flatpickr-day.startRange:focus,.flatpickr-day.endRange:focus,.flatpickr-day.selected:hover,.flatpickr-day.startRange:hover,.flatpickr-day.endRange:hover,.flatpickr-day.selected.prevMonthDay,.flatpickr-day.startRange.prevMonthDay,.flatpickr-day.endRange.prevMonthDay,.flatpickr-day.selected.nextMonthDay,.flatpickr-day.startRange.nextMonthDay,.flatpickr-day.endRange.nextMonthDay{background:#222222!important;border-color:#222222!important;color:#ffffff!important;border-radius:9999px!important}
+.flatpickr-day:hover,.flatpickr-day.selected:hover{background:#f7f7f7!important;border-color:transparent!important;color:#222222!important}
+.flatpickr-day.selected:hover,.flatpickr-day.startRange:hover,.flatpickr-day.endRange:hover{background:#222222!important;color:#ffffff!important}
+.flatpickr-day.inRange{background:#f7f7f7!important;border-color:transparent!important;box-shadow:-5px 0 0 #f7f7f7,5px 0 0 #f7f7f7!important;color:#222222!important}
+.flatpickr-day.today{border-color:#dddddd!important;border-radius:9999px!important}
+.flatpickr-day.today:hover{background:#f7f7f7!important;border-color:transparent!important}
+.flatpickr-day.prevMonthDay,.flatpickr-day.nextMonthDay{color:#dddddd!important}
+.flatpickr-months .flatpickr-month{color:#222222!important;fill:#222222!important}
+.flatpickr-current-month{font-size:14px!important;font-weight:600!important;color:#222222!important}
+.flatpickr-weekday{color:#6a6a6a!important;font-size:12px!important;font-weight:600!important}
+.flatpickr-prev-month,.flatpickr-next-month{fill:#222!important}
+.flatpickr-prev-month:hover,.flatpickr-next-month:hover{fill:#6a6a6a!important}
+.flatpickr-clear,.flatpickr-today-button{color:#ff385c!important;font-size:13px!important;font-weight:600!important}
+.flatpickr-clear:hover,.flatpickr-today-button:hover{color:#e00b41!important}
+</style>
 </head>
 <body class="bg-zinc-50 text-zinc-900 antialiased">
 <header class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-zinc-100 shadow-sm"></header>
@@ -185,17 +197,43 @@ document.addEventListener('DOMContentLoaded', async () => {
       const typeBtn = document.getElementById(`pax-type-btn-${i}`);
       const gender = genderBtn ? genderBtn.dataset.value : 'Male';
       const type = typeBtn ? typeBtn.dataset.value : 'Adult';
+      const dobPicker = document.getElementById(`pax-dob-${i}`)._flatpickr;
       const dobRaw = document.getElementById(`pax-dob-${i}`).value;
       let dobVal = '';
+      let dobDate = null;
       if (dobRaw) {
         const parts = dobRaw.split('/');
         if (parts.length === 3) {
           dobVal = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+          dobDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
         } else {
           dobVal = dobRaw;
+          dobDate = new Date(dobRaw);
         }
       }
       if(!name) { toast(`Vui lòng nhập họ tên hành khách ${i+1}`,'error'); return; }
+
+      // Validate age vs passenger type
+      if (dobDate) {
+        const age = calculateAge(dobDate);
+        if (type === 'Adult' && age < 12) {
+          toast(`Hành khách ${i+1}: Người lớn phải từ 12 tuổi trở lên (hiện ${age} tuổi).`,'error'); return;
+        }
+        if (type === 'Child' && (age < 2 || age > 11)) {
+          toast(`Hành khách ${i+1}: Trẻ em phải từ 2 đến 11 tuổi (hiện ${age} tuổi).`,'error'); return;
+        }
+        if (type === 'Infant' && age > 1) {
+          toast(`Hành khách ${i+1}: Em bé phải dưới 2 tuổi (hiện ${age} tuổi).`,'error'); return;
+        }
+      } else {
+        if (type === 'Child') {
+          toast(`Vui lòng nhập ngày sinh cho hành khách ${i+1} (Trẻ em).`,'error'); return;
+        }
+        if (type === 'Infant') {
+          toast(`Vui lòng nhập ngày sinh cho hành khách ${i+1} (Em bé).`,'error'); return;
+        }
+      }
+
       const p = { fullName: name, gender, passengerType: type };
       if (dobVal) p.dateOfBirth = dobVal;
       passengers.push(p);
@@ -461,8 +499,9 @@ function renderPassengerForms() {
     selectPaxOption('pax-type-btn-' + i, defaultType, defaultTypeLabel);
   }
   // Init flatpickr for DOB inputs
+  const todayStr = new Date().toISOString().split('T')[0];
   for(let i=0;i<pax;i++) {
-    flatpickr('#pax-dob-' + i, { locale: 'vi', dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: true });
+    flatpickr('#pax-dob-' + i, { locale: 'vn', dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: false, maxDate: todayStr });
   }
 }
 
@@ -501,6 +540,14 @@ document.addEventListener('click', (e) => {
     document.querySelectorAll('.custom-dropdown-panel').forEach(d => d.classList.add('hidden'));
   }
 });
+
+function calculateAge(birthDate) {
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+  return age;
+}
 
 function getFlightPrice(flight, seatClass) {
   if (!flight || !flight.prices) return 0;
