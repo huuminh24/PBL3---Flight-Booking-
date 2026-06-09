@@ -191,6 +191,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(!cn||!ce||!cp) { toast('Vui lòng điền đầy đủ thông tin liên hệ','error'); return; }
 
     const passengers = [];
+    let minDepartureTime = null;
+    if (bookingData?.flights?.length > 0) {
+      const depTimes = bookingData.flights.map(f => new Date(f.departureTime)).filter(d => !isNaN(d));
+      if (depTimes.length > 0) minDepartureTime = new Date(Math.min(...depTimes));
+    }
     for(let i=0;i<pax;i++) {
       const name = document.getElementById(`pax-name-${i}`).value.trim();
       const genderBtn = document.getElementById(`pax-gender-btn-${i}`);
@@ -215,7 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // Validate age vs passenger type
       if (dobDate) {
-        const age = calculateAge(dobDate);
+        const age = calculateAge(dobDate, minDepartureTime);
         if (type === 'Adult' && age < 12) {
           toast(`Hành khách ${i+1}: Người lớn phải từ 12 tuổi trở lên (hiện ${age} tuổi).`,'error'); return;
         }
@@ -237,6 +242,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       const p = { fullName: name, gender, passengerType: type };
       if (dobVal) p.dateOfBirth = dobVal;
       passengers.push(p);
+    }
+
+    const adultTotal = passengers.filter(p => p.passengerType === 'Adult').length;
+    const infantTotal = passengers.filter(p => p.passengerType === 'Infant').length;
+    if (infantTotal > adultTotal) {
+      toast('Số lượng em bé không được vượt quá số lượng người lớn.','error'); return;
     }
 
     const btn = document.getElementById('btn-continue');
@@ -541,11 +552,11 @@ document.addEventListener('click', (e) => {
   }
 });
 
-function calculateAge(birthDate) {
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+function calculateAge(birthDate, referenceDate) {
+  const ref = referenceDate || new Date();
+  let age = ref.getFullYear() - birthDate.getFullYear();
+  const m = ref.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && ref.getDate() < birthDate.getDate())) age--;
   return age;
 }
 

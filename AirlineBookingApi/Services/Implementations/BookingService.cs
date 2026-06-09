@@ -466,6 +466,15 @@ public class BookingService : IBookingService
       throw new InvalidOperationException($"Loại hành khách '{pax.PassengerType}' không hợp lệ. Chỉ chấp nhận: Adult, Child, Infant.");
     }
   }
+
+  var adultCount = request.Passengers.Count(p =>
+      string.Equals(p.PassengerType, AppConstants.AdultPassengerType, StringComparison.OrdinalIgnoreCase));
+  var infantCount = request.Passengers.Count(p =>
+      string.Equals(p.PassengerType, AppConstants.InfantPassengerType, StringComparison.OrdinalIgnoreCase));
+  if (infantCount > adultCount)
+  {
+    throw new InvalidOperationException("Số lượng em bé không được vượt quá số lượng người lớn.");
+  }
 }
 
 }
